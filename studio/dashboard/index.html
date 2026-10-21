@@ -1,0 +1,2002 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="ms-token" content="__MS_TOKEN__">
+<meta name="color-scheme" content="dark light">
+<title>STUDIO · __MS_TITEL__</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0a09'/%3E%3Ccircle cx='9' cy='16' r='3' fill='%234ade80'/%3E%3Cpath d='M12 16h8' stroke='%234ade80' stroke-width='2'/%3E%3Ccircle cx='23' cy='16' r='3' fill='%23ff6b1a'/%3E%3C/svg%3E">
+<style>
+/* Schriften: self-hosted (dashboard/fonts, OFL), variabel, nur latin + latin-ext */
+@font-face { font-family: "JetBrains Mono"; src: url("/fonts/jetbrains-mono-latin.woff2") format("woff2"); font-weight: 400 800; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "JetBrains Mono"; src: url("/fonts/jetbrains-mono-latin-ext.woff2") format("woff2"); font-weight: 400 800; font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: "IBM Plex Sans"; src: url("/fonts/ibm-plex-sans-latin.woff2") format("woff2"); font-weight: 100 700; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "IBM Plex Sans"; src: url("/fonts/ibm-plex-sans-latin-ext.woff2") format("woff2"); font-weight: 100 700; font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+
+/* Farben: Tokens aus DESIGN.md. Dunkel ist Standard (Agentic OS), hell mit ?thema=hell oder hellem System */
+:root {
+  --bg: #0b0a09; --panel: #121110; --panel-2: #181614; --line: #24211e; --line-2: #302c28;
+  --text: #ece9e3; --muted: #8b877f; --dim: #5b5852;
+  --accent: #ff6b1a; --accent-weak: #2a1a10; --accent-ink: #140a04;
+  --ok: #4ade80; --warn: #e3b46b; --bad: #f0857c;
+  --scrim: rgba(5, 4, 3, .55);
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --sans: "IBM Plex Sans", "JetBrains Mono", sans-serif;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dunkel"]) {
+    --bg: #f4f1ec; --panel: #fbfaf7; --panel-2: #f0ece5; --line: #e3ded6; --line-2: #d6d0c6;
+    --text: #1b1917; --muted: #6d675e; --dim: #9a948a; --accent: #b8460a; --accent-weak: #fbe6d9; --accent-ink: #ffffff;
+    --ok: #1a7f5a; --warn: #8f5c0e; --bad: #c2402f; --scrim: rgba(27, 25, 23, .35); color-scheme: light;
+  }
+}
+:root[data-theme="hell"] {
+  --bg: #f4f1ec; --panel: #fbfaf7; --panel-2: #f0ece5; --line: #e3ded6; --line-2: #d6d0c6;
+  --text: #1b1917; --muted: #6d675e; --dim: #9a948a; --accent: #b8460a; --accent-weak: #fbe6d9; --accent-ink: #ffffff;
+  --ok: #1a7f5a; --warn: #8f5c0e; --bad: #c2402f; --scrim: rgba(27, 25, 23, .35); color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 400 13px/1.5 var(--sans); -webkit-font-smoothing: antialiased; font-feature-settings: "tnum" 1; overflow-x: hidden; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+p { margin: 0; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+svg.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.mono { font-family: var(--mono); }
+.leise { color: var(--muted); }
+.zwei { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+
+/* Kopfzeile: eine Zeile, eine Hauptaktion */
+.kopf { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 10px 14px; min-height: 52px; padding: 8px 16px;
+  background: var(--bg); border-bottom: 1px solid var(--line); }
+.marke { display: flex; align-items: baseline; gap: 10px; min-width: 0; flex: 0 1 auto; max-width: 34%; }
+.marke b { font: 700 12px/1 var(--mono); letter-spacing: .18em; }
+.marke span { font: 500 11px/1 var(--mono); color: var(--muted); letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; flex: 1 1 0; min-width: 0; }
+.chip { display: inline-flex; align-items: baseline; gap: 8px; height: 26px; padding: 0 9px; border: 1px solid var(--line); border-radius: 4px; min-width: 0; max-width: 100%;
+  font: 500 10px/26px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.chip b { font: 600 12px/26px var(--mono); letter-spacing: 0; text-transform: none; color: var(--text); overflow: hidden; text-overflow: ellipsis; min-width: 0; max-width: 300px; }
+.chip.ok b { color: var(--ok); } .chip.warn b { color: var(--warn); } .chip.bad b { color: var(--bad); }
+.chip.skelett { width: 120px; border-color: var(--line); }
+.kopf-rechts { display: flex; align-items: center; gap: 8px; margin-left: auto; flex: none; }
+.stand { font: 500 10px/1 var(--mono); color: var(--muted); letter-spacing: .04em; white-space: nowrap; }
+.stand.warn { color: var(--warn); } .stand.bad { color: var(--bad); }
+
+/* Knöpfe: primär (genau einer pro Blickfeld), sekundär (Rahmen), Gefahr (rote Schrift, immer mit Bestätigung) */
+.knopf { display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 30px; padding: 0 12px; border-radius: 4px; border: 1px solid var(--line-2);
+  background: transparent; color: var(--text); font: 600 10.5px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap;
+  transition: border-color .15s, background-color .15s, color .15s, filter .15s; text-decoration: none; }
+.knopf:hover { border-color: var(--muted); background: var(--panel-2); }
+.knopf.primaer { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.knopf.primaer:hover { filter: brightness(1.08); background: var(--accent); }
+.knopf.gefahr { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, transparent); }
+.knopf.gefahr:hover { border-color: var(--bad); background: transparent; }
+.knopf.still { border-color: transparent; color: var(--muted); }
+.knopf.still:hover { color: var(--text); background: var(--panel-2); border-color: transparent; }
+.knopf.klein { height: 26px; padding: 0 9px; font-size: 10px; }
+.knopf.icon { width: 30px; padding: 0; }
+.knopf.klein.icon { width: 26px; }
+.knopf:disabled, .knopf[aria-disabled="true"] { opacity: .45; cursor: default; filter: none; }
+.knopf.stand-knopf { gap: 8px; text-transform: none; letter-spacing: 0; font: 600 12px/1 var(--mono); max-width: 46vw; }
+.knopf.stand-knopf span { font: 500 10px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.knopf.stand-knopf b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.knopf.stand-knopf.ok b { color: var(--ok); }
+.knopf svg.i { width: 14px; height: 14px; }
+
+/* Raster: ab 1100 px zweispaltig (64/36), darunter einspaltig in Kern-Loop-Reihenfolge */
+.raster { display: grid; grid-template-columns: minmax(0, 64fr) minmax(0, 36fr); gap: 12px; padding: 12px 16px 28px; align-items: start; }
+.spalte { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+#p-jetzt { order: 1; } #p-plan { order: 2; } #p-vorrat { order: 3; } #p-kanaele { order: 4; } #p-arbeit { order: 5; } #p-agenten { order: 6; }
+#p-gepostet { order: 7; } #p-log { order: 8; } #p-zahlen { order: 9; }
+.plan-leer #p-kanaele { order: 2; } .plan-leer #p-plan { order: 3; }
+@media (max-width: 1099px) {
+  .raster { display: flex; flex-direction: column; align-items: stretch; }
+  .spalte { display: contents; }
+}
+@media (max-width: 1099px) and (min-width: 761px) { .marke span { display: none; } }
+@media (min-width: 2200px) { .raster { grid-template-columns: minmax(0, 62fr) minmax(0, 38fr); } }
+
+/* Panel: Mono-Kopf, 1px-Linie, Zeilen */
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; min-width: 0; container-type: inline-size; transition: border-color .2s; }
+.panel.hervor { border-color: var(--muted); }
+.p-kopf { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 6px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.p-kopf h2 { margin: 0; font: 600 10px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; }
+.p-zahl { font: 500 10px/1.3 var(--mono); letter-spacing: .1em; color: var(--muted); margin-left: auto; text-transform: uppercase; text-align: right; }
+.p-fuss { display: flex; justify-content: center; padding: 6px 14px 10px; }
+.p-inhalt.auftritt { animation: auftritt .26s ease-out both; animation-delay: calc(var(--i, 0) * 45ms); }
+@keyframes auftritt { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .p-inhalt.auftritt { animation: none; } * { transition-duration: 0s !important; } }
+
+/* Umschalter (Heute/Morgen, Log-Filter) */
+.wahl { display: inline-flex; border: 1px solid var(--line); border-radius: 4px; padding: 2px; gap: 2px; }
+.wahl button { height: 22px; padding: 0 8px; border: 0; border-radius: 3px; background: transparent; color: var(--muted); font: 600 9.5px/22px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+.wahl button:hover { color: var(--text); }
+.wahl button[aria-pressed="true"] { background: var(--panel-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line-2); }
+
+/* Tags: Mono, 1px Rahmen, Text in Statusfarbe. TRIAL/ZWILLING neutral */
+.tag { display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border: 1px solid; border-color: color-mix(in srgb, currentColor 45%, transparent); border-radius: 4px;
+  font: 500 10px/1.4 var(--mono); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; color: var(--muted); flex: none; }
+.tag.ok { color: var(--ok); } .tag.warn { color: var(--warn); } .tag.bad { color: var(--bad); } .tag.akzent { color: var(--accent); } .tag.text { color: var(--text); }
+
+/* Skeleton (laden) */
+.skelett-zeile { display: grid; grid-template-columns: 70px minmax(0, 1fr) 80px; gap: 12px; align-items: center; padding: 12px 14px; border-top: 1px solid var(--line); }
+.skelett-zeile:first-child { border-top: 0; }
+.sk { display: block; height: 10px; border-radius: 3px; background: var(--panel-2); }
+.sk.breit { height: 12px; }
+.sk-plan { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 12px; padding: 18px 14px; }
+.sk-plan span { height: 92px; border-radius: 4px; background: var(--panel-2); }
+
+/* JETZT */
+.hinweis { display: grid; grid-template-columns: 88px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 7px 14px; border-top: 1px solid var(--line); min-height: 44px; }
+.hinweis:first-child { border-top: 0; }
+.hinweis .tag { justify-self: start; }
+.hinweis p { font-size: 13.5px; line-height: 1.45; overflow-wrap: anywhere; }
+.hinweis.ruhig p { color: var(--muted); }
+.hinweis p b { font-weight: 600; }
+.h-knopf { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
+.h-form { grid-column: 2 / -1; display: grid; gap: 6px; padding-bottom: 4px; }
+.h-form[hidden] { display: none; }
+.h-zeilen { margin: 0; padding: 6px 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); font: 400 11px/1.5 var(--mono); color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere; max-height: 7.5em; overflow: auto; }
+.fg-kommentar { display: flex; gap: 6px; flex-wrap: wrap; }
+.fg-kommentar input, .h-form .a-antwort input { flex: 1 1 240px; min-width: 0; height: 30px; padding: 0 10px; border-radius: 4px; border: 1px solid var(--line-2); background: var(--bg); color: var(--text); font: 400 13px/1 var(--sans); }
+.fg-kommentar input:focus { outline: none; border-color: var(--accent); }
+.h-form .a-antwort { margin: 0; }
+.fg-hinweis { font-size: 12px; line-height: 1.45; color: var(--muted); }
+.fg-hinweis:empty { display: none; }
+.knopf[aria-pressed="true"] { background: var(--panel-2); }
+.hinweis.ruhig p b { color: var(--text); font-weight: 600; }
+@container (max-width: 520px) {
+  .hinweis { grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 10px 14px; }
+  .hinweis .knopf { justify-self: start; }
+  .h-knopf { justify-content: flex-start; }
+  .h-form { grid-column: 1; }
+}
+
+/* SENDEPLAN: Zeitleiste, ein Slot pro Sendezeit, Zwilling als Nachläufer */
+.plan { position: relative; display: grid; grid-template-columns: repeat(var(--n, 7), minmax(0, 1fr)); padding: 12px 8px 12px; --px: 8px; }
+.plan-achse { position: absolute; top: 42px; height: 2px; border-radius: 1px; pointer-events: none;
+  left: calc(var(--px) + (100% - 2 * var(--px)) / (2 * var(--n, 7))); right: calc(var(--px) + (100% - 2 * var(--px)) / (2 * var(--n, 7)));
+  background: linear-gradient(90deg, var(--muted) 0 calc(var(--fort, 0) * 100%), var(--line-2) calc(var(--fort, 0) * 100%) 100%); }
+.plan-achse i { position: absolute; top: -6px; width: 2px; height: 14px; border-radius: 1px; background: var(--text); left: calc(var(--fort, 0) * 100% - 1px); }
+.plan-achse i[hidden] { display: none; }
+.slot { display: flex; flex-direction: column; align-items: center; min-width: 0; padding: 0 2px 6px; border: 0; border-radius: 4px; background: none; color: inherit; text-align: center;
+  font: inherit; transition: background-color .15s; }
+.slot:not(:disabled):hover { background: var(--panel-2); }
+.slot:disabled { cursor: default; opacity: 1; }
+.s-zeit { height: 20px; font: 700 13px/20px var(--mono); letter-spacing: .02em; }
+.z-vorbei .s-zeit { color: var(--muted); font-weight: 500; }
+.s-achse { height: 20px; display: grid; place-items: center; }
+.s-punkt { width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid var(--line-2); background: var(--panel); position: relative; z-index: 1; }
+.z-gepostet .s-punkt { background: var(--ok); border-color: var(--ok); }
+.z-geplant .s-punkt { border-color: var(--text); background: var(--panel); }
+.z-geplant.naechster .s-punkt { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-weak); }
+.z-faellt_aus .s-punkt { border-color: var(--bad); }
+.z-vorbei .s-punkt { width: 9px; height: 9px; background: var(--line-2); border-color: var(--line-2); }
+.s-tag { height: 26px; display: grid; place-items: center; }
+.s-folge { height: 56px; display: flex; align-items: center; justify-content: center; gap: 6px; max-width: 100%; min-width: 0; text-align: left; }
+.s-bild { width: 26px; height: 46px; border-radius: 3px; overflow: hidden; background: var(--panel-2); flex: none; display: grid; place-items: center;
+  font: 600 11px/1 var(--mono); color: var(--muted); }
+.s-bild img, .f-bild img, .k-bild img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.s-text { min-width: 0; display: grid; gap: 2px; }
+.s-titel { font: 600 11.5px/1.3 var(--sans); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: break-word; hyphens: auto; -webkit-hyphens: auto; }
+.s-meta { font: 500 10px/1.3 var(--mono); color: var(--muted); }
+.s-leer { font-size: 12px; color: var(--muted); line-height: 1.35; text-align: center; }
+.s-zwilling { min-height: 0; display: flex; align-items: center; justify-content: center; gap: 6px; font: 500 10px/1.2 var(--mono); color: var(--muted); white-space: nowrap; }
+.plan.mit-zwilling .s-zwilling { min-height: 22px; }
+.plan.ohne-bild .s-folge { height: 34px; }
+.z-punkt { width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--text); flex: none; }
+.z-punkt.ok { background: var(--ok); border-color: var(--ok); }
+.nur-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.spaeter { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; padding: 9px 14px 11px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); }
+.spaeter b { font: 500 10px/1.4 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.spaeter button { border: 0; background: none; padding: 0; color: var(--text); font: 400 12.5px/1.5 var(--sans); text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; }
+.spaeter button:hover { text-decoration-color: var(--text); }
+.spaeter span.mono { font-size: 11px; margin-right: 6px; color: var(--muted); }
+.plan-leer-satz { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 14px; }
+.plan-leer-satz p { color: var(--muted); font-size: 13.5px; }
+@container (max-width: 620px) {
+  .plan { display: block; padding: 0; }
+  .plan-achse { display: none; }
+  .slot { display: grid; grid-template-columns: 46px 14px 92px minmax(0, 1fr); align-items: center; gap: 2px 10px; width: 100%; padding: 8px 14px; border-top: 1px solid var(--line); border-radius: 0; text-align: left; }
+  .slot:first-child { border-top: 0; }
+  .s-zeit, .s-achse, .s-tag { height: auto; }
+  .s-tag { justify-items: start; }
+  .s-folge { height: auto; justify-content: flex-start; }
+  .s-bild { width: 24px; height: 42px; }
+  .s-leer { text-align: left; }
+  .s-zwilling { grid-column: 3 / 5; justify-content: flex-start; min-height: 0; }
+  .s-zwilling:empty { display: none; }
+  .plan-leer-satz { grid-template-columns: minmax(0, 1fr); }
+  .plan-leer-satz .knopf { justify-self: start; }
+}
+
+/* Schrittleiste: Punkte + Linie wie die Pipeline im Agentic OS */
+.schritte { display: flex; align-items: center; list-style: none; margin: 0; padding: 0; min-width: 0; }
+.schritte li { display: flex; align-items: center; gap: 6px; flex: 1 1 0; min-width: 0; font: 500 10px/1.4 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.schritte li:last-child { flex: 0 0 auto; }
+.schritte li::after { content: ""; flex: 1 1 auto; height: 1.5px; min-width: 6px; margin-right: 6px; background: var(--line-2); }
+.schritte li:last-child::after { display: none; }
+.schritte i { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--line-2); flex: none; }
+.schritte span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.schritte .ok i { background: var(--ok); border-color: var(--ok); }
+.schritte .ok::after { background: color-mix(in srgb, var(--ok) 70%, transparent); }
+.schritte .jetzt { color: var(--text); font-weight: 700; flex-shrink: 0; flex-basis: auto; }
+.schritte .jetzt i { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-weak); }
+.schritte .jetzt.warn i { background: var(--warn); border-color: var(--warn); box-shadow: none; }
+.schritte .jetzt.bad i { background: var(--bad); border-color: var(--bad); box-shadow: none; }
+@container (max-width: 560px) { .schritte li:not(.jetzt) span { display: none; } }
+
+/* IN ARBEIT */
+.folge { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 8px 14px; align-items: center; padding: 12px 14px; border-top: 1px solid var(--line); }
+.folge:first-child { border-top: 0; }
+.f-bild { width: 40px; height: 71px; border-radius: 3px; overflow: hidden; background: var(--panel-2); display: grid; place-items: center; font: 600 13px/1 var(--mono); color: var(--muted);
+  border: 0; padding: 0; }
+.f-mitte { min-width: 0; display: grid; gap: 7px; container-type: inline-size; }
+.f-kopf { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.f-titel { font: 600 15px/1.3 var(--sans); min-width: 0; }
+.f-meta { font: 500 10px/1.3 var(--mono); color: var(--muted); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; margin-left: auto; }
+.f-grund { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; line-height: 1.45; min-width: 0; }
+.f-grund:empty { display: none; }
+.f-grund p { min-width: 0; overflow-wrap: anywhere; }
+.f-knoepfe { display: flex; gap: 6px; justify-content: flex-end; }
+@container (max-width: 560px) {
+  .folge { grid-template-columns: 40px minmax(0, 1fr); }
+  .f-knoepfe { grid-column: 2; justify-content: flex-start; }
+  .f-kopf { flex-wrap: wrap; }
+  .f-meta { margin-left: 0; }
+}
+.leer-satz { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 14px; }
+.leer-satz p { color: var(--muted); font-size: 13.5px; }
+@container (max-width: 520px) { .leer-satz { grid-template-columns: minmax(0, 1fr); } .leer-satz .knopf { justify-self: start; } }
+
+/* VORRAT: fertige Folgen als Kacheln, 1px-Linien, Zwilling als Anhängsel */
+.vorrat { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); width: calc(100% + 1px); margin-bottom: -1px; clip-path: inset(0 1px 1px 0); }
+.vk { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 12px; padding: 12px 14px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); min-width: 0; align-items: start; }
+.vk-bild { width: 54px; height: 96px; border-radius: 3px; overflow: hidden; background: var(--panel-2); border: 1px solid var(--line); padding: 0; display: grid; place-items: center;
+  font: 600 13px/1 var(--mono); color: var(--muted); transition: border-color .15s; }
+.vk-bild:hover { border-color: var(--muted); }
+.vk-bild img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.vk-mitte { display: grid; gap: 6px; min-width: 0; align-content: start; }
+.vk-titel { font: 600 13.5px/1.3 var(--sans); }
+.vk-zeit { font: 500 10.5px/1.4 var(--mono); color: var(--muted); overflow-wrap: anywhere; }
+.vk-zeit b { color: var(--text); font-weight: 600; }
+.vk-tags { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.vk-knoepfe { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+.vorrat-leer { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 14px; }
+.vorrat-leer p { color: var(--muted); font-size: 13.5px; }
+@container (max-width: 520px) { .vorrat-leer { grid-template-columns: minmax(0, 1fr); } .vorrat-leer .knopf { justify-self: start; } }
+
+/* GEPOSTET: kompaktes Raster */
+.karten { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 14px 12px; padding: 12px 14px 14px; }
+.karte { min-width: 0; max-width: 116px; display: grid; gap: 6px; align-content: start; position: relative; }
+.k-bild { display: block; width: 100%; max-width: 116px; aspect-ratio: 9 / 16; border-radius: 4px; overflow: hidden; background: var(--panel-2); border: 1px solid var(--line); padding: 0;
+  display: grid; place-items: center; font: 600 14px/1 var(--mono); color: var(--muted); transition: border-color .15s; }
+.k-bild:hover { border-color: var(--muted); }
+.k-titel { font: 600 12.5px/1.3 var(--sans); }
+.k-meta { display: flex; align-items: center; gap: 6px; font: 500 10px/1.2 var(--mono); color: var(--muted); min-width: 0; flex-wrap: wrap; }
+.k-link { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 4px;
+  background: rgba(11, 10, 9, .72); color: #ece9e3; border: 1px solid rgba(236, 233, 227, .18); transition: background-color .15s; }
+.k-link:hover { background: rgba(11, 10, 9, .92); }
+.k-link svg.i { width: 13px; height: 13px; }
+
+
+/* KANÄLE (Motion-Studio) */
+.kanal { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 14px; align-items: center; padding: 12px 14px; border-top: 1px solid var(--line); }
+.kanal:first-child { border-top: 0; }
+.kn-mitte { display: grid; gap: 7px; min-width: 0; }
+.kn-kopf { display: flex; gap: 10px; align-items: baseline; min-width: 0; }
+.kn-kopf b { font: 600 15px/1.3 var(--sans); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kn-kopf span { font: 500 10px/1.3 var(--mono); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.kn-fuss { font-size: 12.5px; color: var(--muted); display: flex; gap: 4px 12px; flex-wrap: wrap; }
+@container (max-width: 520px) { .kanal { grid-template-columns: minmax(0, 1fr); } .kanal .knopf { justify-self: start; } }
+
+/* AGENTEN */
+.agent { display: grid; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--line); }
+.agent:first-child { border-top: 0; }
+.agent.hervor { background: var(--panel-2); }
+.a-kopf { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.a-titel { font: 600 13.5px/1.3 var(--sans); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 auto; }
+.a-zeit { font: 500 10px/1 var(--mono); color: var(--muted); white-space: nowrap; }
+.a-info { font-size: 12.5px; line-height: 1.45; color: var(--muted); overflow-wrap: anywhere; }
+.a-info:empty { display: none; }
+.a-info.bad { color: var(--bad); }
+.a-term { margin: 0; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 7px 10px; font: 400 11px/1.5 var(--mono); color: var(--muted);
+  white-space: pre; overflow: hidden; min-height: calc(3 * 1.5em + 16px); }
+.a-term.auf { max-height: 300px; overflow: auto; color: var(--text); }
+.a-unten { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.a-antwort { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+.a-antwort input { flex: 1 1 220px; min-width: 0; height: 30px; padding: 0 10px; border-radius: 4px; border: 1px solid var(--line-2); background: var(--bg); color: var(--text); font: 400 13px/1 var(--sans); }
+.a-antwort input:focus { outline: none; border-color: var(--accent); }
+.a-frage { font: 500 10px/1.4 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--warn); margin: 2px 0 -2px; }
+.a-auf { height: 26px; padding: 0 6px 0 0; border: 0; background: none; color: var(--muted); font: 500 10px/26px var(--mono); letter-spacing: .1em; text-transform: uppercase; margin-right: auto; }
+.a-auf:hover { color: var(--text); }
+.a-name { font: 500 10px/1 var(--mono); color: var(--muted); }
+.a-ceo { display: flex; gap: 8px; align-items: center; min-width: 0; font-size: 12.5px; color: var(--muted); }
+.a-ceo span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.a-ceo[hidden] { display: none; }
+.agent.zusammen .a-info { color: var(--muted); }
+
+/* LOG */
+.log { list-style: none; margin: 0; padding: 6px 0; }
+.log li { display: grid; grid-template-columns: 40px 64px minmax(0, 1fr); gap: 8px; padding: 4px 14px; font: 400 11px/1.55 var(--mono); align-items: baseline; }
+.log time { color: var(--muted); white-space: nowrap; }
+.l-tag { font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.l-text { color: var(--muted); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.l-text a { display: inline-flex; vertical-align: -2px; color: var(--muted); }
+.l-text a:hover { color: var(--text); }
+.l-text svg.i { width: 12px; height: 12px; }
+.a-fehler .l-tag { color: var(--bad); } .a-warnung .l-tag { color: var(--warn); } .a-fertig .l-tag { color: var(--ok); } .a-frage .l-tag { color: var(--warn); }
+.a-fehler .l-text, .a-warnung .l-text, .a-frage .l-text, .a-fertig .l-text { color: var(--text); }
+.log .l-leer { display: block; padding: 8px 14px; color: var(--muted); font: 400 12.5px/1.5 var(--sans); }
+
+/* ZAHLEN */
+.zahlen { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); width: calc(100% + 1px); margin-bottom: -1px; clip-path: inset(0 1px 1px 0); }
+.zahl { padding: 10px 14px 12px; display: grid; gap: 3px; align-content: start; min-width: 0; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.z-label { font: 500 9.5px/1.3 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.z-wert { font: 600 20px/1.2 var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.z-wert.warn { color: var(--warn); } .z-wert.bad { color: var(--bad); } .z-wert.ok { color: var(--ok); }
+.z-hint { font-size: 11.5px; line-height: 1.4; color: var(--muted); overflow-wrap: anywhere; }
+
+/* Zeile unter der Kopfzeile, wenn der Server weg ist */
+.offline { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; margin: 12px 16px 0; padding: 9px 14px; border: 1px solid var(--line-2); border-radius: 6px; background: var(--panel); }
+.offline p { font-size: 13.5px; }
+.start-fehler { margin: 15vh auto 0; max-width: 520px; padding: 0 16px; display: grid; gap: 14px; justify-items: start; }
+.start-fehler h1 { margin: 0; font: 600 20px/1.3 var(--sans); }
+.start-fehler p { color: var(--muted); font-size: 13.5px; }
+.start-fehler code { font: 500 12px/1 var(--mono); color: var(--text); }
+
+/* Menü „⋯“ */
+.menue { position: fixed; z-index: 50; width: 300px; max-width: calc(100vw - 24px); background: var(--panel-2); border: 1px solid var(--line-2); border-radius: 6px; padding: 6px; }
+.m-titel { font: 600 9.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding: 8px 10px 6px; }
+.m-item { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 2px 10px; width: 100%; padding: 8px 10px; border: 0; border-radius: 4px; background: none; text-align: left; color: var(--text); font: 500 13px/1.35 var(--sans); }
+.m-item svg.i { margin-top: 1px; color: var(--muted); }
+.m-item small { grid-column: 2; display: block; font-size: 11.5px; line-height: 1.35; color: var(--muted); }
+.m-item:hover, .m-item:focus-visible { background: var(--panel); outline: none; }
+.m-item:focus-visible { box-shadow: inset 0 0 0 1px var(--accent); }
+.m-item.gefahr, .m-item.gefahr svg.i { color: var(--bad); }
+.m-item:disabled { opacity: .45; cursor: default; }
+.m-trenn { height: 1px; background: var(--line-2); margin: 6px 4px; }
+
+/* Detail-Schublade von rechts (einzige Stelle mit Schatten) */
+.schleier { position: fixed; inset: 0; z-index: 40; background: var(--scrim); opacity: 0; transition: opacity .2s; }
+.schleier.an { opacity: 1; }
+.schublade { position: fixed; top: 0; right: 0; bottom: 0; z-index: 41; width: min(800px, 100vw); display: flex; flex-direction: column; background: var(--panel);
+  border-left: 1px solid var(--line-2); box-shadow: -24px 0 64px rgba(0, 0, 0, .5); transform: translateX(102%); transition: transform .2s ease-out; container-type: inline-size; }
+.schublade.an { transform: none; }
+.d-kopf { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 14px 16px 12px; border-bottom: 1px solid var(--line); }
+.d-ueber { font: 500 10px/1.3 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); overflow-wrap: anywhere; }
+.d-kopf h2 { margin: 4px 0 0; font: 600 20px/1.3 var(--sans); overflow-wrap: anywhere; }
+.d-status { display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+.d-body { flex: 1 1 auto; overflow: auto; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 20px; padding: 16px; align-content: start; }
+.d-medien video, .d-medien img { width: 100%; max-height: 72vh; border-radius: 4px; background: #000; display: block; object-fit: contain; aspect-ratio: 9 / 16; }
+.d-medien .d-platz { aspect-ratio: 9 / 16; border-radius: 4px; background: var(--panel-2); border: 1px solid var(--line); display: grid; place-items: center; text-align: center; padding: 16px; color: var(--muted); font-size: 12.5px; }
+.d-spalte { display: grid; gap: 18px; align-content: start; min-width: 0; }
+.d-info { display: grid; gap: 18px; align-content: start; min-width: 0; }
+.d-frei { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; padding: 12px; border: 1px solid var(--line-2); border-radius: 4px; }
+.d-frei[hidden] { display: none; }
+.d-frei .fg-box { display: grid; gap: 8px; min-width: 0; }
+.d-frei .fg-frage { font: 600 14px/1.45 var(--sans); overflow-wrap: anywhere; }
+.d-frei .fg-kontext { font-size: 12px; line-height: 1.45; color: var(--muted); overflow-wrap: anywhere; }
+.d-frei .fg-kontext:empty { display: none; }
+.d-frei .h-form { grid-column: auto; }
+.d-frei .fg-knoepfe { display: flex; gap: 6px; flex-wrap: wrap; }
+.d-abschnitt h3 { margin: 0 0 8px; font: 600 10px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.d-hinweis { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; padding: 10px 12px; border: 1px solid var(--line-2); border-radius: 4px; }
+.d-hinweis p { font-size: 13px; overflow-wrap: anywhere; }
+.verlauf { list-style: none; margin: 0; padding: 0; position: relative; }
+.verlauf li { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 2px 12px; padding: 0 0 12px; position: relative; }
+.verlauf li::before { content: ""; position: absolute; left: 5px; top: 14px; bottom: -2px; width: 1.5px; background: var(--line-2); }
+.verlauf li:last-child::before { display: none; }
+.verlauf li.ok::before { background: color-mix(in srgb, var(--ok) 70%, transparent); }
+.v-punkt { width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid var(--line-2); background: var(--panel); margin-top: 4px; position: relative; z-index: 1; }
+.verlauf .ok .v-punkt { background: var(--ok); border-color: var(--ok); }
+.verlauf .jetzt .v-punkt { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-weak); }
+.verlauf .jetzt.warn .v-punkt { background: var(--warn); border-color: var(--warn); box-shadow: none; }
+.verlauf .jetzt.bad .v-punkt { background: var(--bad); border-color: var(--bad); box-shadow: none; }
+.v-name { font: 600 10.5px/19px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.verlauf .ok .v-name, .verlauf .jetzt .v-name { color: var(--text); }
+.v-zeit { font: 500 10.5px/19px var(--mono); color: var(--muted); white-space: nowrap; }
+.v-notiz { grid-column: 2 / 4; font-size: 12.5px; line-height: 1.5; color: var(--muted); overflow-wrap: anywhere; }
+.tabelle { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.tabelle td { padding: 6px 0; border-top: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; }
+.tabelle tr:first-child td { border-top: 0; }
+.tabelle td:first-child { color: var(--muted); padding-right: 12px; }
+.tabelle td:last-child { text-align: right; font-family: var(--mono); font-size: 11.5px; }
+.tabelle a, .d-links a { color: var(--text); text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; }
+.tabelle a:hover, .d-links a:hover { text-decoration-color: var(--text); }
+.d-links { display: grid; gap: 6px; font-size: 13px; }
+.d-links div { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 10px; }
+.d-links span { font: 500 10px/19px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.d-links a, .d-links p { overflow-wrap: anywhere; }
+.d-fuss { border-top: 1px solid var(--line); padding: 12px 16px; display: grid; gap: 10px; }
+.d-fuss:empty { display: none; }
+.d-zeile { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+.feld { display: grid; gap: 5px; flex: 1 1 220px; font: 500 10px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.feld input, .feld select { height: 32px; width: 100%; min-width: 0; padding: 0 10px; border-radius: 4px; border: 1px solid var(--line-2); background: var(--bg); color: var(--text);
+  font: 400 13px/1 var(--sans); letter-spacing: 0; text-transform: none; }
+.feld input:focus, .feld select:focus { outline: none; border-color: var(--accent); }
+@container (max-width: 640px) {
+  .d-body { grid-template-columns: minmax(0, 1fr); }
+  .d-medien { max-width: 300px; }
+}
+
+/* Dialoge (Bestätigung, Aufträge) */
+dialog { background: var(--panel); color: var(--text); border: 1px solid var(--line-2); border-radius: 6px; padding: 0; width: min(500px, calc(100vw - 32px)); }
+dialog::backdrop { background: var(--scrim); }
+.dl-kopf { padding: 16px 18px 4px; }
+.dl-kopf p { font: 600 10px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.dl-kopf h2 { margin: 8px 0 0; font: 600 17px/1.35 var(--sans); }
+.dl-inhalt { padding: 10px 18px 16px; display: grid; gap: 12px; font-size: 13.5px; }
+.dl-inhalt .notiz { font-size: 12.5px; padding: 9px 11px; border: 1px solid var(--line-2); border-radius: 4px; color: var(--muted); }
+.dl-inhalt .notiz.warn { color: var(--warn); }
+.dl-inhalt .notiz.bad { color: var(--bad); }
+.dl-inhalt .notiz:empty { display: none; }
+.dl-inhalt .zitat { color: var(--text); font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+.dl-inhalt .zitat span { display: block; font: 500 10px/1.4 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.dl-fuss { display: flex; justify-content: flex-end; gap: 8px; padding: 0 18px 16px; }
+
+/* Meldungen */
+.toasts { position: fixed; right: 16px; bottom: 16px; z-index: 60; display: grid; gap: 8px; width: min(440px, calc(100vw - 32px)); pointer-events: none; }
+.toast { pointer-events: auto; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; padding: 10px 12px; background: var(--panel-2); border: 1px solid var(--line-2);
+  border-radius: 6px; font-size: 13px; line-height: 1.45; transition: opacity .2s, transform .2s; overflow-wrap: anywhere; }
+.toast.weg { opacity: 0; transform: translateY(6px); }
+
+/* Handy und schmale Tabs */
+@media (max-width: 760px) {
+  .kopf { flex-wrap: wrap; padding: 8px 12px; position: static; }
+  .marke { order: 1; flex: 1 1 auto; }
+  .kopf-rechts { order: 2; }
+  .chips { order: 3; flex-basis: 100%; }
+  .stand { display: none; }
+  .raster { padding: 10px 10px 24px; gap: 10px; }
+  .offline { margin: 10px 10px 0; grid-template-columns: minmax(0, 1fr); }
+  .offline .knopf { justify-self: start; }
+}
+@media (max-width: 430px) {
+  .marke span { display: none; }
+  .knopf.primaer { padding: 0 10px; }
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="kopf">
+    <div class="marke"><b>STUDIO</b><span id="kanal">__MS_TITEL__</span></div>
+    <div class="chips" id="chips" aria-label="Stand"><span class="chip skelett"></span><span class="chip skelett"></span><span class="chip skelett"></span></div>
+    <div class="kopf-rechts">
+      <span class="stand" id="stand" aria-live="off">lädt …</span>
+      <button type="button" class="knopf primaer" id="haupt" disabled>Lädt</button>
+      <button type="button" class="knopf icon" id="mehr" aria-haspopup="menu" aria-expanded="false" aria-label="Weitere Aktionen" title="Weitere Aktionen"></button>
+    </div>
+  </header>
+
+  <div class="offline" id="offline" role="status" hidden>
+    <span class="tag bad">Offline</span><p id="offline-text"></p>
+    <button type="button" class="knopf klein" data-aktion="jetzt-versuchen">Jetzt versuchen</button>
+  </div>
+  <div class="start-fehler" id="start-fehler" role="alert" hidden>
+    <span class="tag bad">Offline</span>
+    <h1>STUDIO erreicht seinen Server nicht.</h1>
+    <p id="start-fehler-text">Ich versuche es alle 5 Sekunden neu.</p>
+    <p>Läuft er nicht mehr: im Agentic OS startet der Tab ihn von selbst, sonst im Terminal <code>ms dashboard</code> ausführen.</p>
+    <button type="button" class="knopf" data-aktion="jetzt-versuchen">Jetzt versuchen</button>
+  </div>
+
+  <main class="raster" id="raster">
+    <div class="spalte links">
+      <section class="panel" id="p-jetzt" aria-labelledby="h-jetzt">
+        <header class="p-kopf"><h2 id="h-jetzt">Jetzt</h2><span class="p-zahl" id="jetzt-zahl"></span></header>
+        <div class="p-inhalt" id="jetzt" style="--i:0"><div class="skelett-zeile"><span class="sk"></span><span class="sk breit"></span><span class="sk"></span></div><div class="skelett-zeile"><span class="sk"></span><span class="sk breit"></span><span class="sk"></span></div></div>
+      </section>
+      <section class="panel" id="p-plan" aria-labelledby="h-plan">
+        <header class="p-kopf"><h2 id="h-plan">Sendeplan</h2>
+          <div class="wahl" id="plan-wahl" role="group" aria-label="Tag"><button type="button" data-tag="heute" aria-pressed="true">Heute</button><button type="button" data-tag="morgen" aria-pressed="false">Morgen</button></div>
+          <span class="p-zahl" id="plan-zahl"></span></header>
+        <div class="p-inhalt" id="plan" style="--i:1"><div class="sk-plan"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
+        <div class="spaeter" id="plan-spaeter" hidden></div>
+      </section>
+      <section class="panel" id="p-vorrat" aria-labelledby="h-vorrat" hidden>
+        <header class="p-kopf"><h2 id="h-vorrat">Vorrat</h2><span class="p-zahl" id="vorrat-zahl"></span></header>
+        <div class="p-inhalt" id="vorrat" style="--i:2"><div class="skelett-zeile"><span class="sk"></span><span class="sk breit"></span><span class="sk"></span></div></div>
+      </section>
+      <section class="panel" id="p-kanaele" aria-labelledby="h-kanaele" hidden>
+        <header class="p-kopf"><h2 id="h-kanaele">Kanäle</h2><span class="p-zahl" id="kanaele-zahl"></span></header>
+        <div class="p-inhalt" id="kanaele" style="--i:2"></div>
+      </section>
+      <section class="panel" id="p-arbeit" aria-labelledby="h-arbeit">
+        <header class="p-kopf"><h2 id="h-arbeit">In Arbeit</h2><span class="p-zahl" id="arbeit-zahl"></span></header>
+        <div class="p-inhalt" id="arbeit" style="--i:2"><div class="skelett-zeile"><span class="sk"></span><span class="sk breit"></span><span class="sk"></span></div></div>
+        <div class="p-fuss" id="arbeit-fuss" hidden></div>
+      </section>
+      <section class="panel" id="p-gepostet" aria-labelledby="h-gepostet">
+        <header class="p-kopf"><h2 id="h-gepostet">Gepostet</h2><span class="p-zahl" id="gepostet-zahl"></span></header>
+        <div class="p-inhalt" id="gepostet" style="--i:3"><div class="skelett-zeile"><span class="sk"></span><span class="sk breit"></span><span class="sk"></span></div></div>
+        <div class="p-fuss" id="gepostet-fuss" hidden></div>
+      </section>
+    </div>
+    <div class="spalte rechts">
+      <section class="panel" id="p-agenten" aria-labelledby="h-agenten">
+        <header class="p-kopf"><h2 id="h-agenten">Agenten</h2><span class="p-zahl" id="agenten-zahl"></span></header>
+        <div class="p-inhalt" id="agenten" style="--i:1"><div class="skelett-zeile"><span class="sk"></span><span class="sk breit"></span><span class="sk"></span></div><div class="skelett-zeile"><span class="sk"></span><span class="sk breit"></span><span class="sk"></span></div></div>
+      </section>
+      <section class="panel" id="p-log" aria-labelledby="h-log">
+        <header class="p-kopf"><h2 id="h-log">Log</h2>
+          <div class="wahl" id="log-wahl" role="group" aria-label="Filter"><button type="button" data-filter="alles" aria-pressed="true">Alles</button><button type="button" data-filter="posts" aria-pressed="false">Posts</button><button type="button" data-filter="probleme" aria-pressed="false">Probleme</button></div>
+        </header>
+        <div class="p-inhalt" id="log-box" style="--i:2"><ol class="log" id="log"><li><span class="sk"></span><span class="sk"></span><span class="sk breit"></span></li><li><span class="sk"></span><span class="sk"></span><span class="sk breit"></span></li></ol></div>
+        <div class="p-fuss" id="log-fuss" hidden></div>
+      </section>
+      <section class="panel" id="p-zahlen" aria-labelledby="h-zahlen">
+        <header class="p-kopf"><h2 id="h-zahlen">Zahlen</h2></header>
+        <div class="p-inhalt zahlen" id="zahlen" style="--i:3"><div class="zahl"><span class="sk"></span><span class="sk breit"></span></div><div class="zahl"><span class="sk"></span><span class="sk breit"></span></div><div class="zahl"><span class="sk"></span><span class="sk breit"></span></div></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="schleier" id="schleier" hidden></div>
+<aside class="schublade" id="schublade" aria-labelledby="d-titel" hidden>
+  <header class="d-kopf"><div><p class="d-ueber" id="d-ueber"></p><h2 id="d-titel"></h2><div class="d-status" id="d-status"></div></div>
+    <button type="button" class="knopf icon" data-aktion="detail-zu" aria-label="Schließen (Esc)" title="Schließen (Esc)" id="d-zu"></button></header>
+  <div class="d-body"><div class="d-medien" id="d-medien"></div><div class="d-spalte"><div class="d-frei" id="d-frei" hidden></div><div class="d-info" id="d-info"></div></div></div>
+  <div class="d-fuss" id="d-fuss"></div>
+</aside>
+<div class="menue" id="menue" role="menu" aria-label="Weitere Aktionen" hidden></div>
+<dialog id="frage" aria-labelledby="f-titel"></dialog>
+<dialog id="auftrag" aria-labelledby="a-titel"></dialog>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+'use strict';
+const TOKEN = document.querySelector('meta[name="ms-token"]').content;
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const zahl = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 });
+const ganz = new Intl.NumberFormat('de-DE');
+const WENIG_BEWEGUNG = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Ein Icon-Satz: 16 px, Strich 1.5, runde Enden
+const IC = {
+  play: '<path d="M5.5 3.8v8.4L12.2 8z"/>',
+  extern: '<path d="M9.5 3.5h3v3M12.5 3.5 7.2 8.8M11 9.5V12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h2.5"/>',
+  terminal: '<rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="m5.2 6.5 2 1.5-2 1.5M8.8 10h2"/>',
+  pfeil: '<path d="M3.5 8h9M9 4.5 12.5 8 9 11.5"/>',
+  mehr: '<path d="M3.5 8h.01M8 8h.01M12.5 8h.01" stroke-width="2.4"/>',
+  neu: '<path d="M12.8 3.5v3h-3"/><path d="M12.5 6.4A5 5 0 1 0 13 9"/>',
+  zu: '<path d="m4.5 4.5 7 7M11.5 4.5l-7 7"/>',
+  ordner: '<path d="M2.5 4.5a1 1 0 0 1 1-1h3l1.5 1.5h4.5a1 1 0 0 1 1 1V12a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1z"/>',
+  stopp: '<rect x="4.2" y="4.2" width="7.6" height="7.6" rx="1"/>',
+  aus: '<path d="M8 2.5V8"/><path d="M4.6 4.7a5 5 0 1 0 6.8 0"/>',
+  start: '<path d="M8 2.5V8"/><path d="M4.6 4.7a5 5 0 1 0 6.8 0"/>',
+  suche: '<circle cx="7" cy="7" r="4"/><path d="m10 10 3.5 3.5"/>',
+  plus: '<path d="M8 3.5v9M3.5 8h9"/>',
+  pruefen: '<path d="m3.5 8.5 3 3 6-7"/>',
+};
+const icon = n => `<svg class="i" viewBox="0 0 16 16" aria-hidden="true">${IC[n] || ''}</svg>`;
+
+const PHASE = { vorlage: 'Vorlage', skript: 'Skript', stimme: 'Stimme', storyboard: 'Storyboard', szenen: 'Szenen', ton: 'Ton',
+  render: 'Render', vergleich: 'Vergleich', pruefung: 'Prüfung', fertig: 'Fertig', geplant: 'Geplant', gepostet: 'Gepostet' };
+const SCHRITTE = [['skript', 'Skript'], ['stimme', 'Stimme'], ['szenen', 'Szenen'], ['ton', 'Ton'], ['render', 'Render'], ['pruefung', 'Prüfung'], ['fertig', 'Fertig']];
+const SCHRITT_VON = { vorlage: 0, skript: 0, stimme: 1, storyboard: 2, szenen: 2, ton: 3, render: 4, vergleich: 4, pruefung: 5, fertig: 7, geplant: 7, gepostet: 7 };
+const KANAL_SCHRITT = { vorbild: 'Vorbild', zerlegt: 'Zerlegen', bibel: 'Bibel', pilot: 'Pilot', gemessen: 'Messen', kit: 'Baukasten', bereit: 'Bereit' };
+const ART = { einrichten: 'Einrichten', vorlagen: 'Vorlagen finden', 'kanal-lernen': 'Kanal lernen', folge: 'Nächste Folge', weiter: 'Weitermachen', pruefen: 'Prüfen' };
+const ZUSTAND = { arbeitet: ['Arbeitet', 'ok'], wartet: ['Wartet', 'warn'], fehler: ['Fehler', 'bad'], beendet: ['Beendet', ''] };
+const LOGART = { info: 'Info', fertig: 'Erledigt', warnung: 'Warnung', fehler: 'Fehler', frage: 'Frage', kosten: 'Kosten' };
+const DATEI = { 'SKRIPT.md': 'Skript', 'STORYBOARD.md': 'Storyboard', 'PRUEFBERICHT.md': 'Prüfbericht', 'HANDOFF.md': 'Übergabe', 'CAPTION.md': 'Caption' };
+const PLATTFORM = { instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube', x: 'X', linkedin: 'LinkedIn', facebook: 'Facebook', web: 'Web' };
+const MESSWERT = { delta_e: 'ΔE Farbabstand (kleiner ist besser)', ssim: 'SSIM Bildähnlichkeit (1 = gleich)', ziel_delta_e: 'Ziel ΔE', ziel_ssim: 'Ziel SSIM', lufs: 'Lautheit (LUFS)' };
+const TAGE = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+const FERTIG = ['fertig', 'geplant', 'gepostet'];
+// Zeilen ohne Inhalt im Terminal (Trennlinien, Statusleiste, leerer Prompt): eingeklappt ausblenden
+const RAUSCHEN = /^[\s─━═│┃|>❯⏵▶·…-]*$|bypass permissions|shift\+tab to cycle|\? for shortcuts|\/gsd:|░|│\s*(Opus|Sonnet|Haiku)\b/;
+
+const thema = new URLSearchParams(location.search).get('thema');
+if (thema === 'hell' || thema === 'dunkel') document.documentElement.dataset.theme = thema;
+
+// ------------------------------------------------------------ Zustand der Seite
+let S = null;                 // letzter Stand vom Server
+let serverId = null;
+let letzterStand = 0;
+let fehlversuche = 0;
+let naechsterVersuch = 0;
+let schleifenTimer = 0;
+let ersterAufbau = true;
+let planTag = 'heute';
+let logFilter = 'alles';
+let logAlle = false;
+let gepostetAlle = false;
+let arbeitAlle = false;
+let jetztAlle = false;
+const termAuf = new Set();     // aufgeklappte Terminal-Auszüge (Name der Sitzung)
+const fgOffen = new Map();     // Freigabe: Folge → Option, deren Kommentarfeld offen ist (bleibt beim Polling)
+let erledigtAuf = false;       // erledigte Sitzungen einzeln zeigen
+let postenVorher = null;       // letzter Stand des laufenden Posts (Meldung, wenn er fertig wird)
+let detailId = null;
+let neustartLaeuft = false;
+
+// ------------------------------------------------------------ Hilfen
+function setHTML(el, html) { if (el && el._html !== html) { el.innerHTML = html; el._html = html; } }
+function setText(el, t) { t = String(t ?? ''); if (el && el.textContent !== t) el.textContent = t; }
+function setAttr(el, k, v) { if (v == null || v === false) { if (el.hasAttribute(k)) el.removeAttribute(k); } else if (el.getAttribute(k) !== String(v)) el.setAttribute(k, v); }
+function setClass(el, c) { if (el.className !== c) el.className = c; }
+function dateiURL(p) { return '/datei?pfad=' + encodeURIComponent(p); }
+function istLink(u) { return typeof u === 'string' && /^https?:\/\/[^\s"'<>]+$/i.test(u); }
+function folgeId(f) { return f.id || (f._ordner || '').split('/').pop(); }
+function folgeVon(id) { return (S?.folgen || []).find(f => folgeId(f) === id); }
+function initial(t) { return esc(String(t || '?').trim().slice(0, 1).toUpperCase()); }
+function plural(n, eins, mehr) { return `${n} ${n === 1 ? eins : mehr}`; }
+function zwei(n) { return String(n).padStart(2, '0'); }
+function uhr(iso) { const d = new Date(iso); return isNaN(d) ? '' : `${zwei(d.getHours())}:${zwei(d.getMinutes())}`; }
+function tagName(d) { return `${TAGE[d.getDay()]} ${zwei(d.getDate())}.${zwei(d.getMonth() + 1)}.`; }
+function wann(iso) {   // heute 14:40 · morgen 14:40 · gestern 18:45 · Mo 19.10. 18:45
+  const d = new Date(iso); if (isNaN(d)) return '';
+  const heute = new Date(); heute.setHours(0, 0, 0, 0);
+  const tag = new Date(d); tag.setHours(0, 0, 0, 0);
+  const diff = Math.round((tag - heute) / 86400000);
+  if (diff === 0) return uhr(iso);
+  if (diff === 1) return `morgen ${uhr(iso)}`;
+  if (diff === -1) return `gestern ${uhr(iso)}`;
+  return `${tagName(d)} ${uhr(iso)}`;
+}
+function wannKurz(iso) { return Date.parse(iso) <= Date.now() + 60000 ? 'jetzt' : wann(iso); }
+function datumZeit(iso) { const d = new Date(iso); return isNaN(d) ? '' : `${tagName(d)} ${uhr(iso)}`; }
+function rel(iso) {
+  const t = Date.parse(iso); if (!t) return '';
+  const s = Math.round((Date.now() - t) / 1000);
+  if (s < -60) { const m = Math.round(-s / 60); if (m < 60) return `in ${m} Min.`; const h = Math.round(m / 60); return h < 24 ? `in ${h} Std.` : wann(iso); }
+  if (s < 45) return 'gerade eben';
+  if (s < 3600) return `vor ${Math.max(1, Math.round(s / 60))} Min.`;
+  if (s < 86400) return `vor ${Math.round(s / 3600)} Std.`;
+  const d = Math.round(s / 86400); return d === 1 ? 'gestern' : `vor ${d} Tagen`;
+}
+function kostenListe(obj) { return Object.entries(obj || {}).filter(([, v]) => v).map(([e, v]) => `${zahl.format(v)} ${e}`); }
+function phaseName(p) { return PHASE[p] || p || 'Neu'; }
+// „wartet_auf“ ist beim Reel-Adapter ein Objekt („deine Hörprobe …“), im Motion-Studio eine Frage des Agenten
+function wartetSatz(w) { w = String(w || '').trim(); return /\?$/.test(w) ? `Der Agent fragt: ${w}` : `Wartet auf ${w.replace(/^auf\s+/i, '')}`; }
+
+// Bild in einem Behälter setzen, ohne es bei jedem Polling neu zu erzeugen (kein Flackern)
+function bild(box, pfad, ersatz) {
+  const url = pfad ? dateiURL(pfad) : '';
+  const sig = url || '#' + ersatz;
+  if (box._sig === sig) return;
+  box._sig = sig;
+  if (url) {
+    let img = box.querySelector('img');
+    if (!img) { img = document.createElement('img'); img.alt = ''; img.decoding = 'async'; img.loading = 'lazy'; box.replaceChildren(img); }
+    img.src = url;
+  } else box.innerHTML = ersatz || '';
+}
+
+// Elemente nach Schlüssel wiederverwenden: nur Geändertes wird angefasst
+function abgleich(box, items, key, neu, aktualisieren) {
+  if (box._html != null) { box.innerHTML = ''; box._html = null; }
+  [...box.children].forEach(c => { if (!c.dataset.key) c.remove(); });
+  const alt = new Map([...box.children].map(c => [c.dataset.key, c]));
+  let vorher = null;
+  for (const it of items) {
+    const k = String(key(it));
+    let el = alt.get(k);
+    if (!el) { el = neu(it); el.dataset.key = k; }
+    alt.delete(k);
+    aktualisieren(el, it);
+    const soll = vorher ? vorher.nextSibling : box.firstChild;
+    if (soll !== el) box.insertBefore(el, soll);
+    vorher = el;
+  }
+  alt.forEach(el => el.remove());
+}
+function element(tag, cls, html) { const el = document.createElement(tag); if (cls) el.className = cls; if (html) el.innerHTML = html; return el; }
+
+async function post(pfad, daten) {
+  try {
+    const r = await fetch(pfad, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-MS-Token': TOKEN }, body: JSON.stringify(daten || {}) });
+    const j = await r.json().catch(() => ({ ok: false, fehler: 'Antwort unlesbar' }));
+    if (!r.ok) j.ok = false;
+    if (r.status === 403) j.fehler = 'Der Server wurde neu gestartet. Bitte die Seite neu laden (Menü ⋯).';
+    return j;
+  } catch (e) {
+    return { ok: false, fehler: 'Server nicht erreichbar. Gleich noch einmal versuchen.' };
+  }
+}
+function toast(text, art = 'ok') {
+  const t = element('div', 'toast');
+  const tag = art === 'fehler' ? '<span class="tag bad">Fehler</span>' : art === 'warn' ? '<span class="tag warn">Hinweis</span>' : '<span class="tag ok">OK</span>';
+  t.innerHTML = `${tag}<p>${esc(text)}</p>`;
+  t.setAttribute('role', art === 'fehler' ? 'alert' : 'status');
+  $('#toasts').append(t);
+  const dauer = art === 'fehler' ? 9000 : 5500;
+  setTimeout(() => t.classList.add('weg'), dauer);
+  setTimeout(() => t.remove(), dauer + 300);
+}
+
+// ------------------------------------------------------------ Laden, Polling, Verbindung
+async function laden() {
+  const r = await fetch('/api/stand', { cache: 'no-store' });
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).fehler || `Status ${r.status}`);
+  const neu = await r.json();
+  if (serverId && neu.server_id && neu.server_id !== serverId) return serverNeu();
+  serverId = neu.server_id || serverId;
+  S = neu;
+  postenBeobachten();
+  letzterStand = Date.now();
+  fehlversuche = 0;
+  zeichnen();
+  verbindung();
+}
+function schleife() {
+  clearTimeout(schleifenTimer);
+  laden().catch(e => { fehlversuche++; verbindung(e); }).finally(() => {
+    const warte = fehlversuche ? 5000 : (document.hidden ? 10000 : 3000);
+    naechsterVersuch = Date.now() + warte;
+    schleifenTimer = setTimeout(schleife, warte);
+  });
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - letzterStand > 2500) schleife(); });
+function verbindung(fehler) {
+  const offline = fehlversuche > 0;
+  $('#start-fehler').hidden = !(offline && !S);
+  if (!S) { $('#chips').hidden = offline; $('#haupt').hidden = offline; }
+  $('#raster').hidden = offline && !S;
+  $('#offline').hidden = !(offline && S);
+  if (fehler) console.info('STUDIO: Server nicht erreichbar', fehler);   // Details nur ins Log, nie an den Nutzer
+  tick();
+}
+// Server läuft jetzt mit neuem Token: Seite neu laden, wenn gerade nichts offen ist
+function serverNeu() {
+  const offen = detailId || $('#frage').open || $('#auftrag').open || !$('#menue').hidden;
+  if (!offen) { location.reload(); return; }
+  fehlversuche = 0;
+  setText($('#offline-text'), 'Der Server wurde neu gestartet. Lade die Seite neu, damit die Knöpfe wieder gehen.');
+  $('#offline').hidden = false;
+  $('#offline .knopf').dataset.aktion = 'neu-laden';
+  setText($('#offline .knopf'), 'Neu laden');
+}
+
+// Uhr: relative Zeiten und „aktualisiert vor …“ jede Sekunde, ohne neu zu zeichnen
+function tick() {
+  document.querySelectorAll('[data-rel]').forEach(el => setText(el, rel(el.dataset.rel)));
+  const st = $('#stand');
+  const sek = Math.max(0, Math.round((Date.now() - letzterStand) / 1000));
+  const rest = Math.max(0, Math.ceil((naechsterVersuch - Date.now()) / 1000));
+  if (fehlversuche) {
+    setClass(st, 'stand bad');
+    setText(st, 'keine Verbindung');
+    const alt = letzterStand ? ` Angezeigt ist der Stand von ${uhr(new Date(letzterStand).toISOString())}.` : '';
+    if ($('#offline .knopf').dataset.aktion === 'jetzt-versuchen') setText($('#offline-text'), `Keine Verbindung zum Server. Neuer Versuch in ${rest} s.${alt}`);
+    setText($('#start-fehler-text'), `Ich versuche es alle 5 Sekunden neu. Nächster Versuch in ${rest} s.`);
+  } else if (letzterStand) {
+    setClass(st, sek > 20 ? 'stand warn' : 'stand');
+    setText(st, sek < 60 ? `aktualisiert vor ${sek} s` : `aktualisiert ${rel(new Date(letzterStand).toISOString())}`);
+  }
+}
+setInterval(tick, 1000);
+
+// ------------------------------------------------------------ Zeichnen
+function zeichnen() {
+  zeichneKopf(); zeichneJetzt(); zeichnePlan(); zeichneVorrat(); zeichneKanaele(); zeichneArbeit(); zeichneGepostet(); zeichneAgenten(); zeichneLog(); zeichneZahlen();
+  if (detailId) detailAktualisieren(false);
+  if (ersterAufbau) {
+    ersterAufbau = false;
+    if (!WENIG_BEWEGUNG) document.querySelectorAll('.p-inhalt').forEach(el => el.classList.add('auftritt'));
+  }
+  tick();
+}
+
+// Kopfzeile: Chips + eine Hauptaktion
+function hauptAktion() {
+  if (S.adapter) return (S.aktionen || []).find(a => a.primaer) || null;
+  return { art: '__los', label: 'Einfach weitermachen', hinweis: S.vorschlag?.text || '' };
+}
+function naechsterGeplant() {
+  const f = (S.folgen || []).filter(x => x.phase === 'geplant' && x.geplant && !x.zwilling_von && Date.parse(x.geplant) > Date.now() - 3 * 3600e3)
+    .sort((a, b) => String(a.geplant).localeCompare(String(b.geplant)))[0];
+  return f ? { zeit: f.geplant, titel: f.titel || folgeId(f), folge_id: folgeId(f) } : null;
+}
+function zeichneKopf() {
+  $('#chips').hidden = false;
+  setText($('#kanal'), S.titel || '');
+  document.title = `STUDIO · ${S.titel || ''}`;
+  const chip = (label, wert, art = '', titel = '') => `<span class="chip ${art}" title="${esc(titel)}">${esc(label)}<b>${esc(wert)}</b></span>`;
+  const c = [];
+  const ap = S.autopilot;
+  if (ap) {
+    c.push(chip('Autopilot', ap.aktiv ? 'an' : 'aus', ap.aktiv ? 'ok' : 'warn', ap.aktiv ? (ap.bauen ? 'Postet zu den Sendezeiten und baut nach' : 'Postet zu den Sendezeiten, baut nicht selbst nach') : 'Postet nichts automatisch'));
+    if (!ap.aktiv) c.push(chip('Nächster Post', 'keiner', 'warn', 'Autopilot ist aus'));
+    else if (ap.naechster) c.push(chip('Nächster Post', `${wannKurz(ap.naechster.zeit)} ${ap.naechster.titel}`, '', `${datumZeit(ap.naechster.zeit)}: ${ap.naechster.titel}${ap.naechster.trial ? ' (Trial)' : ''}`));
+    else c.push(chip('Nächster Post', 'Vorrat leer', 'bad', 'Keine fertige Folge mit Caption und Guide'));
+    const v = ap.vorrat, p = ap.puffer || 0;
+    c.push(chip('Vorrat', p ? `${v}/${p}` : String(v), v === 0 ? 'bad' : (p && v < p ? 'warn' : 'ok'), `${v} fertig zum Posten, Puffer ${p}${ap.ohne_guide ? `, ${ap.ohne_guide} ohne Guide oder Caption` : ''}`));
+  } else {
+    const offen = (S.folgen || []).filter(f => !FERTIG.includes(f.phase)).length;
+    c.push(chip('In Arbeit', String(offen)));
+    const n = naechsterGeplant();
+    c.push(n ? chip('Nächster Post', `${wann(n.zeit)} ${n.titel}`, '', datumZeit(n.zeit)) : chip('Nächster Post', 'nichts geplant', '', 'Fertige Folgen planst du in den Details'));
+    const k = kostenListe(S.kosten?.monat);
+    c.push(chip('Kosten Monat', k[0] || '0', '', k.join(' · ')));
+  }
+  setHTML($('#chips'), c.join(''));
+  const h = hauptAktion(), knopf = $('#haupt');
+  if (h && h.anzeige) {   // Tagesproduktion läuft: Stand statt Hauptaktion, Klick zeigt die Agenten
+    const m = /^([^:]+):\s*(.*)$/.exec(h.label) || [null, '', h.label];
+    setHTML(knopf, `<span>${esc(m[1])}</span><b>${esc(m[2])}</b>`);
+    setClass(knopf, `knopf stand-knopf${S.produktion?.laufend ? ' ok' : ''}`);
+    knopf.disabled = false;
+    knopf.title = h.hinweis || '';
+    knopf.hidden = false;
+  } else if (h) {
+    setHTML(knopf, esc(h.label));
+    setClass(knopf, 'knopf primaer');
+    knopf.disabled = !!h.aus;
+    knopf.title = h.hinweis || '';
+    knopf.hidden = false;
+  } else knopf.hidden = true;
+}
+// Knopf für leere Bereiche: die Hauptaktion, aber nicht der Stand-Knopf der Tagesproduktion
+function leerKnopf(klein) {
+  const h = hauptAktion();
+  return h && !h.anzeige ? `<button type="button" class="knopf${klein ? ' klein' : ''}" data-aktion="haupt">${esc(h.label)}</button>` : '';
+}
+
+// JETZT: was braucht mich? Hinweise vom Server + Sitzungen (hängt, wartet, erledigt)
+const RANG = { fehler: 0, haengt: 0, ceo: 0, freigabe: 1, postet: 1, vorrat: 2, aus: 2, wartet: 2, fehlt: 3, info: 4, erledigt: 5 };
+const TAGFARBE = { fehler: 'bad', haengt: 'bad', ceo: 'bad', freigabe: 'warn', postet: 'ok', vorrat: 'bad', aus: 'warn', wartet: 'warn', fehlt: 'warn', info: '', erledigt: '' };
+const FG_FORM = '<div class="h-form" hidden><form class="fg-kommentar"><input type="text" name="kommentar" maxlength="2000" autocomplete="off" placeholder="Was soll anders werden? Der Agent setzt genau das um." aria-label="Kommentar zur Freigabe"><button type="submit" class="knopf klein"></button><button type="button" class="knopf klein still" data-aktion="fg-zu">Abbrechen</button></form><p class="fg-hinweis"></p></div>';
+function sitzungTitel(s) { return s.titel || (ART[s.art] ? `Agent „${ART[s.art]}“` : s.name); }
+function folgeVonSitzung(s) {
+  if (s.folge) return s.folge;
+  const m = /Folge (\S+?)(?=[\s.,]|$)/.exec(s.auftrag || '');
+  return m ? m[1] : null;
+}
+function hinweiseListe() {
+  const h = (S.hinweise || []).map(x => ({ ...x }));
+  const erledigt = [];
+  const ceoOffen = new Set(h.filter(x => x.art === 'ceo').map(x => x.sitzung));
+  for (const s of S.sitzungen || []) {
+    if (s.tot) continue;
+    const f = folgeVonSitzung(s) ? folgeVon(folgeVonSitzung(s)) : null;
+    const steuerbar = !s.nur_ansehen;
+    if (s.zustand === 'fehler') {
+      h.push({ art: s.haenger ? 'haengt' : 'fehler', tag: s.haenger ? 'Hängt' : 'Fehler', sitzung: s.name,
+        text: s.haenger ? `${sitzungTitel(s)} hängt: ${s.grund}.` : `${sitzungTitel(s)} ist stehen geblieben: ${s.grund}`,
+        knopf: steuerbar ? { label: 'Weiter', aktion: 'sitzung_weiter', sitzung: s.name } : (f ? { label: 'Ansehen', aktion: 'detail', folge: folgeId(f) } : null) });
+    } else if (s.zustand === 'wartet') {
+      if (f && FERTIG.includes(f.phase)) { erledigt.push({ s, f }); continue; }
+      if (ceoOffen.has(s.name) || ['gefragt', 'eskaliert'].includes(s.ceo?.status)) continue;   // der CEO ist dran bzw. Zeile „CEO fragt“
+      h.push({ art: 'wartet', tag: 'Wartet', sitzung: s.name,
+        text: `${sitzungTitel(s)} wartet auf deine Antwort im Terminal${s.grund && s.grund.includes('Auswahl') ? ' (Auswahl)' : ''}.`,
+        knopf: steuerbar ? { label: 'Ansehen', aktion: 'ansehen', sitzung: s.name } : null });
+    }
+  }
+  // Sitzungen, deren Folge schon fertig ist, brauchen dich nicht: sie stehen nur bei AGENTEN (Tag „Erledigt“)
+  return h.sort((a, b) => (RANG[a.art] ?? 4) - (RANG[b.art] ?? 4));
+}
+function ruhigeZeile() {
+  const ap = S.autopilot;
+  let n = ap?.naechster || (!S.adapter ? naechsterGeplant() : null);
+  if (n) return `<b>Alles läuft.</b> Nächster Post ${esc(wannKurz(n.zeit))}: „${esc(n.titel)}“.`;
+  if (!S.adapter && S.vorschlag?.text) return `<b>Alles läuft.</b> Nächster Schritt: ${esc(S.vorschlag.text)}.`;
+  return '<b>Alles läuft.</b> Gerade braucht nichts deine Hilfe.';
+}
+function zeichneJetzt() {
+  const box = $('#jetzt');
+  const alle = hinweiseListe();
+  const zeigen = alle.length > 5 && !jetztAlle ? alle.slice(0, 4) : alle;
+  setText($('#jetzt-zahl'), alle.length ? plural(alle.length, 'Punkt', 'Punkte') : '');
+  if (!alle.length) {
+    abgleich(box, [{ ruhig: true }], () => 'ruhig', () => element('div', 'hinweis ruhig', '<span class="tag ok">OK</span><p></p><span></span>'), el => setHTML($('p', el), ruhigeZeile()));
+    return;
+  }
+  const liste = zeigen.slice();
+  if (zeigen.length < alle.length || jetztAlle && alle.length > 5) liste.push({ mehr: true });
+  const erster = liste.find(x => x.art === 'ceo' || x.art === 'freigabe');   // nur diese Zeile bekommt den Hauptknopf
+  const schluessel = x => x.mehr ? 'mehr' : x.art === 'freigabe' ? `fg|${x.folge}|${x.freigabe?.seit || ''}`
+    : x.art === 'ceo' ? `ceo|${x.sitzung}|${x.zeit || ''}` : `${x.art}|${x.sitzung || x.folge || ''}|${x.tag}|${(x.text || '').slice(0, 40)}`;
+  abgleich(box, liste, schluessel, x => {
+    if (x.mehr) return element('div', 'p-fuss', '<button type="button" class="knopf still klein" data-aktion="jetzt-alle"></button>');
+    if (x.art === 'freigabe') return element('div', 'hinweis', '<span class="tag warn">Freigabe</span><p></p><span class="h-knopf"></span>' + FG_FORM);
+    if (x.art === 'ceo') return element('div', 'hinweis', '<span class="tag bad">CEO fragt</span><p></p><span class="h-knopf"></span><div class="h-form"><pre class="h-zeilen" hidden></pre><form class="a-antwort"><input type="text" name="text" maxlength="2000" autocomplete="off" placeholder="Deine Antwort an den Agenten" aria-label="Antwort an den Agenten"><button type="submit" class="knopf klein">Antworten</button></form></div>');
+    return element('div', 'hinweis', '<span class="tag"></span><p></p><span class="h-knopf"></span>');
+  }, (el, x) => {
+    if (x.mehr) { setText($('button', el), jetztAlle ? 'Weniger zeigen' : `Alle ${alle.length} zeigen`); return; }
+    if (x.art === 'freigabe') return jetztFreigabe(el, x, x === erster);
+    if (x.art === 'ceo') return jetztCeo(el, x, x === erster);
+    const tag = el.children[0];
+    setClass(tag, `tag ${TAGFARBE[x.art] ?? ''}`);
+    setText(tag, x.tag || x.art);
+    setText(el.children[1], x.text);
+    const k = x.knopf;
+    setHTML(el.children[2], k ? `<button type="button" class="knopf klein" data-aktion="hinweis" data-h-aktion="${esc(k.aktion)}" data-art="${esc(k.art || '')}" data-folge="${esc(k.folge || '')}" data-sitzung="${esc(k.sitzung || '')}">${esc(k.label)}</button>` : '');
+  });
+}
+
+// Freigabe-Knöpfe (dynamisch aus STATUS.json freigabe.optionen): gut = Hauptknopf, schlecht = Rahmen + rote Schrift
+function fgKnoepfe(fid, fg, primaer, ansehen) {
+  const offen = fgOffen.get(fid);
+  return (ansehen ? `<button type="button" class="knopf klein still" data-detail="${esc(fid)}" title="Details mit Video">Ansehen</button>` : '')
+    + fg.optionen.map(o => {
+      const cls = o.art === 'gut' ? (primaer ? ' primaer' : '') : o.art === 'schlecht' ? ' gefahr' : '';
+      return `<button type="button" class="knopf klein${cls}" data-aktion="fg-option" data-folge="${esc(fid)}" data-id="${esc(o.id)}"${o.kommentar ? ` aria-pressed="${offen === o.id}"` : ''} title="${esc(o.hinweis || o.bestaetigen || '')}">${esc(o.label)}</button>`;
+    }).join('');
+}
+// Kommentarfeld: erscheint nach Klick auf eine Option mit kommentar:true; Eingaben bleiben beim Polling stehen
+function fgForm(wrap, fid, fg) {
+  const o = fg.optionen.find(x => x.id === fgOffen.get(fid) && x.kommentar);
+  wrap.hidden = !o;
+  if (!o) return;
+  const form = $('form', wrap);
+  form.dataset.folge = fid; form.dataset.id = o.id;
+  const knopf = $('button[type="submit"]', form);
+  setText(knopf, `${o.label}: senden`);
+  setClass(knopf, `knopf klein${o.art === 'schlecht' ? ' gefahr' : ''}`);
+  setText($('.fg-hinweis', wrap), o.hinweis || '');
+}
+function jetztFreigabe(el, x, primaer) {
+  setHTML(el.children[1], `<b>${esc(x.titel || x.folge)}</b> · ${esc(x.freigabe.frage)}`);
+  setHTML($('.h-knopf', el), fgKnoepfe(x.folge, x.freigabe, primaer, true));
+  fgForm($('.h-form', el), x.folge, x.freigabe);
+}
+function jetztCeo(el, x, primaer) {
+  setHTML(el.children[1], `${esc(x.text)}${x.zeit ? ` <span class="leise">· ${esc(wann(x.zeit))}</span>` : ''}${x.sitzung_da ? '' : ' <span class="leise">Die Sitzung läuft nicht mehr.</span>'}`);
+  setHTML($('.h-knopf', el), (x.sitzung_da ? `<button type="button" class="knopf klein still" data-aktion="hinweis" data-h-aktion="agenten" data-sitzung="${esc(x.sitzung)}" title="Zur Karte des Agenten mit seinem Terminal">Zum Agenten</button>` : '')
+    + `<button type="button" class="knopf klein" data-aktion="esk-erledigt" data-sitzung="${esc(x.sitzung)}" title="Frage schließen, zum Beispiel wenn du sie im Terminal gelöst hast">Erledigt</button>`);
+  const form = $('form', el);
+  form.hidden = !x.sitzung_da;
+  form.dataset.sitzung = x.sitzung;
+  setClass($('button[type="submit"]', form), `knopf klein${primaer ? ' primaer' : ''}`);
+  const pre = $('.h-zeilen', el), z = (x.frage || []).join('\n');
+  pre.hidden = !z;
+  if (pre.textContent !== z) pre.textContent = z;
+}
+
+// VORRAT: fertige Folgen als Bibliothek, Posten auf Knopf (Zwilling hängt am Original)
+function zeichneVorrat() {
+  const panel = $('#p-vorrat'), liste = Array.isArray(S.vorrat) ? S.vorrat : null;
+  panel.hidden = !liste;
+  if (!liste) return;
+  const box = $('#vorrat'), p = S.posten?.laeuft ? S.posten : null, pr = S.produktion;
+  const bereit = liste.filter(v => v.postbar).length, zw = liste.filter(v => v.zwilling).length, puffer = S.autopilot?.puffer;
+  setText($('#vorrat-zahl'), [liste.length ? `${bereit} bereit` : '', liste.length > bereit ? `${liste.length - bereit} blockiert` : '',
+    zw ? `${zw} mit Zwilling` : '', puffer ? `Puffer ${puffer}` : ''].filter(Boolean).join(' · '));
+  if (!liste.length) {
+    box.classList.remove('vorrat');
+    const satz = pr?.an
+      ? `Noch keine fertige Folge. Die Tagesproduktion läuft (${pr.heute} von ${pr.pro_tag} heute, ${pr.laufend ? `${pr.laufend} ${pr.laufend === 1 ? 'baut' : 'bauen'} gerade` : pr.kurz}). Fertige Folgen landen hier und gehen zu den Sendezeiten raus.`
+      : `Der Vorrat ist leer. Mit der Tagesproduktion baut der Autopilot bis zu ${pr?.pro_tag || 5} Folgen am Tag, die hier landen und zu den Sendezeiten rausgehen.`;
+    const knopf = pr?.an ? '<button type="button" class="knopf" data-aktion="agenten">Stand ansehen</button>'
+      : (S.aktionen || []).some(a => a.art === 'produktion-an') ? '<button type="button" class="knopf" data-aktion="adapter" data-art="produktion-an">Tagesproduktion starten</button>' : '';
+    abgleich(box, [1], () => 'leer', () => element('div', 'vorrat-leer', '<p></p><span></span>'), el => { setText(el.children[0], satz); setHTML(el.children[1], knopf); });
+    return;
+  }
+  box.classList.add('vorrat');
+  abgleich(box, liste, v => v.folge_id, () => element('article', 'vk', '<button type="button" class="vk-bild"></button><div class="vk-mitte"><p class="vk-titel zwei"></p><p class="vk-zeit"></p><div class="vk-tags"></div><div class="vk-knoepfe"></div></div>'), (el, v) => {
+    const f = folgeVon(v.folge_id) || {}, b = $('.vk-bild', el), diese = p && p.folge === v.folge_id;
+    b.dataset.detail = v.folge_id;
+    b.setAttribute('aria-label', `${v.titel}: Details`);
+    bild(b, f._vorschau, initial(v.titel));
+    setText($('.vk-titel', el), v.titel);
+    let zeit;
+    if (diese) zeit = `<b>geht gerade raus${p.trial ? ' als Trial' : ''}</b> · seit ${esc(uhr(p.start))}`;
+    else if (!v.postbar) zeit = `wird nicht gepostet: ${esc(v.grund)}`;
+    else if (v.geplant) zeit = `Sendezeit <b>${esc(wannKurz(v.geplant))}</b>${v.geplant_trial ? ' · als Trial' : ''}`;
+    else zeit = esc(f.hinweis || 'keine Sendezeit geplant');
+    setHTML($('.vk-zeit', el), zeit);
+    const tags = [];
+    if (diese) tags.push('<span class="tag ok">Postet</span>');
+    if (v.zwilling) tags.push(`<span class="tag" title="Trial-Zwilling ${esc(v.zwilling.id)}${v.zwilling.geplant ? `, geplant ${esc(wann(v.zwilling.geplant))}` : ''}">Zwilling${v.zwilling.geplant ? ` ${esc(uhr(v.zwilling.geplant))}` : ''}</span>`);
+    else if (v.zwilling_an) tags.push('<span class="tag" title="Für diese Folge gibt es keinen Trial-Zwilling">ohne Zwilling</span>');
+    tags.push(v.guide_ok ? '<span class="tag ok">Guide ok</span>' : '<span class="tag bad">Guide fehlt</span>');
+    if (!v.caption_da) tags.push('<span class="tag bad">Caption fehlt</span>');
+    setHTML($('.vk-tags', el), tags.join(''));
+    let k;
+    if (!v.postbar) k = `<button type="button" class="knopf klein" data-detail="${esc(v.folge_id)}">Details</button>`;
+    else {
+      const aus = p ? ` disabled title="${esc(diese ? 'Geht gerade raus' : `Es postet gerade „${p.titel}“`)}"` : '';
+      k = `<button type="button" class="knopf klein" data-aktion="posten" data-folge="${esc(v.folge_id)}"${aus}>Jetzt posten</button>`
+        + `<button type="button" class="knopf klein still" data-aktion="posten" data-trial="1" data-folge="${esc(v.folge_id)}"${aus}>Als Trial posten</button>`;
+    }
+    setHTML($('.vk-knoepfe', el), k);
+  });
+}
+
+// SENDEPLAN
+function planEintraege(tag) {
+  const roh = (S.sendeplan?.[tag] || []).filter(e => e && e.zeit);
+  const haupt = roh.filter(e => !(e.art === 'trial' && e.zu));
+  const zw = roh.filter(e => e.art === 'trial' && e.zu);
+  for (const e of haupt) e._zwillinge = zw.filter(z => z.zu === e.slot);
+  return haupt;
+}
+function slotTag(e, naechster) {
+  if (e.zustand === 'gepostet') return ['Gepostet', 'ok'];
+  if (e.zustand === 'geplant') return naechster ? ['Als Nächstes', 'akzent'] : ['Geplant', 'text'];
+  if (e.zustand === 'faellt_aus') return ['Fällt aus', 'bad'];
+  if (e.zustand === 'vorbei') return /nicht als gepostet/.test(e.grund || '') ? ['Offen', 'warn'] : ['Vorbei', ''];
+  return [e.zustand || '?', ''];
+}
+// Später geplant (nach morgen): sonst stünden diese Folgen nirgends
+function zeichneSpaeter() {
+  const morgenEnde = new Date(); morgenEnde.setDate(morgenEnde.getDate() + 2); morgenEnde.setHours(0, 0, 0, 0);
+  const liste = (S.folgen || []).filter(f => f.phase === 'geplant' && f.geplant && !f.zwilling_von && Date.parse(f.geplant) >= morgenEnde.getTime())
+    .sort((a, b) => String(a.geplant).localeCompare(String(b.geplant)));
+  const box = $('#plan-spaeter');
+  box.hidden = !liste.length;
+  const zeigen = liste.slice(0, 4);
+  setHTML(box, liste.length ? `<b>Später geplant</b>${zeigen.map(f => `<span><span class="mono">${esc(wann(f.geplant))}</span><button type="button" data-detail="${esc(folgeId(f))}">${esc(f.titel || folgeId(f))}</button></span>`).join('')}${liste.length > 4 ? `<span>und ${liste.length - 4} weitere</span>` : ''}` : '');
+}
+function zeichnePlan() {
+  zeichneSpaeter();
+  const box = $('#plan');
+  const ms = !S.adapter;
+  const heute = planEintraege('heute'), morgen = planEintraege('morgen');
+  const liste = planTag === 'heute' ? heute : morgen;
+  document.querySelectorAll('#plan-wahl button').forEach(b => setAttr(b, 'aria-pressed', String(b.dataset.tag === planTag)));
+  // Motion-Studio ohne Plan: Kanäle nach oben, Plan nur als kurze leere Zeile
+  $('#raster').classList.toggle('plan-leer', ms && !heute.length && !morgen.length);
+  const n = c => liste.filter(e => e.zustand === c).length;
+  const teile = [];
+  if (n('gepostet')) teile.push(`${n('gepostet')} gepostet`);
+  if (n('geplant')) teile.push(`${n('geplant')} geplant`);
+  if (n('faellt_aus')) teile.push(`${n('faellt_aus')} fallen aus`);
+  const d = new Date(); if (planTag === 'morgen') d.setDate(d.getDate() + 1);
+  setText($('#plan-zahl'), liste.length ? `${tagName(d)} · ${teile.join(' · ')}` : tagName(d));
+  if (!liste.length) {
+    const fertigeF = (S.folgen || []).find(f => f.phase === 'fertig' && !f.zwilling_von);
+    let satz, knopf;
+    if (ms) {
+      satz = planTag === 'heute' ? 'Heute ist nichts geplant. Fertige Folgen planst du in den Details mit Datum und Uhrzeit, dann erscheinen sie hier.' : 'Für morgen ist nichts geplant.';
+      knopf = fertigeF ? `<button type="button" class="knopf" data-detail="${esc(folgeId(fertigeF))}">Folge planen</button>` : `<button type="button" class="knopf" data-aktion="dialog" data-art="folge">Nächste Folge</button>`;
+    } else {
+      satz = 'Keine Sendezeiten eingestellt. Sie stehen in tools/autopilot.json unter „sendezeiten“.';
+      knopf = '';
+    }
+    abgleich(box, [1], () => 'leer', () => element('div', 'plan-leer-satz', '<p></p><span></span>'), el => { setText(el.children[0], satz); setHTML(el.children[1], knopf); });
+    return;
+  }
+  // Nächster geplanter Post (bekommt als einziger den Akzent)
+  const alleGeplant = [...heute, ...morgen].filter(e => e.zustand === 'geplant');
+  const naechster = alleGeplant[0] || null;
+  let wrap = box.firstElementChild;
+  if (!wrap || !wrap.classList.contains('plan')) {
+    box.innerHTML = ''; box._html = null;
+    wrap = element('div', 'plan', '<div class="plan-achse"><i></i></div><div class="plan-slots" style="display:contents"></div>');
+    box.append(wrap);
+  }
+  wrap.style.setProperty('--n', String(liste.length));
+  wrap.classList.toggle('ohne-bild', !liste.some(e => e.folge_id));
+  wrap.classList.toggle('mit-zwilling', liste.some(e => (e._zwillinge || []).length || (e.trial && e.folge_id)));
+  // Fortschritt der Zeit auf der Achse (nur heute)
+  const achse = wrap.firstElementChild;
+  let fort = 0;
+  const zeiten = liste.map(e => Date.parse(e.zeit));
+  if (planTag === 'heute' && liste.length > 1) {
+    const jetzt = Date.now();
+    if (jetzt >= zeiten[zeiten.length - 1]) fort = 1;
+    else {
+      const i = zeiten.findIndex(t => t > jetzt);
+      if (i > 0) fort = (i - 1 + (jetzt - zeiten[i - 1]) / Math.max(1, zeiten[i] - zeiten[i - 1])) / (liste.length - 1);
+    }
+  }
+  achse.style.setProperty('--fort', fort.toFixed(4));
+  achse.hidden = liste.length < 2;
+  achse.firstElementChild.hidden = !(planTag === 'heute' && fort > 0 && fort < 1);
+  achse.firstElementChild.title = `jetzt ${uhr(new Date().toISOString())}`;
+  abgleich(wrap.children[1], liste, e => `${planTag}|${e.slot || e.zeit}|${e.folge_id || ''}`, () => {
+    const b = element('button', 'slot', '<span class="s-zeit"></span><span class="s-achse"><i class="s-punkt"></i></span><span class="s-tag"><span class="tag"></span></span><span class="s-folge"><span class="s-bild"></span><span class="s-text"><span class="s-titel"></span><span class="s-meta"></span></span><span class="s-leer"></span></span><span class="s-zwilling"></span>');
+    b.type = 'button';
+    return b;
+  }, (el, e) => {
+    const ist = e === naechster;
+    setClass(el, `slot z-${e.zustand}${ist ? ' naechster' : ''}`);
+    el.disabled = !e.folge_id;
+    if (e.folge_id) el.dataset.detail = e.folge_id; else delete el.dataset.detail;
+    const zeitLabel = e.slot || uhr(e.zeit);
+    setText($('.s-zeit', el), zeitLabel);
+    const [tt, tf] = slotTag(e, ist);
+    const tag = $('.s-tag .tag', el);
+    setClass(tag, `tag ${tf}`); setText(tag, tt);
+    const mitFolge = !!e.folge_id;
+    $('.s-bild', el).hidden = !mitFolge; $('.s-text', el).hidden = !mitFolge; $('.s-leer', el).hidden = mitFolge;
+    if (mitFolge) {
+      bild($('.s-bild', el), e._vorschau, initial(e.titel));
+      setText($('.s-titel', el), e.titel);
+      const meta = [];
+      if (e.zustand === 'gepostet' && e.slot) meta.push(uhr(e.zeit));
+      if (e.zustand === 'geplant') meta.push(/jetzt/.test(e.grund || '') ? 'jetzt' : `um ${uhr(e.zeit)}`);
+      setText($('.s-meta', el), meta.join(' · '));
+    } else setText($('.s-leer', el), String(e.grund || '').split(',')[0]);
+    const z = e._zwillinge || [];
+    setHTML($('.s-zwilling', el), (e.trial && e.folge_id ? '<span class="tag">Trial</span>' : '') + z.map(x => `<span class="tag">Trial</span><i class="z-punkt ${x.zustand === 'gepostet' ? 'ok' : ''}" aria-hidden="true"></i><span>${esc(uhr(x.zeit))}</span><span class="nur-sr">${x.zustand === 'gepostet' ? 'gepostet' : 'geplant'}</span>`).join(''));
+    const titel = [`${zeitLabel}: ${tt}`];
+    if (e.titel) titel.push(e.titel + (e.trial ? ' (Trial)' : ''));
+    if (e.grund) titel.push(e.grund);
+    if (z.length) titel.push(z.map(x => `Trial-Zwilling ${uhr(x.zeit)} ${x.zustand === 'gepostet' ? 'gepostet' : 'geplant'}`).join(', '));
+    el.title = titel.join(' · ');
+  });
+}
+
+// KANÄLE (nur Motion-Studio-Modus)
+function zeichneKanaele() {
+  const panel = $('#p-kanaele');
+  const zeigen = !S.adapter || (S.kanaele || []).length > 0;
+  panel.hidden = !zeigen;
+  if (!zeigen) return;
+  const box = $('#kanaele'), liste = S.kanaele || [];
+  setText($('#kanaele-zahl'), liste.length ? `${liste.filter(k => k.phase === 'bereit').length} von ${liste.length} bereit` : '');
+  if (!liste.length) {
+    abgleich(box, [1], () => 'leer', () => element('div', 'leer-satz', '<p>Noch kein Kanal. Zeig dem Studio ein Vorbild: es zerlegt den Kanal, baut ein Video nach und lernt so den Stil für deine Folgen.</p><button type="button" class="knopf" data-aktion="dialog" data-art="kanal-lernen">Kanal lernen</button>'), () => {});
+    return;
+  }
+  const ph = S.kanal_phasen || Object.keys(KANAL_SCHRITT);
+  abgleich(box, liste, k => k.id, () => element('div', 'kanal', '<div class="kn-mitte"><div class="kn-kopf"><b></b><span></span></div><ol class="schritte"></ol><div class="kn-fuss"></div></div><span class="kn-knopf"></span>'), (el, k) => {
+    const i = ph.indexOf(k.phase);
+    setText($('.kn-kopf b', el), k.titel || k.id);
+    setText($('.kn-kopf span', el), String(k.vorbild || '').replace(/^https?:\/\/(www\.)?/i, ''));
+    const zustand = k.fehler ? ' bad' : k.wartet_auf ? ' warn' : '';
+    setHTML($('.schritte', el), ph.map((p, j) => {
+      const cls = k.phase === 'bereit' || j <= i ? 'ok' : (j === i + 1 ? 'jetzt' + zustand : '');
+      return `<li class="${cls}" title="${esc(KANAL_SCHRITT[p] || p)}"><i></i><span>${esc(KANAL_SCHRITT[p] || p)}</span></li>`;
+    }).join(''));
+    const anzahl = (S.folgen || []).filter(f => f.kanal === k.id).length;
+    const mw = k.messwerte || {};
+    const teile = [k.phase === 'bereit' ? 'Bereit für Folgen' : `lernt noch, als Nächstes ${esc(KANAL_SCHRITT[ph[i + 1]] || 'Vorbild')}`, plural(anzahl, 'Folge', 'Folgen')];
+    if (mw.delta_e != null) teile.push(`ΔE ${esc(zahl.format(mw.delta_e))}`);
+    if (mw.ssim != null) teile.push(`SSIM ${esc(zahl.format(mw.ssim))}`);
+    setHTML($('.kn-fuss', el), teile.map(t => `<span>${t}</span>`).join(''));
+    setHTML($('.kn-knopf', el), k.phase === 'bereit'
+      ? `<button type="button" class="knopf klein" data-aktion="dialog" data-art="folge" data-kanal="${esc(k.id)}">Nächste Folge</button>`
+      : `<button type="button" class="knopf klein" data-aktion="dialog" data-art="weiter-offen" data-kanal="${esc(k.id)}">Weiterlernen</button>`);
+  });
+}
+
+// IN ARBEIT
+function schrittHTML(f) {
+  const i = SCHRITT_VON[f.phase] ?? 0;
+  const zustand = f.fehler ? ' bad' : (f.wartet_auf || f.freigabe || (f.phase === 'fertig' && f.hinweis)) ? ' warn' : '';
+  return SCHRITTE.map(([, name], j) => {
+    const cls = j < i ? 'ok' : (j === i ? 'jetzt' + zustand : '');
+    return `<li class="${cls}" title="${esc(name)}"><i></i><span>${esc(name)}</span></li>`;
+  }).join('');
+}
+function zeichneArbeit() {
+  const box = $('#arbeit');
+  const sitzungVon = id => (S.sitzungen || []).find(s => !s.tot && folgeVonSitzung(s) === id);
+  const rang = f => f.fehler ? 0 : (f.wartet_auf || f.freigabe) ? 1 : sitzungVon(folgeId(f))?.zustand === 'arbeitet' ? 2 : f.phase === 'fertig' ? 4 : 3;
+  const mitVorrat = Array.isArray(S.vorrat);   // fertige Folgen stehen dann im VORRAT
+  const alle = (S.folgen || []).filter(f => !['geplant', 'gepostet'].includes(f.phase) && !(mitVorrat && f.phase === 'fertig'))
+    .sort((a, b) => rang(a) - rang(b) || String(b.aktualisiert || '').localeCompare(String(a.aktualisiert || '')));
+  const neuBaue = (S.baue || []).filter(b => b.lebt && !b.folge).map(b => ({ bau: b }));   // Tagesproduktion, Ordner noch nicht angelegt
+  const warten = alle.filter(f => f.wartet_auf || f.fehler || f.freigabe).length;
+  const anzahl = alle.length + neuBaue.length;
+  setText($('#arbeit-zahl'), anzahl ? `${anzahl}${warten ? ` · ${warten} ${warten === 1 ? 'braucht' : 'brauchen'} dich` : ''}` : '');
+  const grenze = 5;
+  const zeigen = alle.length > grenze + 1 && !arbeitAlle ? alle.slice(0, grenze) : alle;
+  const fuss = $('#arbeit-fuss');
+  fuss.hidden = !(alle.length > grenze + 1);
+  setHTML(fuss, `<button type="button" class="knopf still klein" data-aktion="arbeit-alle">${arbeitAlle ? 'Weniger zeigen' : `Alle ${alle.length} zeigen`}</button>`);
+  if (!anzahl) {
+    abgleich(box, [1], () => 'leer', () => element('div', 'leer-satz', '<p></p><span></span>'), el => {
+      setText(el.children[0], S.adapter ? `Gerade wird keine Folge gebaut. ${S.produktion?.an ? S.produktion.grund : 'Ein neuer Bau füllt den Vorrat für die nächsten Sendezeiten.'}` : 'Gerade ist keine Folge in Arbeit. Die nächste Folge baut der Agent im gelernten Stil deines Kanals.');
+      setHTML(el.children[1], leerKnopf(false));
+    });
+    return;
+  }
+  abgleich(box, [...neuBaue, ...zeigen], x => x.bau ? `bau|${x.bau.sitzung}` : folgeId(x), () => element('div', 'folge', '<button type="button" class="f-bild" aria-label="Details"></button><div class="f-mitte"><div class="f-kopf"><span class="f-titel zwei"></span><span class="f-meta"></span></div><ol class="schritte"></ol><div class="f-grund"></div></div><div class="f-knoepfe"></div>'), (el, f) => {
+    if (f.bau) return neuerBau(el, f.bau);
+    const id = folgeId(f);
+    const fb = $('.f-bild', el); fb.dataset.detail = id;
+    bild(fb, f._vorschau, initial(f.titel));
+    setText($('.f-titel', el), f.titel || id);
+    const s = sitzungVon(id);
+    const meta = [phaseName(f.phase)];
+    if (f.trial || f.zwilling_von) meta.push('Trial');
+    if (s?.produktion) meta.push('Tagesproduktion');
+    setHTML($('.f-meta', el), `${meta.map(esc).join(' · ')}${f.aktualisiert ? ` · <span data-rel="${esc(f.aktualisiert)}"></span>` : ''}`);
+    setHTML($('.schritte', el), schrittHTML(f));
+    let grund = '';
+    if (f.fehler) grund = `<span class="tag bad">Fehler</span><p>${esc(f.fehler)}</p>`;
+    else if (f.freigabe) grund = `<span class="tag warn">Freigabe</span><p>${esc(f.freigabe.frage)}</p>`;
+    else if (f.wartet_auf) grund = `<span class="tag warn">Wartet</span><p>${esc(wartetSatz(f.wartet_auf))}</p>`;
+    else if (s && s.zustand === 'arbeitet') grund = `<span class="tag ok">Arbeitet</span><p class="leise">${esc(sitzungTitel(s))} läuft gerade.</p>`;
+    else if (s && s.zustand === 'fehler') grund = `<span class="tag bad">${s.haenger ? 'Hängt' : 'Fehler'}</span><p>${esc(s.grund)}</p>`;
+    else if (f.hinweis) grund = `<span class="tag ${f.phase === 'fertig' ? 'warn' : ''}">${f.phase === 'fertig' ? 'Fehlt' : 'Info'}</span><p class="${f.phase === 'fertig' ? '' : 'leise'}">${esc(f.hinweis)}</p>`;
+    else if (f.phase === 'fertig' && !S.adapter) grund = `<span class="tag">Fertig</span><p class="leise">Noch nicht geplant. In den Details planst du Datum und Uhrzeit.</p>`;
+    setHTML($('.f-grund', el), grund);
+    const k = [];
+    if (s && !s.nur_ansehen && S.tmux) k.push(`<button type="button" class="knopf klein" data-aktion="oeffnen" data-sitzung="${esc(s.name)}" title="Terminal der Sitzung ${esc(s.name)} öffnen">${icon('terminal')}Terminal</button>`);
+    k.push(`<button type="button" class="knopf klein" data-detail="${esc(id)}">Details</button>`);
+    setHTML($('.f-knoepfe', el), k.join(''));
+  });
+}
+// Bau der Tagesproduktion, dessen Folge noch keinen Ordner hat (Thema wird gewählt)
+function neuerBau(el, b) {
+  const s = (S.sitzungen || []).find(x => x.name === b.sitzung);
+  const fb = $('.f-bild', el);
+  delete fb.dataset.detail;
+  fb.setAttribute('aria-label', 'Neue Folge, noch ohne Details');
+  bild(fb, null, '+');
+  setText($('.f-titel', el), 'Neue Folge');
+  setHTML($('.f-meta', el), `Tagesproduktion${b.start ? ` · <span data-rel="${esc(b.start)}"></span>` : ''}`);
+  setHTML($('.schritte', el), schrittHTML({ phase: 'vorlage' }));
+  const z = s?.zustand;
+  setHTML($('.f-grund', el), z === 'fehler' ? `<span class="tag bad">${s.haenger ? 'Hängt' : 'Fehler'}</span><p>${esc(s.grund)}</p>`
+    : z === 'wartet' ? '<span class="tag warn">Wartet</span><p>Der Agent wartet auf eine Antwort, rechts bei „Agenten“.</p>'
+    : '<span class="tag ok">Arbeitet</span><p class="leise">Wählt das Thema, der Ordner der Folge entsteht gleich.</p>');
+  setHTML($('.f-knoepfe', el), s && !s.nur_ansehen && S.tmux ? `<button type="button" class="knopf klein" data-aktion="oeffnen" data-sitzung="${esc(s.name)}" title="Terminal der Sitzung ${esc(s.name)} öffnen">${icon('terminal')}Terminal</button>` : '');
+}
+
+// GEPOSTET: kompaktes Raster der letzten (ganze Reihen, etwa 8)
+function gepostetSpalten() {
+  const w = $('#gepostet').clientWidth - 28;
+  return Math.max(1, Math.floor((w + 12) / (84 + 12)));
+}
+function zeichneGepostet() {
+  const box = $('#gepostet');
+  const zeit = f => f.gepostet?.zeit || f.aktualisiert || '';
+  const alle = (S.folgen || []).filter(f => f.phase === 'gepostet').sort((a, b) => String(zeit(b)).localeCompare(String(zeit(a))));
+  const heute = new Date().toDateString();
+  const gestern = new Date(Date.now() - 86400000).toDateString();
+  const n = tag => alle.filter(f => new Date(zeit(f)).toDateString() === tag).length;
+  setText($('#gepostet-zahl'), alle.length ? `heute ${n(heute)} · gestern ${n(gestern)} · gesamt ${alle.length}` : '');
+  const sp = gepostetSpalten();
+  const anzahl = Math.min(16, sp * Math.max(1, Math.round(8 / sp)));
+  const zeigen = gepostetAlle ? alle : alle.slice(0, anzahl);
+  const fuss = $('#gepostet-fuss');
+  fuss.hidden = alle.length <= anzahl;
+  setHTML(fuss, `<button type="button" class="knopf still klein" data-aktion="gepostet-alle">${gepostetAlle ? 'Weniger zeigen' : `Alle ${alle.length} anzeigen`}</button>`);
+  if (!alle.length) {
+    box.classList.remove('karten');
+    abgleich(box, [1], () => 'leer', () => element('div', 'leer-satz', '<p></p><span></span>'), el => setText(el.children[0], S.adapter ? 'Noch nichts gepostet. Der Autopilot postet fertige Folgen zu den Sendezeiten.' : 'Noch nichts gepostet. Fertige Folgen markierst du in den Details als gepostet, mit dem Link zum Beitrag.'));
+    return;
+  }
+  box.classList.add('karten');
+  abgleich(box, zeigen, folgeId, () => element('article', 'karte', '<button type="button" class="k-bild"></button><p class="k-titel zwei"></p><div class="k-meta"></div><span class="k-link-platz" style="display:contents"></span>'), (el, f) => {
+    const id = folgeId(f), b = $('.k-bild', el);
+    b.dataset.detail = id;
+    b.setAttribute('aria-label', `${f.titel || id}: Details`);
+    bild(b, f._vorschau, initial(f.titel));
+    setText($('.k-titel', el), f.titel || id);
+    const g = f.gepostet || {};
+    const wo = PLATTFORM[g.plattform] || '';
+    setHTML($('.k-meta', el), `<span>${esc(wann(zeit(f)))}</span>${g.trial || f.zwilling_von ? '<span class="tag">Trial</span>' : ''}`);
+    setHTML($('.k-link-platz', el), istLink(g.link) ? `<a class="k-link" href="${esc(g.link)}" target="_blank" rel="noopener noreferrer" title="Beitrag auf ${esc(wo || 'der Plattform')} öffnen" aria-label="${esc(f.titel || id)}: Beitrag öffnen">${icon('extern')}</a>` : '');
+  });
+}
+
+// AGENTEN
+const AGENT_HTML = '<div class="a-kopf"><span class="tag"></span><span class="a-titel"></span><span class="a-zeit"></span></div><p class="a-info"></p><p class="a-ceo" hidden></p><p class="a-frage" hidden>Der Agent schreibt:</p><pre class="a-term" tabindex="0" aria-label="Letzte Terminalzeilen"></pre><form class="a-antwort" hidden><input type="text" name="text" maxlength="2000" autocomplete="off" placeholder="Antwort an den Agenten, z. B. „Ja, mach so weiter“" aria-label="Antwort an den Agenten"><button type="submit" class="knopf klein primaer">Antworten</button><button type="button" class="knopf klein" data-aktion="selbst" title="Schickt: Entscheide selbst sinnvoll und mach ohne Rückfrage weiter.">Entscheide selbst</button></form><div class="a-unten"><button type="button" class="a-auf" data-aktion="term-auf"></button><span class="a-knoepfe" style="display:contents"></span></div>';
+// Erledigt = Folge fertig oder gepostet und die Sitzung tut nichts mehr (wartet oder ist beendet)
+function istErledigt(s) {
+  const f = folgeVonSitzung(s) ? folgeVon(folgeVonSitzung(s)) : null;
+  return !!f && FERTIG.includes(f.phase) && (s.tot || s.zustand === 'wartet');
+}
+function zeichneAgenten() {
+  const box = $('#agenten');
+  const rang = s => s.tot ? 5 : s.zustand === 'fehler' ? 0 : s.zustand === 'wartet' ? 1 : s.zustand === 'arbeitet' ? 2 : 3;
+  const alle = (S.sitzungen || []).slice().sort((a, b) => rang(a) - rang(b) || String(b.erstellt || '').localeCompare(String(a.erstellt || '')));
+  const erledigt = alle.filter(istErledigt), aktiv = alle.filter(s => !istErledigt(s));
+  const z = r => aktiv.filter(s => rang(s) === r).length;
+  setText($('#agenten-zahl'), [z(0) && `${z(0)} Fehler`, z(1) && `${z(1)} wartet`, z(2) && `${z(2)} arbeitet`, z(5) && `${z(5)} beendet`, erledigt.length && `${erledigt.length} erledigt`].filter(Boolean).join(' · '));
+  if (!S.tmux) {
+    abgleich(box, [1], () => 'ohne-tmux', () => element('div', 'leer-satz', '<p>Ohne tmux laufen Agenten in eigenen Terminalfenstern. Was sie tun, steht im Log.</p><span></span>'), () => {});
+    return;
+  }
+  const items = aktiv.map(s => ({ s }));
+  if (!aktiv.length) items.push({ leer: true });
+  if (S.ceo) items.push({ ceo: S.ceo });
+  if (erledigt.length) { items.push({ zusammen: erledigt }); if (erledigtAuf) erledigt.forEach(s => items.push({ s })); }
+  abgleich(box, items, it => it.leer ? 'leer' : it.ceo ? 'ceo' : it.zusammen ? 'erledigt' : it.s.name, it => {
+    if (it.leer) return element('div', 'leer-satz', '<p></p><span></span>');
+    if (it.zusammen) return element('article', 'agent zusammen', '<div class="a-kopf"><span class="tag">Erledigt</span><span class="a-titel"></span></div><p class="a-info"></p><div class="a-unten"><button type="button" class="a-auf" data-aktion="erledigt-auf"></button><span class="a-knoepfe" style="display:contents"></span></div>');
+    return element('article', 'agent', AGENT_HTML);
+  }, (el, it) => {
+    if (it.leer) {
+      setText(el.children[0], S.produktion?.an ? `Gerade läuft kein Bau-Agent. ${S.produktion.grund}` : 'Gerade läuft kein Agent. Ein neuer Bau erscheint hier mit seinem Terminal.');
+      setHTML(el.children[1], leerKnopf(true));
+      return;
+    }
+    if (it.zusammen) return erledigtKarte(el, it.zusammen);
+    if (it.ceo) return ceoKarte(el, it.ceo);
+    agentKarte(el, it.s);
+  });
+}
+function erledigtKarte(el, liste) {
+  const titel = liste.map(s => { const f = folgeVon(folgeVonSitzung(s)); return f?.titel || s.name; });
+  const gepostet = liste.every(s => folgeVon(folgeVonSitzung(s))?.phase === 'gepostet');
+  setText($('.a-titel', el), liste.length === 1 ? '1 erledigte Sitzung' : `${liste.length} erledigte Sitzungen`);
+  setText($('.a-info', el), `${titel.join(', ')}: ${liste.length === 1 ? 'die Folge ist' : 'die Folgen sind'} ${gepostet ? 'gepostet' : 'fertig'}, ${liste.length === 1 ? 'die Sitzung wartet' : 'die Sitzungen warten'} nur noch.`);
+  setText($('.a-auf', el), erledigtAuf ? 'Weniger zeigen' : 'Einzeln zeigen');
+  setHTML($('.a-knoepfe', el), `<button type="button" class="knopf klein" data-aktion="erledigte-schliessen" title="Beendet nur Sitzungen, deren Folge fertig oder gepostet ist und die gerade nichts tun">${icon('zu')}Alle erledigten schließen</button>`);
+}
+// Karte „CEO“: Sitzung ceo-aufsicht, nur ansehen
+function ceoKarte(el, c) {
+  const lebt = c.laeuft && !c.tot;
+  const [zt, zf] = !c.laeuft ? ['Bereit', ''] : c.tot ? ['Beendet', ''] : c.zustand === 'arbeitet' ? ['Entscheidet', 'ok'] : c.zustand === 'fehler' ? ['Fehler', 'bad'] : ['Bereit', ''];
+  const tag = $('.a-kopf .tag', el);
+  setClass(tag, `tag ${zf}`); setText(tag, zt);
+  setText($('.a-titel', el), 'CEO');
+  $('.a-titel', el).title = 'CEO-Aufsicht · tmux ceo-aufsicht';
+  setHTML($('.a-zeit', el), c.letzte_ausgabe ? `<span data-rel="${esc(c.letzte_ausgabe)}"></span>` : '');
+  const namen = (c.gefragt || []).map(n => { const s = (S.sitzungen || []).find(x => x.name === n); return s ? sitzungTitel(s) : n; });
+  setClass($('.a-info', el), c.zustand === 'fehler' ? 'a-info bad' : 'a-info');
+  setText($('.a-info', el), !c.laeuft ? 'Beantwortet Fragen der Bau-Agenten selbst, nur Kritisches kommt zu dir. Die Sitzung startet bei der ersten Frage.'
+    : c.tot ? 'Die CEO-Sitzung ist beendet.' : namen.length ? `Entscheidet gerade für ${namen.join(', ')}.` : 'Beantwortet Fragen der Bau-Agenten selbst, nur Kritisches kommt zu dir.');
+  $('.a-ceo', el).hidden = true; $('.a-frage', el).hidden = true; $('.a-antwort', el).hidden = true;
+  const pre = $('.a-term', el), auf = termAuf.has(c.name);
+  const zeilen = (c.zeilen || []).filter((z, i, a) => z.trim() || (i > 0 && a[i - 1].trim()));
+  const kern = zeilen.filter(z => z.trim() && !RAUSCHEN.test(z));
+  const text = (auf ? zeilen : (kern.length ? kern : zeilen).slice(-3)).join('\n');
+  pre.hidden = !zeilen.length;
+  pre.classList.toggle('auf', auf);
+  if (pre.textContent !== text) { pre.textContent = text; pre.scrollTop = pre.scrollHeight; }
+  const aufKnopf = $('.a-auf', el);
+  aufKnopf.dataset.sitzung = c.name;
+  aufKnopf.hidden = zeilen.length <= 3;
+  setText(aufKnopf, auf ? 'Weniger Zeilen' : `Alle ${zeilen.length} Zeilen`);
+  setHTML($('.a-knoepfe', el), lebt ? `<button type="button" class="knopf klein" data-aktion="oeffnen" data-sitzung="${esc(c.name)}" title="Terminalfenster öffnen (tmux attach), nur ansehen">${icon('terminal')}Ansehen</button>` : '');
+}
+function agentKarte(el, s) {
+  const f = folgeVonSitzung(s) ? folgeVon(folgeVonSitzung(s)) : null;
+  const erledigt = !s.tot && s.zustand === 'wartet' && f && FERTIG.includes(f.phase);
+  const [zt, zf] = s.tot ? ['Beendet', ''] : erledigt ? ['Erledigt', ''] : (s.haenger ? ['Hängt', 'bad'] : ZUSTAND[s.zustand] || [s.zustand, '']);
+  const tag = $('.a-kopf .tag', el);
+  setClass(tag, `tag ${zf}`); setText(tag, zt);
+  setText($('.a-titel', el), sitzungTitel(s));
+  $('.a-titel', el).title = `${sitzungTitel(s)} · tmux ${s.name}`;
+  setHTML($('.a-zeit', el), s.letzte_ausgabe ? `<span data-rel="${esc(s.letzte_ausgabe)}"></span>` : '');
+  $('.a-zeit', el).title = 'Letzte Ausgabe im Terminal';
+  let info = '', infoArt = 'a-info';
+  if (s.tot) info = s.grund && s.grund !== 'beendet' ? `Beendet: ${s.grund}.` : 'Fertig, die Sitzung ist beendet.';
+  else if (s.zustand === 'fehler') { info = s.haenger ? `Keine Ausgabe mehr: ${s.grund}. „Weiter“ stößt ihn an.` : `${s.grund}. „Weiter“ schickt ihm „weiter“.`; infoArt = 'a-info bad'; }
+  else if (erledigt) info = `„${f.titel || folgeId(f)}“ ist schon ${f.phase === 'gepostet' ? 'gepostet' : 'fertig'}. Die Sitzung wartet nur noch und kann gestoppt werden.`;
+  else if (s.zustand === 'wartet') info = s.grund && s.grund.includes('Auswahl') ? 'Fragt nach einer Auswahl. Die steht unten; wählen geht mit „Ansehen“ im Terminal.' : 'Wartet auf deine Antwort. Was er wissen will, steht unten. Antworte direkt hier.';
+  else if (s.auftrag) info = s.auftrag;
+  setClass($('.a-info', el), infoArt);
+  setText($('.a-info', el), info);
+  const c = s.ceo, ceoZeile = $('.a-ceo', el);
+  ceoZeile.hidden = !c || !!s.tot || erledigt;
+  if (c) setHTML(ceoZeile, c.status === 'gefragt' ? '<span class="tag">CEO</span><span>entscheidet …</span>'
+    : c.status === 'eskaliert' ? '<span class="tag bad">CEO</span><span>hat die Frage an dich gegeben, siehe „Jetzt“.</span>'
+    : `<span class="tag">CEO</span><span title="${esc(c.antwort)}">${esc(c.antwort || 'hat geantwortet')}</span>`);
+  // Terminal: eingeklappt die letzten 3 Zeilen, aufgeklappt alles (Scrollstand bleibt beim Polling)
+  const pre = $('.a-term', el), auf = termAuf.has(s.name);
+  const zeilen = (s.zeilen || []).filter((z, i, a) => z.trim() || (i > 0 && a[i - 1].trim()));
+  const kern = zeilen.filter(z => z.trim() && !RAUSCHEN.test(z));
+  // Wartet er auf eine Antwort, zeigen wir seine letzte Nachricht ausführlich (Sebastian 20.10.: „keine Ahnung, was der von mir will“)
+  const fragt = !s.tot && !erledigt && !s.nur_ansehen && (s.zustand === 'wartet' || s.zustand === 'fehler');
+  const text = (auf ? zeilen : (kern.length ? kern : zeilen.filter(z => z.trim())).slice(fragt ? -14 : -3)).join('\n');
+  $('.a-frage', el).hidden = !(fragt && s.zustand === 'wartet');
+  const form = $('.a-antwort', el);
+  form.hidden = !fragt;
+  form.dataset.sitzung = s.name;
+  $('[data-aktion="selbst"]', form).dataset.sitzung = s.name;
+  pre.classList.toggle('auf', auf);
+  pre.hidden = erledigt && !auf;
+  if (pre.textContent !== text) {
+    const unten = !pre._gesehen || pre.scrollTop + pre.clientHeight >= pre.scrollHeight - 12;
+    pre.textContent = text;
+    if (unten) pre.scrollTop = pre.scrollHeight;
+    pre._gesehen = true;
+  }
+  const aufKnopf = $('.a-auf', el);
+  aufKnopf.dataset.sitzung = s.name;
+  setText(aufKnopf, auf ? 'Weniger Zeilen' : `Alle ${zeilen.length} Zeilen`);
+  aufKnopf.hidden = zeilen.length <= 3 && !erledigt;
+  if (erledigt && !auf) setText(aufKnopf, 'Terminal zeigen');
+  const n = esc(s.name);
+  let k = '';
+  if (s.nur_ansehen) k = f ? `<button type="button" class="knopf klein" data-detail="${esc(folgeId(f))}">Folge</button>` : '';
+  else if (s.tot) k = `<button type="button" class="knopf klein" data-aktion="stopp" data-sitzung="${n}" data-tot="1">Schließen</button>`;
+  else if (erledigt) {
+    k = `<button type="button" class="knopf klein" data-aktion="oeffnen" data-sitzung="${n}" title="Terminalfenster öffnen (tmux attach)">${icon('terminal')}Ansehen</button>`
+      + `<button type="button" class="knopf klein gefahr" data-aktion="stopp" data-sitzung="${n}" title="Sitzung beenden (fragt vorher)">${icon('stopp')}Stoppen</button>`;
+  } else {
+    const wichtig = s.zustand === 'fehler';
+    k = `<button type="button" class="knopf klein${wichtig ? ' primaer' : ''}" data-aktion="weiter" data-sitzung="${n}" title="Schickt „weiter“ und Enter in die Sitzung">${icon('pfeil')}Weiter</button>`
+      + `<button type="button" class="knopf klein" data-aktion="oeffnen" data-sitzung="${n}" title="Terminalfenster öffnen (tmux attach)">${icon('terminal')}Ansehen</button>`
+      + `<button type="button" class="knopf klein gefahr" data-aktion="stopp" data-sitzung="${n}" title="Sitzung beenden (fragt vorher)">${icon('stopp')}Stoppen</button>`;
+  }
+  setHTML($('.a-knoepfe', el), k);
+}
+
+// LOG
+function logPasst(e) {
+  if (logFilter === 'posts') return e.art === 'fertig' && /gepostet/i.test(e.text || '') || /^Gepostet/.test(e.text || '');
+  if (logFilter === 'probleme') return ['fehler', 'warnung', 'frage'].includes(e.art);
+  return true;
+}
+function zeichneLog() {
+  document.querySelectorAll('#log-wahl button').forEach(b => setAttr(b, 'aria-pressed', String(b.dataset.filter === logFilter)));
+  const box = $('#log');
+  const alle = (S.log || []).filter(logPasst);
+  const grenze = 10;
+  const zeigen = logAlle ? alle : alle.slice(0, grenze);
+  const fuss = $('#log-fuss');
+  fuss.hidden = alle.length <= grenze;
+  setHTML(fuss, `<button type="button" class="knopf still klein" data-aktion="log-alle">${logAlle ? 'Weniger zeigen' : `Alle ${alle.length} zeigen`}</button>`);
+  if (!alle.length) {
+    setHTML(box, `<li><span class="l-leer" style="grid-column:1/-1">${logFilter === 'alles' ? 'Noch nichts passiert. Hier erscheint, was Agenten und Autopilot tun.' : logFilter === 'posts' ? 'In diesem Ausschnitt wurde nichts gepostet.' : 'Keine Probleme im Log.'}</span></li>`);
+    return;
+  }
+  const heute = new Date().toDateString();
+  setHTML(box, zeigen.map(e => {
+    const d = new Date(e.zeit);
+    const zeit = isNaN(d) ? '' : (d.toDateString() === heute ? uhr(e.zeit) : `${zwei(d.getDate())}.${zwei(d.getMonth() + 1)}.`);
+    const art = LOGART[e.art] ? e.art : 'info';
+    const tag = art === 'fertig' && /^Gepostet/.test(e.text || '') ? 'Post' : LOGART[art];
+    const link = istLink(e.link) ? ` <a href="${esc(e.link)}" target="_blank" rel="noopener noreferrer" aria-label="Beitrag öffnen" title="Beitrag öffnen">${icon('extern')}</a>` : '';
+    return `<li class="a-${art}"><time datetime="${esc(e.zeit)}" title="${esc(datumZeit(e.zeit))}">${esc(zeit)}</time><span class="l-tag">${esc(tag)}</span><span class="l-text" title="${esc(e.text)}">${esc(e.text)}${link}</span></li>`;
+  }).join(''));
+}
+
+// ZAHLEN
+function zeichneZahlen() {
+  const k = S.kennzahlen;
+  const zelle = (label, wert, hint = '', art = '') => `<div class="zahl"><span class="z-label">${esc(label)}</span><span class="z-wert ${art}">${esc(wert)}</span>${hint ? `<span class="z-hint">${esc(hint)}</span>` : ''}</div>`;
+  if (Array.isArray(k)) {
+    const art = a => ({ warnung: 'warn', fehler: 'bad', gut: 'ok' }[a] || '');
+    setHTML($('#zahlen'), k.map(z => zelle(z.label, z.wert ?? '', z.hinweis || '', art(z.art))).join(''));
+    return;
+  }
+  if (!k) { setHTML($('#zahlen'), ''); return; }
+  const kosten = kostenListe(S.kosten?.monat);
+  setHTML($('#zahlen'), zelle('Gepostet', k.gepostet) + zelle('Geplant', k.geplant) + zelle('Fertig', k.fertig) + zelle('In Arbeit', k.in_arbeit) +
+    zelle('Kosten Monat', kosten[0] || '0', kosten.slice(1).join(' · ')));
+}
+
+// ------------------------------------------------------------ Detail-Schublade
+function detailOeffnen(id) {
+  const f = folgeVon(id);
+  if (!f) return;
+  schliesseMenue();
+  const war = detailId;
+  detailId = id;
+  const sch = $('#schublade'), schleier = $('#schleier');
+  if (!war) sch._zurueck = document.activeElement;
+  sch.hidden = false; schleier.hidden = false;
+  requestAnimationFrame(() => { sch.classList.add('an'); schleier.classList.add('an'); });
+  sch._medien = null; sch._sig = null;
+  $('#d-frei')._bau = false;
+  detailAktualisieren(true);
+  setTimeout(() => $('#d-zu').focus({ preventScroll: true }), WENIG_BEWEGUNG ? 0 : 60);
+}
+function detailSchliessen() {
+  if (!detailId) return;
+  detailId = null;
+  const sch = $('#schublade'), schleier = $('#schleier');
+  const v = $('video', sch); if (v) v.pause();
+  sch.classList.remove('an'); schleier.classList.remove('an');
+  setTimeout(() => { if (!detailId) { sch.hidden = true; schleier.hidden = true; $('#d-medien').innerHTML = ''; sch._medien = null; } }, WENIG_BEWEGUNG ? 0 : 210);
+  if (sch._zurueck && document.contains(sch._zurueck)) sch._zurueck.focus({ preventScroll: true });
+}
+function detailAktualisieren(erzwingen) {
+  const f = folgeVon(detailId);
+  const sch = $('#schublade');
+  if (!f) return;
+  detailFreigabe(f);
+  const s = (S.sitzungen || []).find(x => !x.tot && folgeVonSitzung(x) === folgeId(f));
+  const v = (S.vorrat || []).find(x => x.folge_id === folgeId(f));
+  const sig = JSON.stringify([f.aktualisiert, f.phase, f._video, f._vorschau, f._dateien, f.hinweis, f.wartet_auf, f.fehler, f.geplant, s?.name, s?.zustand, !!f.freigabe, v, S.posten?.laeuft && S.posten.folge]);
+  if (sig === sch._sig && !erzwingen) return;
+  sch._sig = sig;
+  const id = folgeId(f);
+  const art = f.art === 'pilot' ? 'Pilot-Nachbau' : f.zwilling_von ? 'Trial-Zwilling' : 'Folge';
+  setText($('#d-ueber'), [art, id].join(' · '));
+  setText($('#d-titel'), f.titel || id);
+  const status = [`<span class="tag ${f.phase === 'gepostet' ? 'ok' : f.fehler ? 'bad' : f.wartet_auf ? 'warn' : 'text'}">${esc(phaseName(f.phase))}</span>`];
+  if (f.trial || f.zwilling_von) status.push('<span class="tag">Trial</span>');
+  if (f.geplant && f.phase !== 'gepostet') status.push(`<span class="leise mono" style="font-size:11px">geplant ${esc(wann(f.geplant))}</span>`);
+  if (f.gepostet?.zeit) status.push(`<span class="leise mono" style="font-size:11px">gepostet ${esc(datumZeit(f.gepostet.zeit))}</span>`);
+  setHTML($('#d-status'), status.join(''));
+  // Medien nur neu, wenn sich Video oder Bild ändern (Video läuft beim Polling weiter)
+  const medien = JSON.stringify([f._video, f._vorschau]);
+  if (sch._medien !== medien) {
+    sch._medien = medien;
+    $('#d-medien').innerHTML = f._video
+      ? `<video controls playsinline preload="metadata" ${f._vorschau ? `poster="${dateiURL(f._vorschau)}"` : ''} src="${dateiURL(f._video)}"></video>`
+      : f._vorschau ? `<img src="${dateiURL(f._vorschau)}" alt="Vorschau">`
+      : `<div class="d-platz">${['render', 'vergleich', 'pruefung', ...FERTIG].includes(f.phase) ? 'Das Video ist gerade nicht erreichbar, zum Beispiel weil es auf der Archiv-SSD liegt und die fehlt.' : 'Noch kein Video. Es erscheint hier nach dem Render.'}</div>`;
+  }
+  setHTML($('#d-info'), detailInfoHTML(f, s));
+  setHTML($('#d-fuss'), detailAktionenHTML(f, s));
+  tick();
+}
+// Freigabe im Detail (neben dem Video): eigener Block, damit das Kommentarfeld beim Polling stehen bleibt
+function detailFreigabe(f) {
+  const box = $('#d-frei'), fg = f.freigabe, fid = folgeId(f);
+  box.hidden = !fg;
+  if (!fg) return;
+  if (!box._bau) {
+    box.innerHTML = `<span class="tag warn">Freigabe</span><div class="fg-box"><p class="fg-frage"></p><p class="fg-kontext"></p><div class="fg-knoepfe"></div>${FG_FORM}</div>`;
+    box._bau = true;
+  }
+  setText($('.fg-frage', box), fg.frage);
+  setText($('.fg-kontext', box), fg.kontext ? (fg.synthetisch ? `Aus der letzten Notiz: ${fg.kontext}` : fg.kontext) : '');
+  setHTML($('.fg-knoepfe', box), fgKnoepfe(fid, fg, true, false));
+  fgForm($('.h-form', box), fid, fg);
+}
+function detailInfoHTML(f, s) {
+  const teile = [];
+  if (f.fehler) teile.push(`<div class="d-hinweis"><span class="tag bad">Fehler</span><p>${esc(f.fehler)}</p></div>`);
+  if (f.wartet_auf && !f.freigabe) teile.push(`<div class="d-hinweis"><span class="tag warn">Wartet</span><p>${esc(wartetSatz(f.wartet_auf))}${s ? ' Antworten kannst du im Terminal der Sitzung (Knopf „Terminal“ unten).' : ''}</p></div>`);
+  if (f.hinweis) teile.push(`<div class="d-hinweis"><span class="tag ${f.phase === 'fertig' ? 'warn' : ''}">${f.phase === 'fertig' ? 'Fehlt' : 'Info'}</span><p>${esc(f.hinweis)}</p></div>`);
+  // Schrittverlauf mit Zeiten und Notizen
+  const phasen = (S.folge_phasen || Object.keys(PHASE)).filter(p => (p !== 'vergleich' || f.art === 'pilot' || f.phasen?.vergleich) && (!['geplant', 'gepostet'].includes(p) || f.phase === p || f.phasen?.[p] || (p === 'geplant' && f.phase === 'gepostet' && f.geplant)));
+  const i = phasen.indexOf(f.phase);
+  const zustand = f.fehler ? ' bad' : f.wartet_auf ? ' warn' : '';
+  teile.push(`<div class="d-abschnitt"><h3>Verlauf</h3><ol class="verlauf">${phasen.map((p, j) => {
+    const e = (f.phasen || {})[p];
+    const fertig = f.phase === 'gepostet' || (FERTIG.includes(f.phase) && j <= i);
+    const cls = fertig ? 'ok' : p === f.phase ? 'jetzt' + zustand : (e || j < i ? 'ok' : '');
+    const zeit = e?.zeit || (p === 'gepostet' ? f.gepostet?.zeit : '');
+    return `<li class="${cls}"><span class="v-punkt"></span><span class="v-name">${esc(PHASE[p] || p)}</span><span class="v-zeit">${zeit ? esc(datumZeit(zeit)) : ''}</span>${e?.notiz ? `<p class="v-notiz">${esc(e.notiz)}</p>` : ''}</li>`;
+  }).join('')}</ol></div>`);
+  const mw = Object.entries(f.messwerte || {});
+  if (mw.length) teile.push(`<div class="d-abschnitt"><h3>Messwerte${f.art === 'pilot' ? ' (Original gegen Nachbau)' : ''}</h3><table class="tabelle">${mw.map(([k, v]) => `<tr><td>${esc(MESSWERT[k] || k.replace(/_/g, ' '))}</td><td>${esc(typeof v === 'number' ? zahl.format(v) : JSON.stringify(v))}</td></tr>`).join('')}</table></div>`);
+  const kosten = (f.kosten || []).filter(k => k && typeof k === 'object');
+  teile.push(`<div class="d-abschnitt"><h3>Kosten</h3>${kosten.length ? `<table class="tabelle">${kosten.map(k => `<tr><td>${esc(k.was || '')} <span class="leise">${esc(datumZeit(k.zeit))}</span></td><td>${esc(zahl.format(Number(k.betrag) || 0))} ${esc(k.einheit || '')}</td></tr>`).join('')}${kosten.length > 1 ? `<tr><td>Summe</td><td>${esc(kostenListe(f._kosten?.gesamt).join(' · '))}</td></tr>` : ''}</table>` : `<p class="leise">${f.zwilling_von ? 'Keine eigenen Kosten (Zwilling).' : 'Keine Kosten erfasst.'}</p>`}</div>`);
+  // Links: Vorlage, Beitrag, Guide und Dateien
+  const links = [];
+  const v = f.vorlage || {};
+  if (v.url || v.creator) links.push(['Vorlage', `${istLink(v.url) ? `<a href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">${esc(v.creator || 'Original')} ansehen</a>` : `<p>${esc(v.creator)}</p>`}${v.views ? ` <span class="leise">· ${esc(ganz.format(v.views))} Aufrufe</span>` : ''}`]);
+  if (istLink(f.gepostet?.link)) links.push(['Beitrag', `<a href="${esc(f.gepostet.link)}" target="_blank" rel="noopener noreferrer">${esc(f.gepostet.link.replace(/^https?:\/\/(www\.)?/, ''))}</a>`]);
+  for (const x of (f.infos || []).filter(x => x && x.label)) {
+    links.push([x.label, istLink(x.link) ? `<a href="${esc(x.link)}" target="_blank" rel="noopener noreferrer">${esc(x.wert ?? x.link)}</a>` : `<p>${esc(x.wert ?? '')}</p>`]);
+  }
+  if ((f._dateien || []).length) links.push(['Dateien', `<p>${f._dateien.map(n => `<a href="${dateiURL(f._ordner + '/' + n)}" target="_blank" rel="noopener">${esc(DATEI[n] || n)}</a>`).join(' · ')}</p>`]);
+  if (f.geplant_info && f.phase !== 'gepostet') links.push(['Sendezeit', `<p>${esc(f.geplant_info)}</p>`]);
+  const vr = (S.vorrat || []).find(x => x.folge_id === folgeId(f));
+  if (vr) {
+    links.push(['Zwilling', `<p>${vr.zwilling ? `ja, geht ${vr.zwilling.geplant ? esc(wann(vr.zwilling.geplant)) : `${esc(vr.zwilling_min)} min nach dem Original`} als Trial raus` : vr.zwilling_an ? 'nein, für diese Folge gibt es keinen' : 'Trial-Zwillinge sind aus'}</p>`]);
+    links.push(['Caption', `<p>${vr.caption ? esc(vr.caption) : 'fehlt'}</p>`]);
+  }
+  if (links.length) teile.push(`<div class="d-abschnitt"><h3>Links und Angaben</h3><div class="d-links">${links.map(([l, w]) => `<div><span>${esc(l)}</span>${w}</div>`).join('')}</div></div>`);
+  return teile.join('');
+}
+function morgen18() { const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(18, 0, 0, 0); return lokal(d); }
+function lokal(d) { return `${d.getFullYear()}-${zwei(d.getMonth() + 1)}-${zwei(d.getDate())}T${zwei(d.getHours())}:${zwei(d.getMinutes())}`; }
+function detailAktionenHTML(f, s) {
+  const id = esc(folgeId(f)), F = S.faehig || {}, A = S.auftraege || [];
+  const v = (S.vorrat || []).find(x => x.folge_id === folgeId(f));
+  let postenHTML = '';
+  if (v && v.postbar) {   // im Detail ist Posten die Hauptaktion (außer eine Freigabe ist offen)
+    const p = S.posten?.laeuft ? S.posten : null;
+    const aus = p ? ` disabled title="${esc(p.folge === v.folge_id ? 'Geht gerade raus' : `Es postet gerade „${p.titel}“`)}"` : '';
+    postenHTML = `<div class="d-zeile"><button type="button" class="knopf${f.freigabe ? '' : ' primaer'}" data-aktion="posten" data-folge="${id}"${aus}>Jetzt posten</button><button type="button" class="knopf" data-aktion="posten" data-trial="1" data-folge="${id}"${aus}>Als Trial posten</button></div>`;
+  } else if (v) postenHTML = `<p class="leise" style="font-size:12.5px">Wird nicht gepostet: ${esc(v.grund)}.</p>`;
+  const k = [];
+  if (s && !s.nur_ansehen && S.tmux) k.push(`<button type="button" class="knopf" data-aktion="oeffnen" data-sitzung="${esc(s.name)}">${icon('terminal')}Terminal</button>`);
+  if (istLink(f.gepostet?.link)) k.push(`<a class="knopf" href="${esc(f.gepostet.link)}" target="_blank" rel="noopener noreferrer">${icon('extern')}Beitrag öffnen</a>`);
+  if (F.ordner) k.push(`<button type="button" class="knopf" data-aktion="ordner" data-welcher="${S.adapter ? 'folge' : 'upload'}" data-folge="${id}">${icon('ordner')}${S.adapter ? 'Ordner' : 'Upload-Ordner'}</button>`);
+  if (F.ordner) k.push(`<button type="button" class="knopf" data-aktion="ordner" data-welcher="out" data-folge="${id}">${icon('ordner')}Ausgabe</button>`);
+  if (A.includes('weiter') && !FERTIG.includes(f.phase)) k.push(`<button type="button" class="knopf" data-aktion="dialog" data-art="weiter" data-folge="${id}">${icon('pfeil')}Hier weitermachen</button>`);
+  if (A.includes('pruefen')) k.push(`<button type="button" class="knopf" data-aktion="dialog" data-art="pruefen" data-folge="${id}">${icon('pruefen')}Prüfen lassen</button>`);
+  let html = postenHTML + (k.length ? `<div class="d-zeile">${k.join('')}</div>` : '');
+  if (f.phase !== 'gepostet' && (F.gepostet || F.geplant)) {
+    const geplant = f.geplant ? lokal(new Date(f.geplant)) : morgen18();
+    if (F.geplant) html += `<div class="d-zeile"><label class="feld">Planen für<input type="datetime-local" id="d-zeit" value="${esc(geplant)}"></label><button type="button" class="knopf" data-aktion="geplant" data-folge="${id}">Planen</button></div>`;
+    if (F.gepostet) html += `<div class="d-zeile"><label class="feld">Als gepostet markieren<input type="url" id="d-link" inputmode="url" autocomplete="off" placeholder="Link zum Beitrag, z. B. https://www.instagram.com/reel/…"></label><button type="button" class="knopf" data-aktion="gepostet" data-folge="${id}">Gepostet</button></div>`;
+    if (!S.adapter) html += `<p class="leise" style="font-size:12px">Motion-Studio postet nicht selbst. Das Upload-Paket liegt im Upload-Ordner.</p>`;
+  }
+  return html;
+}
+
+// ------------------------------------------------------------ Menü „⋯“
+function menueEintraege() {
+  const e = [];
+  if (S?.adapter) {
+    const andere = (S.aktionen || []).filter(a => !a.primaer && !a.versteckt);
+    if (andere.length) e.push({ titel: 'Pipeline' });
+    for (const a of andere) e.push({ aktion: 'adapter', art: a.art, label: a.label, hint: a.hinweis, gefahr: !!a.gefahr, icon: a.icon || (/aus$/.test(a.art) ? 'aus' : 'start'), aus: !!a.aus });
+  } else if (S) {
+    e.push({ titel: 'Aufträge' });
+    e.push({ aktion: 'dialog', art: 'folge', label: 'Nächste Folge …', hint: 'im gelernten Stil eines Kanals', icon: 'plus' });
+    e.push({ aktion: 'dialog', art: 'weiter', label: 'Folge fortsetzen …', hint: 'eine bestimmte offene Folge wählen', icon: 'pfeil' });
+    e.push({ aktion: 'dialog', art: 'kanal-lernen', label: 'Kanal lernen …', hint: 'Vorbild zerlegen und nachbauen', icon: 'suche' });
+    e.push({ aktion: 'dialog', art: 'vorlagen', label: 'Vorlagen finden …', hint: 'kann Kosten verursachen, fragt vorher', icon: 'suche' });
+    e.push({ aktion: 'dialog', art: 'einrichten', label: 'Einrichtung prüfen …', hint: 'Programme und Profil', icon: 'pruefen' });
+  }
+  e.push({ trenner: true }, { titel: 'Seite' });
+  e.push({ aktion: 'neu-laden', label: 'Seite neu laden', hint: 'lädt nur diese Ansicht neu', icon: 'neu' });
+  e.push({ aktion: 'neustart', label: 'Server neu starten', hint: 'z. B. nach einem Update, dauert 2 Sekunden', icon: 'neu' });
+  return e;
+}
+function oeffneMenue() {
+  const m = $('#menue'), k = $('#mehr');
+  m.innerHTML = menueEintraege().map(x => x.trenner ? '<div class="m-trenn" role="separator"></div>' : x.titel ? `<p class="m-titel">${esc(x.titel)}</p>`
+    : `<button type="button" class="m-item${x.gefahr ? ' gefahr' : ''}" role="menuitem" data-m-aktion="${esc(x.aktion)}" data-art="${esc(x.art || '')}" ${x.aus ? 'disabled' : ''}>${icon(x.icon)}<span>${esc(x.label)}</span>${x.hint ? `<small>${esc(x.hint)}</small>` : ''}</button>`).join('');
+  m.hidden = false;
+  const r = k.getBoundingClientRect();
+  m.style.top = `${Math.round(r.bottom + 6)}px`;
+  m.style.left = `${Math.round(Math.max(12, Math.min(innerWidth - m.offsetWidth - 12, r.right - m.offsetWidth)))}px`;
+  k.setAttribute('aria-expanded', 'true');
+  $('.m-item', m)?.focus();
+}
+function schliesseMenue() {
+  const m = $('#menue');
+  if (m.hidden) return;
+  m.hidden = true;
+  $('#mehr').setAttribute('aria-expanded', 'false');
+}
+
+// ------------------------------------------------------------ Dialoge
+function frage({ titel, text, ja = 'Ja', gefahr = false, ueber = 'Bestätigen', zitat = '', zitatTitel = '' }) {
+  const dlg = $('#frage');
+  dlg.innerHTML = `<div class="dl-kopf"><p>${esc(ueber)}</p><h2 id="f-titel">${esc(titel)}</h2></div><div class="dl-inhalt"><p>${esc(text)}</p>${zitat ? `<p class="notiz zitat"><span>${esc(zitatTitel)}</span>${esc(zitat)}</p>` : ''}</div>
+    <div class="dl-fuss"><button type="button" class="knopf still" value="nein">Abbrechen</button><button type="button" class="knopf ${gefahr ? 'gefahr' : 'primaer'}" value="ja">${esc(ja)}</button></div>`;
+  return new Promise(res => {
+    let fertig = false;
+    const ende = w => { if (fertig) return; fertig = true; if (dlg.open) dlg.close(); res(w); };
+    dlg.querySelectorAll('.dl-fuss button').forEach(b => b.onclick = () => ende(b.value === 'ja'));
+    dlg.onclose = () => ende(false);
+    schliesseMenue();
+    dlg.showModal();
+    $('.dl-fuss .knopf.still', dlg).focus();
+  });
+}
+function auftragDialog(art, vorgabe = {}) {
+  const dlg = $('#auftrag');
+  const kanaele = S.profil?.kanaele || [];
+  const lebend = (S.sitzungen || []).filter(s => !s.tot);
+  const kanalWahl = () => kanaele.length
+    ? `<label class="feld">Kanal<select id="a-kanal">${kanaele.map(k => `<option value="${esc(k.slug)}" ${k.slug === (vorgabe.kanal || S.profil.zuletzt_kanal) ? 'selected' : ''}>${esc(k.titel || k.slug)}${k.phase !== 'bereit' ? ' (lernt noch)' : ''}</option>`).join('')}</select></label>`
+    : '<p class="notiz">Noch kein Kanal. Erst mit „Kanal lernen“ ein Vorbild zeigen.</p>';
+  let titel = ART[art] || art, text = '', felder = '', startbar = true, sendeArt = art;
+  if (art === 'vorlagen') {
+    text = 'Der Agent sucht neue Vorbild-Videos für den Kanal, zuerst aus kostenlosen Quellen.';
+    felder = kanalWahl() + '<p class="notiz warn">Kann Kosten verursachen (zum Beispiel für Apify). Der Agent nennt dir vorher den Betrag und fragt, ob er darf.</p>';
+    startbar = kanaele.length > 0;
+  } else if (art === 'kanal-lernen') {
+    text = 'Zeig dem Studio ein Vorbild. Der Agent zerlegt den Kanal, baut ein Video fast 1:1 nach, misst den Unterschied und macht daraus einen Baukasten.';
+    felder = '<label class="feld">Link zum Kanal oder @handle<input id="a-url" type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://www.youtube.com/@kanal oder @kanal"></label>';
+  } else if (art === 'folge') {
+    titel = 'Nächste Folge';
+    text = 'Der Agent baut die nächste Folge im gelernten Stil: Vorlage, Skript, Stimme, Szenen, Render, Prüfung.';
+    felder = kanalWahl();
+    startbar = kanaele.length > 0;
+  } else if (art === 'weiter-offen') {
+    titel = 'Weiterlernen'; sendeArt = 'weiter';
+    const k = kanaele.find(x => x.slug === vorgabe.kanal);
+    text = `Der Agent macht bei der offenen Arbeit weiter${k ? `, zum Beispiel beim Kanal „${k.titel || k.slug}“, der noch lernt` : ''}.`;
+  } else if (art === 'weiter') {
+    titel = 'Folge fortsetzen';
+    const offen = (S.folgen || []).filter(f => !FERTIG.includes(f.phase));
+    const extra = vorgabe.folge && !offen.some(f => folgeId(f) === vorgabe.folge);
+    if (!offen.length && !extra) { text = 'Gerade ist keine Folge offen. „Einfach weitermachen“ oben nimmt sich alles andere Offene vor.'; startbar = false; }
+    else {
+      text = 'Der Agent macht bei genau dieser Folge weiter, an der Stelle, an der sie steht.';
+      felder = `<label class="feld">Welche Folge?<select id="a-folge">${offen.map(f => `<option value="${esc(folgeId(f))}" ${folgeId(f) === vorgabe.folge ? 'selected' : ''}>${esc(f.titel || folgeId(f))} · ${esc(phaseName(f.phase))}</option>`).join('')}${extra ? `<option value="${esc(vorgabe.folge)}" selected>${esc(vorgabe.folge)}</option>` : ''}</select></label>`;
+    }
+  } else if (art === 'pruefen') {
+    const f = folgeVon(vorgabe.folge);
+    text = `Ein unabhängiger Prüfer schaut sich „${f?.titel || vorgabe.folge}“ mit frischen Augen an und schreibt Befunde mit Zeitstempel.`;
+  } else if (art === 'einrichten') {
+    text = 'Der Agent prüft die nötigen Programme, richtet Fehlendes mit dir ein und fragt nach deinem Profil.';
+  }
+  const warnung = lebend.some(s => s.zustand === 'arbeitet') ? '<p class="notiz warn">Es arbeitet schon ein Agent. Zwei gleichzeitig können sich in die Quere kommen.</p>' : '';
+  const wo = S.tmux ? 'Er läuft im Hintergrund, du siehst ihn rechts bei „Agenten“.' : 'Er öffnet sich in einem neuen Terminalfenster.';
+  dlg.innerHTML = `<div class="dl-kopf"><p>Auftrag an den Agenten</p><h2 id="a-titel">${esc(titel)}</h2></div>
+    <div class="dl-inhalt"><p>${esc(text)}</p>${felder}${warnung}<p class="leise" style="font-size:12px">${esc(wo)}</p><p class="notiz bad" id="a-fehler"></p></div>
+    <div class="dl-fuss"><button type="button" class="knopf still" data-zu>Abbrechen</button><button type="button" class="knopf primaer" id="a-start" ${startbar ? '' : 'disabled'}>Starten</button></div>`;
+  schliesseMenue();
+  dlg.showModal();
+  ($('#a-url', dlg) || $('select', dlg) || $('#a-start', dlg))?.focus();
+  $('#a-url', dlg)?.addEventListener('keydown', e => { if (e.key === 'Enter') $('#a-start', dlg).click(); });
+  $('#a-start', dlg).onclick = async ev => {
+    const daten = { art: sendeArt };
+    if ($('#a-kanal', dlg)) daten.kanal = $('#a-kanal', dlg).value;
+    if ($('#a-url', dlg)) daten.url = $('#a-url', dlg).value.trim();
+    if ($('#a-folge', dlg)) daten.folge = $('#a-folge', dlg).value;
+    if (art === 'pruefen') daten.folge = vorgabe.folge;
+    ev.target.disabled = true;
+    const r = await auftragStarten(daten);
+    ev.target.disabled = false;
+    if (r.ok) dlg.close(); else setText($('#a-fehler', dlg), r.fehler);
+  };
+}
+
+// ------------------------------------------------------------ Aktionen
+async function auftragStarten(daten) {
+  const r = await post('/api/auftrag', daten);
+  if (r.ok) {
+    toast(r.trocken ? `Trocken, nichts gestartet: ${ART[daten.art] || daten.art}.` : r.tmux ? `Agent gestartet (${ART[daten.art] || daten.art}). Rechts bei „Agenten“ siehst du ihn.` : 'Agent gestartet, er läuft in einem neuen Terminalfenster.');
+    if (r.hinweis) toast(r.hinweis, 'warn');
+    schleife();
+  }
+  return r;
+}
+async function adapterAktion(art, knopf) {
+  const a = (S.aktionen || []).find(x => x.art === art);
+  if (!a) return toast('Diese Aktion gibt es gerade nicht. Seite neu laden.', 'fehler');
+  if (a.bestaetigen && !(await frage({ titel: a.label, text: a.bestaetigen, ja: a.label, gefahr: !!a.gefahr }))) return;
+  if (knopf) knopf.disabled = true;
+  const r = await post('/api/auftrag', { art: a.art });
+  if (knopf) knopf.disabled = false;
+  toast(r.ok ? (r.meldung || `${a.label}: erledigt.`) : r.fehler, r.ok ? 'ok' : 'fehler');
+  schleife();
+}
+async function sitzungWeiter(name, knopf) {
+  if (knopf) knopf.disabled = true;
+  const r = await post(`/api/sitzung/${encodeURIComponent(name)}/weiter`);
+  if (knopf) knopf.disabled = false;
+  toast(r.ok ? `„weiter“ an ${name} geschickt.` : r.fehler, r.ok ? 'ok' : 'fehler');
+  schleife();
+}
+async function sitzungAntwort(name, text, knopf) {
+  text = String(text || '').trim();
+  if (!text) return toast('Schreib zuerst eine Antwort.', 'fehler');
+  if (knopf) knopf.disabled = true;
+  const r = await post(`/api/sitzung/${encodeURIComponent(name)}/antwort`, { text });
+  if (knopf) knopf.disabled = false;
+  toast(r.ok ? (r.eskalation === 'erledigt' ? `Antwort an ${name} geschickt, die CEO-Frage ist damit erledigt.` : `Antwort an ${name} geschickt.`) : r.fehler, r.ok ? 'ok' : 'fehler');
+  if (r.ok && r.eskalation && r.eskalation !== 'erledigt') toast(`CEO-Frage ${r.eskalation}`, 'warn');
+  schleife();
+  return r.ok;
+}
+document.addEventListener('submit', async ev => {
+  const fg = ev.target.closest && ev.target.closest('.fg-kommentar');
+  if (fg) {
+    ev.preventDefault();
+    const fid = fg.dataset.folge;
+    if (await freigabeSenden(fid, fg.dataset.id, fg.querySelector('input').value, fg.querySelector('button[type="submit"]')))
+      document.querySelectorAll('.fg-kommentar').forEach(x => { if (x.dataset.folge === fid) x.querySelector('input').value = ''; });
+    return;
+  }
+  const form = ev.target.closest && ev.target.closest('.a-antwort');
+  if (!form) return;
+  ev.preventDefault();
+  const feld = form.querySelector('input[name="text"]');
+  if (await sitzungAntwort(form.dataset.sitzung, feld.value, form.querySelector('button[type="submit"]'))) feld.value = '';
+});
+async function sitzungOeffnen(name) {
+  const r = await post(`/api/sitzung/${encodeURIComponent(name)}/oeffnen`);
+  if (!r.ok) return toast(r.fehler, 'fehler');
+  toast(r.geoeffnet ? `Terminalfenster für ${name} geöffnet.` : `Zum Zuschauen im Terminal eingeben: ${r.befehl}`);
+}
+async function sitzungStopp(name, tot) {
+  const ok = await frage(tot
+    ? { titel: 'Sitzung schließen?', text: `Die beendete Sitzung ${name} wird geschlossen.`, ja: 'Schließen' }
+    : { titel: 'Agent stoppen?', text: `Die Sitzung ${name} wird beendet. Was der Agent gerade tut, bricht ab.`, ja: 'Stoppen', gefahr: true });
+  if (!ok) return;
+  const r = await post(`/api/sitzung/${encodeURIComponent(name)}/stopp`);
+  toast(r.ok ? `Sitzung ${name} beendet.` : r.fehler, r.ok ? 'ok' : 'fehler');
+  schleife();
+}
+async function los(knopf) {
+  const v = S.vorschlag || {};
+  if (knopf) knopf.disabled = true;
+  try {
+    if (v.typ === 'sitzung_weiter') await sitzungWeiter(v.sitzung);
+    else if (v.typ === 'ansehen') await sitzungOeffnen(v.sitzung);
+    else if (v.typ === 'dialog') auftragDialog(v.art);
+    else if (v.typ === 'auftrag') {
+      const r = await auftragStarten({ art: v.art, kanal: v.kanal, folge: v.folge });
+      if (!r.ok) toast(r.fehler, 'fehler');
+    } else toast('Gerade gibt es nichts zum Weitermachen.', 'warn');
+  } finally { if (knopf) knopf.disabled = false; }
+}
+// Ende eines Posts vom Studio-Knopf melden (Ergebnis kommt über STATUS.json bzw. das Log)
+function postenBeobachten() {
+  const p = S.posten;
+  if (postenVorher?.laeuft && p && !p.laeuft && p.folge === postenVorher.folge)
+    toast(p.ok ? `Gepostet: „${p.titel}“.` : `Posten von „${p.titel}“ hat nicht geklappt: ${p.text || 'siehe Log'}`, p.ok ? 'ok' : 'fehler');
+  postenVorher = p ? { ...p } : null;
+}
+async function postenFragen(fid, trial, knopf) {
+  const v = (S.vorrat || []).find(x => x.folge_id === fid);
+  if (!v || !v.postbar) return toast('Diese Folge ist gerade nicht postbar. Seite neu laden.', 'fehler');
+  if (S.posten?.laeuft) return toast(`Es postet gerade „${S.posten.titel}“. Warte, bis das fertig ist.`, 'warn');
+  const kanal = S.kanal_name || 'Instagram';
+  const zw = v.zwilling && v.zwilling.bereit && !v.zwilling.gepostet;
+  const text = trial ? `Postet sofort als Trial-Reel auf ${kanal} (zuerst nur für Nicht-Follower).${zw ? ' Der Trial-Zwilling wird dann nicht gepostet.' : ''}`
+    : zw ? `Postet sofort auf ${kanal}, der Trial-Zwilling folgt ${v.zwilling_min} min später automatisch.`
+    : `Postet sofort auf ${kanal}.${v.zwilling_an ? ' Einen Trial-Zwilling gibt es für diese Folge nicht.' : ''}`;
+  const ok = await frage({ ueber: 'Posten', titel: `„${v.titel}“ ${trial ? 'als Trial posten' : 'jetzt posten'}?`, text, ja: trial ? 'Als Trial posten' : 'Jetzt posten',
+    zitatTitel: 'Caption', zitat: v.caption || 'fehlt' });
+  if (!ok) return;
+  if (knopf) knopf.disabled = true;
+  const r = await post('/api/auftrag', { art: 'posten', folge: fid, trial: !!trial });
+  if (knopf) knopf.disabled = false;
+  toast(r.ok ? (r.meldung || 'Postet.') : r.fehler, r.ok ? 'ok' : 'fehler');
+  schleife();
+}
+async function fgOption(fid, oid, knopf) {
+  const f = folgeVon(fid), fg = f?.freigabe, o = fg?.optionen.find(x => x.id === oid);
+  if (!o) return toast('Diese Freigabe gibt es nicht mehr. Seite neu laden.', 'fehler');
+  if (o.kommentar) {   // erst das Kommentarfeld zeigen
+    const zu = fgOffen.get(fid) === oid;
+    if (zu) fgOffen.delete(fid); else fgOffen.set(fid, oid);
+    zeichneJetzt();
+    if (detailId) detailFreigabe(folgeVon(detailId));
+    if (!zu) knopf?.closest('.hinweis, .d-frei')?.querySelector('.fg-kommentar input')?.focus();
+    return;
+  }
+  if (o.bestaetigen && !(await frage({ ueber: 'Freigabe', titel: o.aktion === 'fertig' ? `„${f.titel || fid}“ freigeben?` : `„${f.titel || fid}“: ${o.label}?`, text: o.bestaetigen, ja: o.label }))) return;
+  return freigabeSenden(fid, oid, '', knopf);
+}
+async function freigabeSenden(fid, oid, kommentar, knopf) {
+  const o = folgeVon(fid)?.freigabe?.optionen.find(x => x.id === oid);
+  if (!o) { toast('Diese Freigabe gibt es nicht mehr. Seite neu laden.', 'fehler'); return false; }
+  kommentar = String(kommentar || '').trim();
+  if (o.kommentar && !kommentar) { toast('Schreib kurz, was anders werden soll.', 'fehler'); return false; }
+  if (knopf) knopf.disabled = true;
+  const r = await post('/api/auftrag', { art: 'freigabe', folge: fid, id: oid, kommentar });
+  if (knopf) knopf.disabled = false;
+  toast(r.ok ? (r.meldung || 'Gespeichert.') : r.fehler, r.ok ? 'ok' : 'fehler');
+  if (r.ok && r.warnung) toast(r.warnung, 'warn');
+  if (r.ok) fgOffen.delete(fid);
+  schleife();
+  return !!r.ok;
+}
+async function eskErledigt(name, knopf) {
+  if (knopf) knopf.disabled = true;
+  const r = await post('/api/auftrag', { art: 'eskalation-erledigt', sitzung: name });
+  if (knopf) knopf.disabled = false;
+  toast(r.ok ? (r.meldung || 'Erledigt.') : r.fehler, r.ok ? 'ok' : 'fehler');
+  schleife();
+}
+async function erledigteSchliessen(knopf) {
+  const liste = (S.sitzungen || []).filter(istErledigt);
+  const titel = liste.map(s => folgeVon(folgeVonSitzung(s))?.titel || s.name);
+  if (!(await frage({ titel: 'Alle erledigten Sitzungen schließen?', ja: 'Schließen',
+    text: `Beendet ${titel.length === 1 ? 'die Sitzung' : 'die Sitzungen'} zu ${titel.map(x => `„${x}“`).join(', ')}. Geschlossen werden nur Sitzungen, deren Folge fertig oder gepostet ist und die gerade nichts tun. Arbeitende Agenten bleiben.` }))) return;
+  if (knopf) knopf.disabled = true;
+  const r = await post('/api/auftrag', { art: 'erledigte-schliessen' });
+  if (knopf) knopf.disabled = false;
+  toast(r.ok ? (r.meldung || 'Geschlossen.') : r.fehler, r.ok ? 'ok' : 'fehler');
+  if (r.ok) erledigtAuf = false;
+  schleife();
+}
+async function haupt(knopf) {
+  const h = hauptAktion();
+  if (!h) return;
+  if (h.anzeige) return zuDenAgenten();
+  if (h.art === '__los') return los(knopf);
+  return adapterAktion(h.art, knopf);
+}
+async function neustart() {
+  if (neustartLaeuft) return;
+  schliesseMenue();
+  const r = await post('/api/neustart');
+  if (!r.ok) return toast(r.fehler || 'Neustart ging nicht.', 'fehler');
+  neustartLaeuft = true;
+  toast('Server startet neu. Die Seite lädt gleich von selbst neu.');
+  clearTimeout(schleifenTimer);
+  await new Promise(res => setTimeout(res, 1500));
+  const bis = Date.now() + 20000;
+  while (Date.now() < bis) {
+    try { const a = await fetch('/api/stand', { cache: 'no-store' }); if (a.ok) { location.reload(); return; } } catch (e) { /* noch nicht da */ }
+    await new Promise(res => setTimeout(res, 500));
+  }
+  neustartLaeuft = false;
+  toast('Der Server kommt nicht wieder hoch. Im Agentic OS startet der Tab ihn selbst neu, sonst „ms dashboard“ im Terminal.', 'fehler');
+  schleife();
+}
+function zuDenAgenten(name) {
+  const p = $('#p-agenten');
+  p.scrollIntoView({ behavior: WENIG_BEWEGUNG ? 'auto' : 'smooth', block: 'start' });
+  p.classList.add('hervor');
+  const el = name && [...$('#agenten').children].find(c => c.dataset.key === name);
+  if (el) el.classList.add('hervor');
+  setTimeout(() => { p.classList.remove('hervor'); if (el) el.classList.remove('hervor'); }, 1600);
+}
+async function hinweisAktion(b) {
+  const a = b.dataset.hAktion;
+  if (a === 'auftrag') return S.adapter ? adapterAktion(b.dataset.art, b) : auftragDialog(b.dataset.art);
+  if (a === 'detail') return detailOeffnen(b.dataset.folge);
+  if (a === 'dialog') return auftragDialog(b.dataset.art);
+  if (a === 'los') return los(b);
+  if (a === 'sitzung_weiter') return sitzungWeiter(b.dataset.sitzung, b);
+  if (a === 'ansehen') return sitzungOeffnen(b.dataset.sitzung);
+  if (a === 'agenten') return zuDenAgenten(b.dataset.sitzung);
+}
+
+// ------------------------------------------------------------ Klicks und Tasten
+document.addEventListener('click', async ev => {
+  const t = ev.target;
+  if (!t.closest('#menue') && !t.closest('#mehr')) schliesseMenue();
+  const zu = t.closest('[data-zu]');
+  if (zu) { zu.closest('dialog')?.close(); return; }
+  if (t.closest('#schleier')) return detailSchliessen();
+  if (t.closest('#mehr')) { $('#menue').hidden ? oeffneMenue() : schliesseMenue(); return; }
+  const m = t.closest('[data-m-aktion]');
+  if (m) {
+    const a = m.dataset.mAktion;
+    schliesseMenue();
+    if (a === 'adapter') return adapterAktion(m.dataset.art);
+    if (a === 'dialog') return auftragDialog(m.dataset.art);
+    if (a === 'neu-laden') return location.reload();
+    if (a === 'neustart') return neustart();
+    return;
+  }
+  const tag = t.closest('#plan-wahl [data-tag]');
+  if (tag) { planTag = tag.dataset.tag; return S && zeichnePlan(); }
+  const fl = t.closest('#log-wahl [data-filter]');
+  if (fl) { logFilter = fl.dataset.filter; logAlle = false; return S && zeichneLog(); }
+  if (t.closest('#haupt')) return S && haupt($('#haupt'));
+  const el = t.closest('[data-aktion],[data-detail]');
+  if (!el) return;
+  if (el.closest('a')) return;   // Links öffnen normal
+  const a = el.dataset.aktion;
+  if (a === 'jetzt-versuchen') return schleife();
+  if (a === 'neu-laden') return location.reload();
+  if (!S) return;
+  if (el.dataset.detail && !a) return detailOeffnen(el.dataset.detail);
+  if (a === 'detail-zu') return detailSchliessen();
+  if (a === 'haupt') return haupt(el);
+  if (a === 'hinweis') return hinweisAktion(el);
+  if (a === 'dialog') { if (el.closest('#schublade')) detailSchliessen(); return auftragDialog(el.dataset.art, { folge: el.dataset.folge, kanal: el.dataset.kanal }); }
+  if (a === 'jetzt-alle') { jetztAlle = !jetztAlle; return zeichneJetzt(); }
+  if (a === 'arbeit-alle') { arbeitAlle = !arbeitAlle; return zeichneArbeit(); }
+  if (a === 'gepostet-alle') { gepostetAlle = !gepostetAlle; return zeichneGepostet(); }
+  if (a === 'log-alle') { logAlle = !logAlle; return zeichneLog(); }
+  if (a === 'term-auf') { const n = el.dataset.sitzung; termAuf.has(n) ? termAuf.delete(n) : termAuf.add(n); return zeichneAgenten(); }
+  if (a === 'agenten') return zuDenAgenten(el.dataset.sitzung);
+  if (a === 'adapter') return adapterAktion(el.dataset.art, el);
+  if (a === 'posten') return postenFragen(el.dataset.folge, !!el.dataset.trial, el);
+  if (a === 'fg-option') return fgOption(el.dataset.folge, el.dataset.id, el);
+  if (a === 'fg-zu') { fgOffen.delete(el.closest('form')?.dataset.folge); zeichneJetzt(); if (detailId) detailFreigabe(folgeVon(detailId)); return; }
+  if (a === 'esk-erledigt') return eskErledigt(el.dataset.sitzung, el);
+  if (a === 'erledigte-schliessen') return erledigteSchliessen(el);
+  if (a === 'erledigt-auf') { erledigtAuf = !erledigtAuf; return zeichneAgenten(); }
+  if (a === 'weiter') return sitzungWeiter(el.dataset.sitzung, el);
+  if (a === 'selbst') return sitzungAntwort(el.dataset.sitzung, 'Entscheide selbst sinnvoll und mach ohne Rückfrage weiter.', el);
+  if (a === 'oeffnen') return sitzungOeffnen(el.dataset.sitzung);
+  if (a === 'stopp') return sitzungStopp(el.dataset.sitzung, !!el.dataset.tot);
+  if (a === 'ordner') {
+    const r = await post(`/api/ordner/${encodeURIComponent(el.dataset.folge)}`, { welcher: el.dataset.welcher });
+    return toast(r.ok ? (r.geoeffnet ? 'Ordner im Finder geöffnet.' : `Ordner: ${r.pfad}`) : r.fehler, r.ok ? 'ok' : 'fehler');
+  }
+  if (a === 'gepostet') {
+    const link = $('#d-link').value.trim();
+    const r = await post(`/api/folge/${encodeURIComponent(el.dataset.folge)}/gepostet`, { link });
+    toast(r.ok ? 'Als gepostet markiert.' : r.fehler, r.ok ? 'ok' : 'fehler');
+    if (r.ok) { await laden().catch(() => {}); detailAktualisieren(true); }
+    return;
+  }
+  if (a === 'geplant') {
+    const zeit = $('#d-zeit').value;
+    const r = await post(`/api/folge/${encodeURIComponent(el.dataset.folge)}/geplant`, { zeit });
+    toast(r.ok ? `Geplant für ${datumZeit(r.geplant)}.` : r.fehler, r.ok ? 'ok' : 'fehler');
+    if (r.ok) { await laden().catch(() => {}); detailAktualisieren(true); }
+  }
+});
+document.addEventListener('keydown', ev => {
+  if (ev.key === 'Escape') {
+    if (!$('#menue').hidden) { schliesseMenue(); $('#mehr').focus(); ev.preventDefault(); return; }
+    if (detailId && !$('#frage').open && !$('#auftrag').open) { detailSchliessen(); ev.preventDefault(); }
+  }
+  if (!$('#menue').hidden && (ev.key === 'ArrowDown' || ev.key === 'ArrowUp')) {
+    const items = [...document.querySelectorAll('#menue .m-item:not(:disabled)')];
+    const i = items.indexOf(document.activeElement);
+    const n = items[(i + (ev.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length];
+    if (n) { n.focus(); ev.preventDefault(); }
+  }
+});
+// Fokus bleibt in der offenen Schublade (Tab springt nicht dahinter)
+$('#schublade').addEventListener('keydown', ev => {
+  if (ev.key !== 'Tab' || !detailId) return;
+  const f = [...$('#schublade').querySelectorAll('button, a[href], input, select, video, [tabindex="0"]')].filter(x => !x.disabled && x.offsetParent !== null);
+  if (!f.length) return;
+  if (ev.shiftKey && document.activeElement === f[0]) { f[f.length - 1].focus(); ev.preventDefault(); }
+  else if (!ev.shiftKey && document.activeElement === f[f.length - 1]) { f[0].focus(); ev.preventDefault(); }
+});
+// Nur bei geänderter Breite: Raster der geposteten Folgen neu zählen, Menü schließen (Polling ändert nur die Höhe)
+let breiteAlt = innerWidth;
+addEventListener('resize', () => { if (Math.abs(innerWidth - breiteAlt) < 2) return; breiteAlt = innerWidth; schliesseMenue(); if (S) zeichneGepostet(); });
+
+$('#mehr').innerHTML = icon('mehr');
+$('#d-zu').innerHTML = icon('zu');
+schleife();
+</script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!doctype html>
+<!-- Beispiel 2D-Szene im flachen Vektorstil (SVG, MS2D): wenige Flächen, eine Aktion auf dem Wort (Glühbirne geht an),
+     ein Zoom-Punch. Kopieren nach build/compositions/<id>.html, dann:
+     1. alle "beispiel2dv" durch die Szenen-id ersetzen (data-composition-id, CSS-ids, __timelines-Schlüssel)
+     2. data-duration und DUR = Dauer aus scenes.json (ms szenen prüft das)
+     3. Zeiten T_… auf die LOKALEN Wortzeiten legen (lokal = global − Szenenstart)
+     Zeigt die drei SVG-Fallen (Skill motion-szene-2d):
+     a) SVG-Element um einen Punkt skalieren: svgOrigin "x y" in viewBox-Koordinaten, nicht transformOrigin in px,
+        und zwar in den from- UND den to-Werten (nur in to: GSAP gleicht den Ursprungswechsel aus, Element landet versetzt)
+     b) Schrift im SVG: CSS-Regel mit font-family (eigene Schrift zusätzlich @font-face), das Attribut allein lädt nicht
+     c) per Code erzeugte SVG-Elemente: opacity="0" im Markup, sonst stehen sie vor ihrem fromTo (immediateRender: false) im Bild
+     Ebenen: root (Hintergrund) > kamera (Leben) > punch (Zoom-Stoß) > svg (Inhalt) -->
+<html><head><meta charset="UTF-8" /></head><body><template>
+<style>
+  #beispiel2dv-root { position: absolute; inset: 0; overflow: hidden; background: #221d57; }
+  #beispiel2dv-kamera, #beispiel2dv-punch { position: absolute; inset: 0; transform-origin: 540px 820px; }
+  #beispiel2dv-svg { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+  /* Falle b: die Schrift kommt über diese Regel, nicht über ein font-family-Attribut am <text> */
+  #beispiel2dv-svg text { font-family: "Montserrat"; font-weight: 900; }
+</style>
+<div id="beispiel2dv-root" data-composition-id="beispiel2dv" data-width="1080" data-height="1920" data-duration="3.00">
+  <div id="beispiel2dv-kamera"><div id="beispiel2dv-punch">
+    <svg id="beispiel2dv-svg" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="540" cy="820" r="440" fill="#2c2670" />
+      <circle id="beispiel2dv-schein" cx="540" cy="760" r="300" fill="#ffd23f" opacity="0" />
+      <g id="beispiel2dv-strahlen"></g>
+      <g id="beispiel2dv-birne">
+        <path d="M452 880 L628 880 L606 958 L474 958 Z" fill="#4b4596" id="beispiel2dv-hals" />
+        <circle id="beispiel2dv-glas" cx="540" cy="760" r="210" fill="#4b4596" />
+        <path id="beispiel2dv-draht" d="M478 806 L509 716 L540 806 L571 716 L602 806" fill="none" stroke="#8f88d6"
+              stroke-width="14" stroke-linecap="round" stroke-linejoin="round" />
+        <rect x="462" y="962" width="156" height="40" rx="14" fill="#c9cbe0" />
+        <rect x="472" y="1008" width="136" height="36" rx="14" fill="#a9acc9" />
+        <rect x="496" y="1050" width="88" height="34" rx="16" fill="#8a8eb0" />
+      </g>
+      <text id="beispiel2dv-wort" x="540" y="1340" text-anchor="middle" font-size="150" fill="#ffd23f" opacity="0">IDEE!</text>
+    </svg>
+  </div></div>
+</div>
+<script>
+(function () {
+  const ID = "beispiel2dv", DUR = 3.00;
+  // Lokale Wortzeiten (Beispiel): "Idee" bei 1,20 s. Die Aktion (Birne geht an) liegt genau auf dem Wort.
+  const T_IDEE = 1.20, T_WORT = 1.32;
+  const MITTE = "540 760";                       // Mitte des Glases in viewBox-Koordinaten (für svgOrigin)
+  const NS = "http://www.w3.org/2000/svg";
+  const $ = (s) => document.getElementById(ID + "-" + s);
+  const build = () => {
+    const tl = gsap.timeline({ paused: true });
+    tl.set({}, {}, DUR);
+    // Leben: langsamer Push-in. Beim Pilot nur, wenn die Kamera im Original auch lebt (1:1 vor Stil)
+    MS2D.kameraLeben(tl, $("kamera"), DUR);
+    // Hook: Birne ab Bild 1 groß im Bild, federt leicht ein (Falle a: svgOrigin statt transformOrigin, in from UND to)
+    tl.fromTo($("birne"), { scale: 0.9, svgOrigin: "540 900" }, { scale: 1, svgOrigin: "540 900", duration: 0.5, ease: "back.out(2)" }, 0);
+    // Strahlen per Code (Falle c: opacity="0" im Markup, sonst stehen sie vor T_IDEE schon da)
+    for (let i = 0; i < 12; i++) {
+      if (i === 3) continue;                     // der Strahl nach unten liefe durch den Sockel
+      const w = (i / 12) * Math.PI * 2, r1 = 255, r2 = 335;
+      const l = document.createElementNS(NS, "line");
+      l.setAttribute("x1", 540 + Math.cos(w) * r1); l.setAttribute("y1", 760 + Math.sin(w) * r1);
+      l.setAttribute("x2", 540 + Math.cos(w) * r2); l.setAttribute("y2", 760 + Math.sin(w) * r2);
+      l.setAttribute("stroke", "#ffd23f"); l.setAttribute("stroke-width", "18"); l.setAttribute("stroke-linecap", "round");
+      l.setAttribute("opacity", "0");
+      $("strahlen").appendChild(l);
+      tl.fromTo(l, { opacity: 0, scale: 0.5, svgOrigin: MITTE }, { opacity: 1, scale: 1, svgOrigin: MITTE, duration: 0.22, ease: "back.out(2.2)",
+        immediateRender: false }, T_IDEE + (i % 2) * 0.03);
+    }
+    // Aktion auf dem Wort: Birne geht an
+    tl.to($("glas"), { fill: "#ffd23f", duration: 0.08 }, T_IDEE);
+    tl.to($("hals"), { fill: "#ffd23f", duration: 0.08 }, T_IDEE);
+    tl.to($("draht"), { stroke: "#fff7d1", duration: 0.08 }, T_IDEE);
+    tl.fromTo($("schein"), { opacity: 0, scale: 0.6, svgOrigin: MITTE }, { opacity: 0.22, scale: 1, svgOrigin: MITTE, duration: 0.3, ease: "power2.out",
+      immediateRender: false }, T_IDEE);
+    // Wow: Zoom-Punch auf eigener HTML-Ebene (nicht auf der Ebene von kameraLeben)
+    MS2D.kameraPunch(tl, $("punch"), T_IDEE, { staerke: 1.12 });
+    // Wort erscheint (Falle b: Schrift über die CSS-Regel oben, vorher geladen)
+    tl.fromTo($("wort"), { opacity: 0, scale: 0.6, svgOrigin: "540 1290" }, { opacity: 1, scale: 1, svgOrigin: "540 1290", duration: 0.25,
+      ease: "back.out(2.4)", immediateRender: false }, T_WORT);
+    // Nachglühen, damit nach der Aktion nichts steht
+    tl.to($("schein"), { opacity: 0.12, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, T_IDEE + 0.4);
+    window.__timelines[ID] = tl;
+  };
+  MS2D.schriftenLaden(["900 150px Montserrat"]).then(build);
+})();
+</script>
+</template></body></html>

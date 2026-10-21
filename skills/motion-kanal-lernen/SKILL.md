@@ -1,0 +1,104 @@
+---
+name: motion-kanal-lernen
+description: "Phase B von Motion-Studio: einen Motion-Design-Kanal lernen. Top-Videos des Vorbilds ins Register, 3 bis 5 laden und zerlegen (motion-analyse), Machbarkeit mit dem Nutzer klären, ein Video als Pilot fast 1:1 nachbauen, mit ms vergleich messen, unabhängig prüfen, daraus Kit, Regeln und Skript-Baukasten machen. Laden bei \"lern den Kanal\", \"neues Vorbild\", \"bau dieses Video nach\", \"Kanal nachbauen\", \"Stil lernen\", \"Pilot\"."
+---
+
+# motion-kanal-lernen (Phase B)
+
+Ergebnis: Kanal `kanaele/<slug>/` mit Status `bereit`, darin BIBEL.md, REGELN.md, SKRIPT-BAUKASTEN.md, kit/ mit KATALOG.md
+und ton-rezept.json, dazu ein gemessener Pilot-Nachbau. Danach produziert der Skill `motion-folge` in diesem Stil.
+
+Grundregel: **erst messen, dann bauen, dann wieder messen.** Kein Schritt gilt als fertig ohne seinen Gate-Beleg.
+Nach jedem Schritt: `__HEIM__/ms status kanal:<slug> <phase> --notiz "<Ergebnis mit Zahl>"` und ein Satz an den Nutzer.
+Zeitbedarf (Richtwert): Vorlagen 15 min, Zerlegen 30 bis 60 min, Pilot 2 bis 4 Stunden, Kit 30 min.
+
+## 1. Kanal anlegen und Vorlagen finden (Phase `vorbild`)
+1. `__HEIM__/ms neu kanal <slug> --vorbild "<@handle oder Link>" --titel "<Name>"`. Slug kurz, nur a-z, 0-9, Bindestrich.
+2. Skill **motion-vorlagen-finden** laden: Top-Videos des Vorbilds ins Register. YouTube und TikTok gratis (`__HEIM__/ms vorlagen yt …`, `… tiktok …`). Instagram nur über Apify mit Kostenansage und Ja, oder der Nutzer speichert Videos selbst (`__HEIM__/ms laden datei …`).
+3. Ausreißer wählen: 3 bis 5 Videos mit den meisten Views im Verhältnis zum Kanal-Median (`__HEIM__/ms vorlagen liste --creator <vorbild> --faktor 2`, das Register ist global). Mischung aus typischen Formaten, keine fünf gleichen.
+4. Laden: `__HEIM__/ms laden <id> --kanal <slug>` je Video (lädt Video und Transkript).
+   Selbst gespeicherte Videos (`ms laden datei …`) haben oft keine Views: Zahl unter dem Video ablesen und `__HEIM__/ms vorlagen set <id> --views <N>`, gibt es keine: `__HEIM__/ms vorlagen set <id> --views-unbekannt`.
+**Gate:** 3 bis 5 Videos liegen in `vorlagen/videos/`, jedes mit Transkript und mit Views im Register, falls bekannt (sonst als unbekannt vermerkt, dann zählt beim Auswählen das eigene Urteil statt des Faktors).
+`__HEIM__/ms status kanal:<slug> vorbild --notiz "<n> Videos, Median <x> Views"`
+
+## 2. Zerlegen (Phasen `zerlegt`, `bibel`)
+Agent **motion-analyse** starten (Agent-Tool, `subagent_type: "motion-analyse"`). Brief:
+```
+Zerlege den Kanal <slug> (Vorbild <@handle>).
+Videos: <id1>, <id2>, … (in __ARBEIT__/vorlagen/videos/, Transkripte in __ARBEIT__/vorlagen/transkripte/)
+Ziel: kanaele/<slug>/analyse/<id>/ je Video, kanaele/<slug>/BIBEL.md, kanaele/<slug>/SKRIPT-BAUKASTEN.md
+Skills: motion-video-zerlegen, motion-ton-zerlegen, motion-skript-zerlegen, motion-bibel
+Am Ende: Typ des Kanals, Machbarkeit je Video (2D / 3D-Web / Blender, erwartete Ähnlichkeit), Vorschlag für den Pilot mit Begründung.
+```
+Während die Analyse läuft: dem Nutzer kurz sagen, was passiert und wie lange es dauert.
+**Gate:** Je Video ein Analyse-Ordner mit Kontaktbogen, Schnittliste, Palette, Transkript. BIBEL.md trennt [B] beobachtet, [P] vermutet, [R] Regel. SKRIPT-BAUKASTEN.md mit Hook-Formeln und Längen. Kontaktbögen selbst ansehen (Read-Tool) und die BIBEL an zwei Stellen gegen die Bilder prüfen.
+`ms status kanal:<slug> zerlegt`, dann `ms status kanal:<slug> bibel`.
+
+## 3. Machbarkeit und Plan mit dem Nutzer (Gate)
+Zeig in 6 bis 10 Zeilen: Was macht den Kanal aus (Look, Schnitt, Ton, Skript), welche Spur (2D, 3D-Web, Blender), was realistisch erreichbar ist, welches Video Pilot wird und warum, Zeit und Kosten (meist 0, Stimme beim Pilot entfällt).
+Ehrlich: Figuren mit Rig und Schauspiel sind der schwerste Teil. Ist der Kanal davon getragen, sag es vorher.
+Für den Pilot das Video wählen, das den Kanal am besten zeigt und am ehesten erreichbar ist. Bei gemischten Kanälen erst 2D.
+`__HEIM__/ms status kanal:<slug> --wartet "Pilot <id> so bauen? (Plan oben)"`. Erst nach Ja weiter, dann `--wartet-weg`.
+
+## 4. Pilot bauen (Phase `pilot`)
+**Originalton nur zum Messen.** Der Pilot übernimmt Ton, Zeitachse und Wortzeiten des Originals, damit Szene für Szene vergleichbar ist. Er wird nie veröffentlicht.
+1. Anlegen: `__HEIM__/ms neu folge <slug>-pilot --kanal <slug> --pilot --vorlage <id>`. Trägt den Pilot im Kanal-Status ein und setzt dort die Phase `pilot` selbst.
+2. Fenster wählen: ganzes Video oder ein Ausschnitt (bei langen Videos zuerst 10 bis 20 s, die den Kanal gut zeigen). Grenzen an Schnitte legen (Schnittliste in `kanaele/<slug>/analyse/<id>/analyse.json`, `szenen[]`).
+3. Ton: `__HEIM__/ms stimme <pilot-id> --original [--von <s> --bis <s>]`. Ohne Angabe nimmt es die Vorlage aus STATUS.json. Ergebnis:
+   - `voice/stimme.wav`: Originalton im Fenster, Tempo und Pausen unverändert, nur auf −14 LUFS gebracht. `--tempo` bricht beim Pilot ab.
+   - `vorbild/ausschnitt.mp4`: das Original im selben Fenster, gleiche Zeitachse wie der Pilot (für `ms snap --gegen`, `ms vergleich`, den Prüfer).
+   - `voice/script.json` (falls sie fehlt): gesprochener Text aus dem Transkript des Originals, tts = display.
+4. Wortzeiten: `__HEIM__/ms woerter <pilot-id>`. Beim Pilot kommen sie aus dem Transkript des ganzen Originals (verschoben um `--von`), genauer als Whisper auf dem Ausschnitt.
+   **Caption-Gruppen wie im Original:** `ms woerter` gruppiert nach `kit/captions.json` (max_woerter, max_zeichen, Pausen). Zeigen die Paarbilder zur selben Zeit anderen Caption-Text als das Original, die Gruppen von Hand übernehmen:
+   - Gruppen ablesen: Paarbilder an den Caption-Wechseln (`__HEIM__/ms snap <pilot-id> <zeiten> --gegen __ARBEIT__/folgen/<pilot-id>/vorbild/ausschnitt.mp4`) oder Beispiele und Caption-Zone in `analyse/<id>/ANALYSE.md`.
+   - Zeiten nur aus `voice/woerter.json`, nie schätzen: Gruppe `s` = `s` ihres ersten Worts, `e` = `s` der nächsten Gruppe (letzte Gruppe: `e` des letzten Worts + 0,25).
+   - `build/captions.json` schreiben, jede Gruppe mit `"hand": true` (dann überschreibt `ms woerter` die Datei nicht mehr, neu gruppieren nur mit `--captions-neu`):
+     `[{"text": "As soon as", "s": 3.33, "e": 3.85, "hand": true, "woerter": [{"w": "As", "s": 3.33, "e": 3.45}, {"w": "soon", "s": 3.45, "e": 3.62}, {"w": "as", "s": 3.62, "e": 3.80}]}, …]`
+     `w` = Schreibweise wie im Original (Versalien und Satzzeichen am Wortende regelt der Caption-Stil). Bei `erscheinen: "wort"` erscheint jedes Wort auf seinem `s`.
+   - Shot ohne Captions im Original (z. B. Titelkarte): in `build/scenes.json` an der Szene `"captions": false`.
+   - Danach `__HEIM__/ms szenen <pilot-id>` und die Paarbilder an den Wechseln erneut ansehen.
+5. Storyboard nach Skill **motion-storyboard**, aber aus der Schnittliste des Originals: eine Szene pro Shot, gleicher Inhalt, Zeit im Pilot = Zeit im Original − von, Überlappung 0,06 s wie dort. `build/scenes.json` schreiben, `__HEIM__/ms szenen <pilot-id> --check --plan` (Ende = Fensterlänge + 0,47 s). Soll der Pilot genau so lang sein wie der Ausschnitt: hier und in Schritt 6 `--auslauf 0` anhängen (Ende = Fensterlänge). Sobald index.html so geschrieben ist, übernehmen `ms szenen` (auch `--check` der Bauer) und `ms render` den Auslauf von selbst. Captions, die über das Ende hinausragen, werden dort gekappt.
+6. Vor dem Bau: `__HEIM__/ms szenen <pilot-id> --plan` (index.html und Platzhalter je Szene).
+7. Bau über **motion-bauer**: Starte alle Bauer in EINER Nachricht parallel über das Agent-Tool (subagent_type "motion-bauer", name "bauer-1", "bauer-2" …), eine Szenengruppe pro Bauer, Brief-Vorlage aus motion-storyboard. Im Brief: Referenzbilder des Originals pro Szene (Pfade aus `analyse/<id>/`), Paarbilder mit `__HEIM__/ms snap <pilot-id> <zeiten> --gegen __ARBEIT__/folgen/<pilot-id>/vorbild/ausschnitt.mp4`, Ziel „so nah wie möglich, gemessen“. Beim Warten `__HEIM__/ms log --zeige` und `build/fertig_*.json` lesen.
+8. Ton beim Pilot: der Originalton ist fertig gemischt, `ms mix` entfällt.
+9. `__HEIM__/ms szenen <pilot-id>` (Gate „Prüfung: OK“, kein Platzhalter mehr), dann Skill **motion-qa** mit `__HEIM__/ms render <pilot-id> pilot-v1` (im Hintergrund, dauert Minuten).
+**Gate:** Video gerendert, Schwarzbild-Scan nur an Schnitten, Kontaktbogen angesehen. `__HEIM__/ms status <pilot-id> render`.
+
+## 5. Messen (Phase `gemessen`)
+1. Skill **motion-vergleich**: `__HEIM__/ms vergleich __ARBEIT__/folgen/<pilot-id>/vorbild/ausschnitt.mp4 __ARBEIT__/folgen/<pilot-id>/out/pilot-v1.mp4 --zeitversatz-suchen`. Der Ausschnitt hat dieselbe Zeitachse wie der Pilot. Wer das ganze Original übergibt: `ms vergleich` nimmt das Fenster dann aus `voice/stimme.json` (oder `--von/--bis`). Ergebnis: ΔE und SSIM pro Szene mit Ampel, Paarbögen (Original links, Nachbau rechts), Nebeneinander-Video. Die Gesamtwerte landen automatisch in der STATUS.json des Pilots (`messwerte`, Phase `vergleich`) und des Kanals.
+2. Richtwerte aus unserem echten Nachbau (Spalte „grob“ im Ergebnis, so wurde dort gemessen):
+
+   | Spur | erreicht | Ziel |
+   |---|---|---|
+   | 2D (Collage, Typo, UI) | ΔE 5,2, SSIM 0,84 | so nah wie dort |
+   | 3D-Web (Three.js) | ΔE 16 | ΔE unter 15 (dort knapp verfehlt) |
+   | Blender | nicht gemessen | erst Probe-Shot von 5 bis 8 s |
+   Die Zahlen in der Tabelle sind die groben Werte von damals. Die Ampel pro Szene (grün, gelb, rot) rechnet das Werkzeug selbst mit feinem ΔE2000 und ist daran geeicht: 2D grün bei ΔE ≤ 6,5 und SSIM ≥ 0,65 (der abgenommene 2D-Nachbau ist damit komplett grün), 3D grün bei ΔE ≤ 11 (entspricht dem alten Ziel unter 15). ΔE heißt: wie weit die Farben auseinander liegen (unter 2 sieht man keinen Unterschied). SSIM heißt: wie ähnlich Formen und Kanten sind (1 = gleich).
+3. Paarbögen immer selbst ansehen (Read-Tool). Eine gute Zahl beweist keinen gleichen Look.
+4. Iterieren: schlechteste Szene zuerst, pro Runde **eine** Änderung, neu rendern, neu messen. Nach drei Runden ohne Fortschritt an derselben Szene: Nutzer fragen.
+**Gate:** jede Szene hat einen Messwert, keine Szene rot ohne Begründung, Gesamtwerte in der STATUS.json (`__HEIM__/ms status <folge-id>`).
+`__HEIM__/ms status kanal:<slug> gemessen --notiz "ΔE <x>, SSIM <y> (grob), <n> Szenen grün"`.
+
+## 6. Unabhängige Prüfung
+Agent **motion-pruefer** (`subagent_type: "motion-pruefer"`), Brief nur mit Pfaden, kein Bau-Kontext:
+„Prüfe den Pilot <pilot-id>. Video: out/pilot-v<n>.mp4, Original-Ausschnitt: vorbild/ausschnitt.mp4, Vergleich: out/vergleich_pilot-v<n>/, Kontaktbögen: out/qa_pilot-v<n>/, Storyboard: STORYBOARD.md, Regeln: kanaele/<slug>/BIBEL.md ([R]-Regeln, REGELN.md gibt es beim Pilot noch nicht).“
+**Gate:** 0 kritische Befunde. Befunde abarbeiten, neu rendern, neu messen. `ms status <folge-id> pruefung`.
+
+## 7. Urteil des Nutzers (Gate)
+Nebeneinander-Video öffnen (Original links, Nachbau rechts). Sag, was gleich ist, was nicht und warum, mit Messwerten.
+`ms status kanal:<slug> --wartet "Pilot ansehen: passt der Stil so?"`. Sein Urteil wörtlich ins Lernlog.
+Will er mehr Nähe: zurück zu Schritt 5. Passt es: weiter.
+
+## 8. Baukasten (Phase `kit`)
+Skill **motion-kanal-kit**: aus dem Pilot wiederverwendbare Bausteine nach `kanaele/<slug>/kit/` (lib, fonts, tex, beispiele), `kit/KATALOG.md`, `REGELN.md` (was den Stil ausmacht, als prüfbare Regeln), `kit/ton-rezept.json`, Captions-Stil.
+**Gate:** KATALOG.md listet jeden Baustein mit Beispiel, REGELN.md hat mindestens 8 prüfbare Regeln, ton-rezept.json existiert. `ms status kanal:<slug> kit`.
+
+## 9. Bereit
+`__HEIM__/ms status kanal:<slug> bereit --notiz "Pilot ΔE <x>, Kit <n> Bausteine"`, Pilot `ms status <folge-id> fertig`.
+Lernlog: Datum, Kanal, Spur, Messwerte, was schwer war, Dauer, Kosten. Dem Nutzer den nächsten Schritt nennen: „Bau die nächste Folge“ (Skill motion-folge).
+
+## Bekannte Fallen
+- Instagram lädt ohne Login fast nie. Keine Browser-Cookies verwenden. Apify (mit Ja) oder selbst speichern.
+- Eine Kennzahl beweist keinen gleichen Look. Immer auch die Paarbögen ansehen.
+- Der Pilot ist eine Übung und wird nicht gepostet (fremde Inhalte, fremde Stimme).
+- Szenen nicht schätzen, sondern aus der Schnittliste übernehmen. Ein Versatz von 0,2 s verdirbt den Vergleich.

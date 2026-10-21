@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# ms: Einstieg für alle Motion-Studio-Werkzeuge.
+#   ms hilfe                 alle Werkzeuge mit Kurzbeschreibung
+#   ms <werkzeug> [args]     startet tools/<werkzeug>.py (Bindestrich = Unterstrich) mit dem Python des Studios
+# Python: zuerst <heim>/.venv (Mac/Linux bin/, Windows Scripts/), sonst python3/python aus dem PATH.
+HEIM="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PY="$HEIM/.venv/bin/python"
+[ -x "$PY" ] || PY="$HEIM/.venv/Scripts/python.exe"
+[ -x "$PY" ] || PY="$(command -v python3 || command -v python)"
+[ -n "$PY" ] || { echo "FEHLER: Python fehlt. Setup: siehe Skill motion-setup."; exit 1; }
+export PYTHONIOENCODING=utf-8 PYTHONUTF8=1
+
+CMD="${1:-hilfe}"; shift 2>/dev/null || true
+case "$CMD" in
+  hilfe|help|-h|--help)
+    echo "Motion-Studio-Werkzeuge (ms <werkzeug> --help für Details):"
+    for f in "$HEIM"/tools/[a-z]*.py; do
+      n="$(basename "$f" .py)"; d="$(sed -n 's/^"""\(.*\)/\1/p' "$f" | head -1)"
+      printf "  %-14s %s\n" "${n//_/-}" "$d"
+    done
+    [ -f "$HEIM/dashboard/server.py" ] && printf "  %-14s %s\n" "dashboard" "Dashboard STUDIO im Browser (127.0.0.1)"
+    exit 0 ;;
+  dashboard) exec "$PY" "$HEIM/dashboard/server.py" "$@" ;;
+esac
+SKRIPT="$HEIM/tools/${CMD//-/_}.py"
+[ -f "$SKRIPT" ] || { echo "FEHLER: Werkzeug '$CMD' gibt es nicht. 'ms hilfe' zeigt alle."; exit 1; }
+exec "$PY" "$SKRIPT" "$@"

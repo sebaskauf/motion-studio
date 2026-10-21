@@ -1,0 +1,7 @@
+# Motion-Studio, optionale KI-Pakete (ms setup venv --ki --ja). Mac rund 1 GB (torch allein 0,4 GB gemessen), mit NVIDIA-CUDA 3 GB und mehr.
+# Wofür: Sounds maschinell anhören (AST) und per Text suchen (CLAP), Tiefe schätzen, Transkription ohne whisper-cli.
+# Apple Silicon nutzt MPS, NVIDIA-Karten CUDA, sonst läuft alles auf der CPU (langsam, aber es läuft).
+torch>=2.2
+torchaudio>=2.2
+transformers>=4.40
+faster-whisper>=1.0

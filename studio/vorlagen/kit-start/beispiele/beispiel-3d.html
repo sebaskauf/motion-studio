@@ -1,0 +1,66 @@
+<!doctype html>
+<!-- Beispiel 3D-Szene (Three.js über ms3d-start.js + ms3d.js). Kopieren nach build/compositions/<id>.html, dann:
+     1. alle "beispiel3d" durch die Szenen-id ersetzen   2. data-duration und dauer = Dauer aus scenes.json
+     3. Zeiten T_… auf die LOKALEN Wortzeiten legen (lokal = global − Szenenstart)
+     Zeigt: Toon-Set mit Licht-Preset, Text-Schild, Objekt fällt auf dem Wort auf den Sockel (Treffer-Blitz, Funken,
+     Kamerastoß, Bloom-Spitze), Konfetti, Kamerafahrt mit Push-in, am Ende Portal-Fahrt in die Tafel (Übergang zu 2D). -->
+<html><head><meta charset="UTF-8" /></head><body><template>
+<style>
+  #beispiel3d-root { position: absolute; inset: 0; overflow: hidden; background: #14181f; font-family: "Montserrat"; }
+  #beispiel3d-canvas { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; display: block; }
+</style>
+<div id="beispiel3d-root" data-composition-id="beispiel3d" data-width="1080" data-height="1920" data-duration="2.50">
+  <canvas id="beispiel3d-canvas" width="1080" height="1920"></canvas>
+</div>
+<!-- three über die Import-Map aus index.html vorladen (macht auch den lint-Check missing_three_script zufrieden) -->
+<script type="module">import "three";</script>
+<script>
+(function () {
+  // Lokale Wortzeiten (Beispiel): "landet" 1,10 s, "geschafft" 1,55 s. Portal ab 2,05 s in die Tafel (Farbe = Hintergrund der 2D-Szene danach).
+  const T_FALL = 0.75, T_HIT = 1.10, T_KONFETTI = 1.55, T_PORTAL = 2.05, DUR = 2.50;
+  ms3dSzene({
+    id: "beispiel3d", dauer: DUR, canvas: "beispiel3d-canvas", hintergrund: "#1b2230", fov: 40, toon: true,
+    schriften: ["900 100px Montserrat"],
+    aufbau: async (M, m) => {
+      const { THREE } = M, s = m.scene;
+      const L = M.licht(s, "abend");
+      const boden = M.kiste(s, 14, 0.2, 14, M.materialToon("#2c3e50", { rau: 0.9 }), 0, -0.1, 0);
+      const wand = M.kiste(s, 14, 6, 0.2, M.materialToon("#34495e"), 0, 3, -3);
+      const sockel = M.kiste(s, 1.2, 0.7, 1.2, M.materialToon("#e9c35a"), 0, 0.35, 0, { r: 0.05 });
+      const wuerfel = M.kiste(s, 0.6, 0.6, 0.6, M.materialToon("#e0352b"), 0, 4.6, 0, { r: 0.06 });
+      // Tafel hinter dem Sockel: Text-Textur (eingepasst), Fläche = Portal für den Übergang
+      const tafel = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 1.35), new THREE.MeshBasicMaterial({ map: M.textTextur("GESCHAFFT", { b: 1024, h: 576, hg: "#d9d0bf", farbe: "#17150f" }) }));
+      tafel.position.set(0, 2.25, -2.85); s.add(tafel);
+      const blitz = M.blitz({ groesse: 1.6, farbe: "#ffd25a" }); s.add(blitz);
+      const funken = M.funkenWolke(s, { seed: 7 });
+      funken.add([0, 0.75, 0], T_HIT, { groesse: 0.8, n: 14, farbe: "#ffd25a", wolke: false, dauer: 0.5 });
+      const konf = M.konfetti(s, { seed: 3 });
+      konf.add([0, 1.2, 0], T_KONFETTI, { n: 70, kraft: 3.4 });
+      // Kamera: Halbtotale 5,2 m vor dem Sockel (sichtbar ±1,07 m), langsamer Push-in, danach Portal in die Tafel
+      const fahrt = M.kamerafahrt({ 0: { pos: [0.9, 1.9, 5.6], ziel: [0, 1.1, 0], fov: 40 }, 1.1: { pos: [0.3, 1.6, 4.6], ziel: [0, 0.9, 0], fov: 40 },
+        2.0: { pos: [0.0, 1.8, 4.4], ziel: [0, 1.6, -1], fov: 40 } });
+      const portal = M.portalFahrt(tafel, fahrt(T_PORTAL), T_PORTAL, DUR - 0.08);
+      return { L, wuerfel, blitz, funken, konf, fahrt, portal };
+    },
+    zustand: (t, w, M, m) => {
+      // Würfel fällt ab T_FALL, landet auf dem Wort bei T_HIT, federt nach (reine Funktion von t)
+      const u = M.win(t, T_FALL, T_HIT);
+      const y = t < T_HIT ? M.lerp(4.6, 1.0, u * u) : 1.0 + Math.exp(-(t - T_HIT) * 9) * Math.abs(Math.sin((t - T_HIT) * 22)) * 0.18;
+      w.wuerfel.position.y = y;
+      const squash = t > T_HIT ? 1 - Math.exp(-(t - T_HIT) * 14) * 0.25 : 1;
+      w.wuerfel.scale.set(2 - squash, squash, 2 - squash);
+      w.wuerfel.rotation.y = 0.6 * M.ease.outCubic(M.win(t, T_FALL, T_HIT + 0.3));
+      M.blitzZeigen(w.blitz, t, T_HIT, [0, 0.75, 0.4], m.camera.position, { dauer: 0.3 });
+      w.funken.update(t);
+      w.konf.update(t);
+    },
+    kamera: (t, w, M) => {
+      const k = t < T_PORTAL ? w.fahrt(t) : w.portal(t);
+      const [dx, dy] = M.schuettel(t, T_HIT, 0.035);
+      return { pos: [k.pos[0] + dx, k.pos[1] + dy, k.pos[2]], ziel: k.ziel, fov: k.fov };
+    },
+    post: (t) => ({ bloom: t > T_HIT && t < T_HIT + 0.3 ? 0.8 : 0.35, schaerfe: 4.8, ao: 0.4 }),
+  });
+})();
+</script>
+</template></body></html>

@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.DS_Store
+node_modules/
+# gehört dem Nutzer bzw. wird beim Setup erzeugt
+studio/.venv/
+studio/config.json
+studio/modelle/

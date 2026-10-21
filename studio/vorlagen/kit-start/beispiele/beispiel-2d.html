@@ -1,0 +1,60 @@
+<!doctype html>
+<!-- Beispiel 2D-Szene (MS2D). Kopieren nach build/compositions/<id>.html, dann:
+     1. alle "beispiel2d" durch die Szenen-id ersetzen (data-composition-id, CSS-ids, __timelines-Schlüssel)
+     2. data-duration und DUR = Dauer aus scenes.json (ms szenen prüft das)
+     3. Zeiten T_… auf die LOKALEN Wortzeiten legen (lokal = global − Szenenstart)
+     Ebenen: root (Hintergrund) > wisch (Übergang) > kamera (Push-in) > punch (Zoom-Stoß) > wackel (Shake) > inhalt -->
+<html><head><meta charset="UTF-8" /></head><body><template>
+<style>
+  #beispiel2d-root { position: absolute; inset: 0; overflow: hidden; background: #f3ead9; }
+  #beispiel2d-wisch, #beispiel2d-kamera, #beispiel2d-punch, #beispiel2d-wackel { position: absolute; inset: 0; }
+  #beispiel2d-wisch { filter: url(#beispiel2d-mb); }
+  #beispiel2d-kamera, #beispiel2d-punch { transform-origin: 540px 760px; }
+  #beispiel2d-titel { position: absolute; left: 90px; top: 260px; width: 900px; text-align: center; color: #17150f;
+    font-family: "Montserrat"; font-weight: 900; opacity: 0; }
+  #beispiel2d-karte { position: absolute; left: 190px; top: 560px; width: 700px; height: 520px; background: #ffffff; border-radius: 28px;
+    overflow: hidden; opacity: 0; }
+  #beispiel2d-zahl { position: absolute; left: 0; right: 0; top: 120px; text-align: center; font: 900 190px "Montserrat"; color: #0f5a46; }
+  #beispiel2d-sub { position: absolute; left: 0; right: 0; top: 360px; text-align: center; font: 700 44px "Montserrat"; color: #555; }
+</style>
+<div id="beispiel2d-root" data-composition-id="beispiel2d" data-width="1080" data-height="1920" data-duration="2.50">
+  <div id="beispiel2d-wisch"><div id="beispiel2d-kamera"><div id="beispiel2d-punch"><div id="beispiel2d-wackel">
+    <div id="beispiel2d-titel"></div>
+    <div id="beispiel2d-karte"><div id="beispiel2d-zahl">0</div><div id="beispiel2d-sub">Nutzer pro Tag</div></div>
+  </div></div></div></div>
+</div>
+<script>
+(function () {
+  const ID = "beispiel2d", DUR = 2.50;
+  // Lokale Wortzeiten (Beispiel): "Tausend" bei 1,0 s, "Rekord" bei 1,70 s
+  const T_TITEL = 0.15, T_ZAHL = 0.55, T_ZAHL_ENDE = 1.35, T_STEMPEL = 1.62, T_FUNKEN = 1.95;
+  const $ = (s) => document.getElementById(ID + "-" + s);
+  const build = () => {
+    const tl = gsap.timeline({ paused: true });
+    tl.set({}, {}, DUR);
+    MS2D.papierHintergrund($("root"), "#f3ead9", { raster: 0.08 });
+    MS2D.papierFilter();
+    $("karte").style.filter = "url(#ms2d-papier)";
+    const blur = MS2D.wischFilter($("root"), ID + "-mb");
+    MS2D.wisch(tl, $("wisch"), blur, ID + "-mb", 0, { richtung: "rein", dx: -300, dauer: 0.12 });
+    MS2D.kameraLeben(tl, $("kamera"), DUR);
+    // Titel: Text immer einpassen (nie über den Rand)
+    MS2D.textEinpassen($("titel"), "SO WÄCHST DEIN KANAL", { breite: 900, groesse: 110, familie: "Montserrat" });
+    tl.fromTo($("titel"), { opacity: 0, y: -60, rotation: -3 }, { opacity: 1, y: 0, rotation: -1.2, duration: 0.3, ease: "back.out(1.8)" }, T_TITEL);
+    // Karte ploppt auf, Zähler läuft hoch
+    tl.fromTo($("karte"), { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(2)" }, T_ZAHL - 0.1);
+    MS2D.zaehler(tl, $("zahl"), 0, 1000, T_ZAHL, T_ZAHL_ENDE);
+    MS2D.glanz(tl, $("karte"), T_ZAHL_ENDE, { dauer: 0.4, weite: 700 });
+    // Wow: Stempel knallt auf, Staub, Kamera-Punch, Wackeln
+    const st = MS2D.stempel($("wackel"), "REKORD", { x: 540, y: 1010, farbe: "#c33b2b", groesse: 110, rot: -10 });
+    const hit = MS2D.schlag(tl, st, T_STEMPEL);
+    MS2D.staub(tl, $("wackel"), 540, 1060, hit, { seed: 4, n: 14 });
+    MS2D.kameraPunch(tl, $("punch"), hit, { staerke: 1.1 });
+    MS2D.wackeln(tl, $("wackel"), hit, { staerke: 16 });
+    MS2D.funken(tl, $("wackel"), [[250, 600, 34, 0], [840, 640, 28, 0.05], [880, 1060, 40, 0.1], [210, 1000, 26, 0.12]], T_FUNKEN, "#ffd23f");
+    window.__timelines[ID] = tl;
+  };
+  MS2D.schriftenLaden(["900 100px Montserrat", "700 40px Montserrat"]).then(build);
+})();
+</script>
+</template></body></html>

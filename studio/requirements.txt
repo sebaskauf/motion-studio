@@ -1,0 +1,7 @@
+# Motion-Studio, Basis-Pakete (ms setup venv installiert sie in HEIM/.venv). ms check prüft jede Zeile automatisch.
+numpy>=1.24
+pillow>=10.0
+scipy>=1.10
+# Texterkennung in Videos über Apples Vision (nur Mac, fertige Pakete, kein Compiler nötig)
+pyobjc-framework-Vision>=10.0; sys_platform == "darwin"
+pyobjc-framework-Quartz>=10.0; sys_platform == "darwin"
