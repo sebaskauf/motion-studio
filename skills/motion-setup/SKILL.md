@@ -35,6 +35,7 @@ Fragen einzeln stellen, Antwort sofort in `__ARBEIT__/PROFIL.md` eintragen (Kopf
 3. Sprache der Videos.
 4. Plattformen und Format (Standard 9:16, 20 bis 60 Sekunden).
 5. Vorbild-Kanäle: Handle oder Link und was ihm daran gefällt. Mehrere sind gut, gelernt wird einer nach dem anderen.
+5b. Eigener Kanal: Handle(s), auf denen er postet. Seine eigenen Top-Videos sind die erste Ideen-Quelle (Skill motion-vorlagen-finden, Reihenfolge der Quellen), dann das Vorbild, dann andere Creator.
 6. Eigener Twist: was bei ihm anders sein soll.
 7. Stimme: Anbieter ElevenLabs (kostet, beste Qualität), Higgsfield (wenn er es schon hat) oder eigene Aufnahme (gratis, oft am glaubwürdigsten, auch für Dateien aus anderen Programmen). Bei ElevenLabs: Stimm-ID (voice_id), Modell, Einstellungen, falls schon bekannt. Felder wie in PROFIL.md, Abschnitt Stimme (Skill motion-stimme liest sie).
 8. Budget pro Monat und pro Folge, welche bezahlten Dienste erlaubt sind. Standard „Ohne Nachfrage frei bis: 0“, also jede Ausgabe vorher fragen.

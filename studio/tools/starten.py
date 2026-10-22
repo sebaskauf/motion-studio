@@ -34,9 +34,15 @@ from datetime import datetime
 from pathlib import Path
 
 import _ms
+import terminal_lesen as TL
 
 AGENT = 'motion-regie'
-AUFTRAEGE = ['einrichten', 'vorlagen', 'kanal-lernen', 'folge', 'weiter', 'pruefen']
+AUFTRAEGE = ['einrichten', 'vorlagen', 'kanal-lernen', 'folge', 'weiter', 'pruefen', 'autobau']
+# Autopilot-Bau (ms autopilot): selbstständig, Kosten im Monatsbudget aus PROFIL.md freigegeben, sparsam (motion-folge „Effizienz“)
+AUTOBAU_ZUSATZ = ('Autopilot-Bau: Arbeite ohne Rückfragen durch und entscheide selbst sinnvoll. Bezahlte Schritte nur bis zur Grenze '
+                  '„Ohne Nachfrage frei bis“ aus PROFIL.md und im Monatsbudget (trotzdem buchen). Kostet ein Schritt mehr oder geht etwas nur '
+                  'mit einer Entscheidung des Nutzers: ms status <ziel> --wartet "<Frage>" setzen und die Sitzung mit einer kurzen Meldung '
+                  'beenden. Halte dich an den Abschnitt Effizienz in motion-folge.')
 SITZUNG_RE = re.compile(r'^ms-[a-z0-9][a-z0-9-]{0,62}$')
 KANAL_RE = re.compile(r'^[a-z0-9][a-z0-9-]{0,62}$')
 FOLGE_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._-]{0,120}$')
@@ -94,6 +100,9 @@ def auftrag_text(art: str, kanal=None, url=None, folge=None) -> str:
     if art == 'folge':
         k = _kanal_pruefen(kanal)
         return f'Bau die nächste Folge für Kanal {k}.'
+    if art == 'autobau':
+        k = _kanal_pruefen(kanal)
+        return f'Bau die nächste Folge für Kanal {k}. {AUTOBAU_ZUSATZ}'
     if art == 'weiter':
         if folge:
             return f'Mach bei Folge {_folge_pruefen(folge)} weiter.'
@@ -111,11 +120,24 @@ def _programm(name: str) -> str:
     return shutil.which(name) or name
 
 
-def claude_befehl(text: str) -> list[str]:
+def claude_befehl(text: str, modell: str | None = None, denkstufe: str | None = None, ohne_gedaechtnis: bool = False,
+                  kopflos: bool = False) -> list[str]:
+    """claude-Aufruf. Token-Diät für Autopilot-Bauten: eigenes Modell (z. B. Sonnet), Denkstufe, ohne Auto-Gedächtnis
+    (--settings autoMemoryEnabled:false spart rund 20 % Startkontext, gemessen 22.10.2026). kopflos = `claude -p` ohne Terminal."""
     ersatz = os.environ.get('MS_CLAUDE_BEFEHL')
     basis = shlex.split(ersatz) if ersatz else ['claude']
     basis[0] = _programm(basis[0])
-    return basis + ['--agent', AGENT, text]
+    extra = []
+    if not ersatz:
+        if modell and re.match(r'^[a-z0-9.-]{3,40}$', modell):
+            extra += ['--model', modell]
+        if denkstufe in ('low', 'medium', 'high', 'xhigh'):
+            extra += ['--effort', denkstufe]
+        if ohne_gedaechtnis:
+            extra += ['--settings', '{"autoMemoryEnabled":false}']
+        if kopflos:
+            extra += ['-p', '--permission-mode', 'acceptEdits']
+    return basis + extra + ['--agent', AGENT, text]
 
 
 def _tmux() -> str | None:
@@ -173,9 +195,10 @@ def _fenster_aus() -> bool:
     return os.environ.get('MS_KEINE_FENSTER') == '1'
 
 
-def starten(art: str, kanal=None, url=None, folge=None, trocken=False, wer='studio') -> dict:
+def starten(art: str, kanal=None, url=None, folge=None, trocken=False, wer='studio', modell=None, denkstufe=None,
+            ohne_gedaechtnis=False) -> dict:
     text = auftrag_text(art, kanal, url, folge)
-    cmd = claude_befehl(text)
+    cmd = claude_befehl(text, modell=modell, denkstufe=denkstufe, ohne_gedaechtnis=ohne_gedaechtnis)
     cwd = _arbeitsordner()
     umg = _umgebung()
     aus = {'auftrag': art, 'text': text, 'befehl': cmd, 'befehl_text': shlex.join(cmd), 'ordner': str(cwd),
@@ -319,12 +342,16 @@ def liste(muster: re.Pattern | None = None) -> list[dict]:
         zeilen = _bildschirm(name, 60)  # etwas History mitlesen: beim Beenden rutscht Text nach oben weg
         still = max(0, jetzt - int(aktiv or jetzt))
         zustand, grund, haenger = _zustand(zeilen, tot == '1', still, code or None)
+        fr = TL.frage(zeilen) if zustand == 'wartet' else None
         aus.append({
             'name': name, 'art': art, 'auftrag': auftrag, 'zustand': zustand, 'grund': grund, 'haenger': haenger,
             'still_seit': still, 'tot': tot == '1', 'exit_code': code or None, 'angehaengt': angehaengt not in ('', '0'),
             'letzte_ausgabe': datetime.fromtimestamp(int(aktiv or jetzt)).astimezone().isoformat(timespec='seconds'),
             'erstellt': datetime.fromtimestamp(int(erstellt or jetzt)).astimezone().isoformat(timespec='seconds'),
-            'zeilen': zeilen[-14:], 'zuschauen': f'tmux attach -t {name}'})
+            'zeilen': zeilen[-14:], 'zuschauen': f'tmux attach -t {name}',
+            # Dashboard: offene Frage (Menü), letzte Nachricht beim Warten, was er gerade tut
+            'frage': fr, 'nachricht': TL.nachricht(zeilen)[:3000] if zustand == 'wartet' and not fr else '',
+            'macht': TL.taetigkeit(zeilen, 'fehler' if haenger else zustand)})
     aus.sort(key=lambda s: s['erstellt'], reverse=True)
     return aus
 
@@ -375,6 +402,78 @@ def antworten(name: str, text: str, wer='studio', muster: re.Pattern | None = No
     if protokoll:
         _ms.log(f'Antwort an Sitzung {name}: {text[:80]}', wer=wer, art='info')
     return {'sitzung': name, 'gesendet': text}
+
+
+def waehlen(name: str, nr, text=None, wer='studio', muster: re.Pattern | None = None, protokoll=True) -> dict:
+    """Option eines offenen Auswahl-Menüs wählen (Sebastian 22.10.2026: Fragen direkt im Studio beantworten).
+    Liest das Menü vorher neu (nie blind Ziffern schicken). Auswahl: Ziffer + Enter, bei „Type something“ Ziffer + Text + Enter.
+    Freigabe-Abfrage (Do you want to proceed?): nur die Ziffer, sie wählt sofort."""
+    s = _sitzung(name, muster)
+    if s['tot']:
+        raise SystemExit(f'FEHLER: Sitzung {name} ist beendet.')
+    try:
+        nr = int(nr)
+    except (TypeError, ValueError):
+        raise SystemExit('FEHLER: Option fehlt.')
+    f = TL.frage(_bildschirm(name, 60))
+    if not f:
+        raise SystemExit('FEHLER: Gerade ist keine Auswahl offen. Vielleicht wurde sie schon beantwortet.')
+    o = next((x for x in f['optionen'] if x['nr'] == nr), None)
+    if not o or not 1 <= nr <= 9:
+        raise SystemExit('FEHLER: Diese Option gibt es nicht mehr. Seite neu laden.')
+    text = ' '.join(str(text or '').split())
+    if len(text) > 2000:
+        raise SystemExit('FEHLER: Antwort ist zu lang (höchstens 2000 Zeichen).')
+    if o['frei'] and not text:
+        raise SystemExit('FEHLER: Schreib zuerst deine Antwort.')
+    if text and not o['frei']:
+        raise SystemExit('FEHLER: Eigener Text geht nur bei der Option für eine eigene Antwort.')
+    _tmux_lauf(['send-keys', '-t', f'={name}:', str(nr)], pruefen=True)
+    if text:
+        time.sleep(0.4)
+        _tmux_lauf(['send-keys', '-t', f'={name}:', '-l', text], pruefen=True)
+    if text or f['enter']:
+        time.sleep(0.4)
+        _tmux_lauf(['send-keys', '-t', f'={name}:', 'Enter'], pruefen=True)
+    if protokoll:
+        _ms.log(f'Auswahl an Sitzung {name}: {o["label"][:60]}' + (f' „{text[:60]}“' if text else ''), wer=wer, art='info')
+    return {'sitzung': name, 'gewaehlt': o['label'], 'text': text}
+
+
+def verlauf(name: str, zeilen: int = 400, muster: re.Pattern | None = None) -> dict:
+    """Terminal als Gespräch (deine Eingaben, Antworten, Werkzeuge) plus offene Frage. Nur lesen."""
+    _sitzung(name, muster)
+    roh = _bildschirm(name, max(60, min(int(zeilen), 2000)))
+    return {'sitzung': name, 'bloecke': TL.gespraech(roh), 'frage': TL.frage(roh), 'nachricht': TL.nachricht(roh)[:3000]}
+
+
+def crew_status(crew: list[dict], sitzungen: list[dict], folgen: list[dict] | None = None, haupt: str = 'regie') -> list[dict]:
+    """Status je Crew-Mitglied aus den laufenden Sitzungen: Die Hauptfigur (Regie) übernimmt die Tätigkeit der Sitzung,
+    ein Subagent (macht.agent) wird bei sich selbst als arbeitend gezeigt. Ohne Sitzung schläft die Crew."""
+    titel = {str(f.get('id') or ''): f.get('titel') for f in folgen or []}
+    aus = [dict(c, status={'art': 'schlaeft', 'text': 'hat gerade nichts zu tun', 'sitzungen': []}) for c in crew]
+    nach_agent = {c.get('agent'): c for c in aus if c.get('agent')}
+    rang = {'fehler': 0, 'fragt': 1, 'delegiert': 3, 'wartet': 4, 'beendet': 5, 'schlaeft': 6}
+    for s in sitzungen or []:
+        if s.get('tot'):
+            continue
+        m = s.get('macht') or {}
+        art = m.get('art') or ('fehler' if s.get('zustand') == 'fehler' else 'wartet')
+        folge = titel.get(str(s.get('folge') or '')) or ''
+        ziel = next((c for c in aus if c['id'] == (s.get('crew') or haupt)), aus[0] if aus else None)
+        if art == 'delegiert' and m.get('agent') in nach_agent:
+            sub = nach_agent[m['agent']]
+            sub['status'] = {'art': 'arbeitet', 'text': 'arbeitet für die Regie' + (f' an „{folge}“' if folge else ''),
+                             'sitzungen': sub['status']['sitzungen'] + [s['name']]}
+        if ziel is None:
+            continue
+        alt = ziel['status']
+        if rang.get(art, 2) <= rang.get(alt['art'], 2) or alt['art'] == 'schlaeft':
+            ziel['status'] = {'art': art, 'text': (m.get('text') or s.get('grund') or '') + (f' · „{folge}“' if folge else ''),
+                              'werkzeug': m.get('werkzeug', ''), 'sitzungen': alt['sitzungen'] + [s['name']]}
+        else:
+            alt['sitzungen'] = alt['sitzungen'] + [s['name']]
+    return aus
 
 
 def oeffnen(name: str, muster: re.Pattern | None = None) -> dict:

@@ -15,6 +15,20 @@ Zeitbudget (Richtwert für 30 bis 45 s): Vorlage 5 · Skript 10 · Stimme 10 · 
 1. `__HEIM__/ms status`: Ist eine Folge offen, dort weitermachen.
 2. Lesen: `kanaele/<k>/REGELN.md`, `BIBEL.md`, `SKRIPT-BAUKASTEN.md`, `kit/KATALOG.md`, `__ARBEIT__/LERNLOG.md`, `__ARBEIT__/PROFIL.md` (Sprache, Stimme, Budget, „Skript vor dem Bau zeigen“).
 
+## Effizienz (Token sparen, gemessen an Sebastians Reel-Studio, 22.10.2026)
+Die Regie selbst macht 57 bis 70 % der Kosten einer Folge. Rund drei Viertel davon entstehen, weil sie bei jedem Schritt ihren immer längeren Verlauf neu liest. Jeder überflüssige Schritt wird also teurer, je später er kommt.
+- **Jede Prüfung einmal.** Nachprüfen nur nach einer Änderung, und nur die geänderte Stelle (Einzelbild oder eine Szene). Kein zweiter Kontaktbogen-Durchgang ohne Änderung, kein Vollrender für eine Kleinigkeit.
+- **motion-pruefer genau eine Runde.** Nach den Fixes prüfst du die gemeldeten Stellen selbst per Einzelbild, ohne zweiten Prüfauftrag.
+- **Verlauf klein halten:**
+  - Lange Ausgaben nie ganz holen (`tail -n 20`, `grep`).
+  - Renders, Whisper und Tests im Hintergrund mit Log-Datei laufen lassen und nicht im Sekundentakt nachsehen.
+- **motion-bauer mit engem Brief** (nur seine Szenen, seine Pfade) und kurzer Rückmeldung (höchstens 15 Zeilen).
+- Qualität kommt aus einem sauberen ersten Durchgang (genaues Storyboard, genaue Treffer-Zeiten), nicht aus Prüfschleifen.
+- **Autopilot-Bau** (Auftrag beginnt mit „Autopilot-Bau“):
+  - ohne Rückfragen durcharbeiten
+  - Bezahlte Schritte nur bis zur Grenze „Ohne Nachfrage frei bis“ aus PROFIL.md und im Monatsbudget, trotzdem buchen
+  - Geht etwas nur mit dem Nutzer: `ms status <ziel> --wartet "<Frage>"` setzen, kurz melden und die Sitzung beenden. Das Dashboard zeigt die Frage in JETZT.
+
 ## 1. Vorlage (Phase `vorlage`)
 Skill **motion-vorlagen-finden**: Das Register ist global (alle Vorbilder), deshalb nach dem Vorbild des Kanals filtern:
 `__HEIM__/ms vorlagen liste --creator <vorbild> --faktor 2`. Regeln:

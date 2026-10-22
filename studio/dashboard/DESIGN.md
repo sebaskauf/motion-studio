@@ -44,6 +44,23 @@ Kein Akzentbalken links an Karten oder Bannern. Hinweise sind Zeilen mit Mono-Ta
 - Icons: ein Satz, inline SVG, 16px, Strich 1.5, runde Enden (play, extern, terminal, pfeil, mehr, neu laden). Keine Emojis.
 - Knöpfe: primär (orange Fläche, dunkler Text) genau einer pro Blickfeld; sekundär (Rahmen); Gefahr (Rahmen + rote Schrift, immer mit Bestätigung).
 
+## STUDIO v3 (22.10.2026)
+- Pixel-Crew (`pixel.js`):
+  - Jeder Agent ist ein kleiner Clawd (32 × 28 Pixel, pixelig skaliert) mit Rollen-Zubehör.
+  - Die Tätigkeit bestimmt die Requisite: rendert = Filmrolle, Stimme = Mikro, fragt = Hand hoch und orangenes Fragezeichen, Fehler = Rauch, schläft = zZ.
+  - Das ist die einzige Dauer-Animation der Seite: ein gemeinsamer Takt mit 8 Bildern/s, ruhige Schritt-Loops, pausiert im Hintergrund.
+  - Bei „weniger Bewegung“ zeigt jede Figur ein Standbild.
+- Crew-Leiste über den Agenten. Beim Drüberfahren, Fokus oder Klick öffnet sich eine Info-Karte mit ruhiger Szene: Die Figur schwebt auf einem Kissen, Staubkörnchen steigen auf.
+- Frage-Block:
+  - Steht in JETZT, nicht doppelt. Die Agentenkarte zeigt nur eine Kurzzeile mit „Antworten“.
+  - Optionen sind ganze Zeilen mit Ziffer, darunter steht das Feld für eine eigene Antwort.
+  - Die Freigabe zeigt den Befehl als Mono-Kasten.
+- Chat-Schublade: Verlauf als Gespräch (Agent links, du rechts in Akzent-schwach, Werkzeuge als eingeklappte Mono-Zeilen), unten Antwort.
+- Steuerung: Schalter (Autopilot, Tagesbau) statt Menüpunkten. Dazu Fortschrittsbalken (heute) und Wochenbudget mit Marke an der Bremse.
+- Zahlen im Stil der Plattform:
+  - Instagram, TikTok und YouTube haben je eigenen Profilkopf und eigenes Raster.
+  - Bewusste Ausnahme von der Farbregel nur in dieser Karte: der Instagram-Ring in Markenfarben bzw. TikTok schwarz.
+
 ## Motion
 Ein gestaffelter Aufbau beim ersten Laden (300 bis 450 ms gesamt). Feedback 150 bis 200 ms. Polling ändert nur Inhalte, nie das Layout (kein Flackern, kein Springen). Keine blinkenden Punkte, keine Scale-Hover. prefers-reduced-motion respektieren.
 

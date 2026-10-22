@@ -96,8 +96,8 @@ svg.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor;
 /* Raster: ab 1100 px zweispaltig (64/36), darunter einspaltig in Kern-Loop-Reihenfolge */
 .raster { display: grid; grid-template-columns: minmax(0, 64fr) minmax(0, 36fr); gap: 12px; padding: 12px 16px 28px; align-items: start; }
 .spalte { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-#p-jetzt { order: 1; } #p-plan { order: 2; } #p-vorrat { order: 3; } #p-kanaele { order: 4; } #p-arbeit { order: 5; } #p-agenten { order: 6; }
-#p-gepostet { order: 7; } #p-log { order: 8; } #p-zahlen { order: 9; }
+#p-jetzt { order: 1; } #p-steuerung { order: 2; } #p-plan { order: 3; } #p-vorrat { order: 4; } #p-kanaele { order: 5; } #p-arbeit { order: 6; }
+#p-agenten { order: 7; } #p-gepostet { order: 8; } #p-zahlen { order: 9; } #p-log { order: 10; }
 .plan-leer #p-kanaele { order: 2; } .plan-leer #p-plan { order: 3; }
 @media (max-width: 1099px) {
   .raster { display: flex; flex-direction: column; align-items: stretch; }
@@ -347,6 +347,137 @@ svg.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor;
 .z-wert.warn { color: var(--warn); } .z-wert.bad { color: var(--bad); } .z-wert.ok { color: var(--ok); }
 .z-hint { font-size: 11.5px; line-height: 1.4; color: var(--muted); overflow-wrap: anywhere; }
 
+/* SENDEPLAN: Slot, den die Tagesproduktion voraussichtlich rechtzeitig füllt */
+.z-erwartet .s-punkt { border-style: dashed; border-color: var(--muted); }
+.z-erwartet .s-leer { color: var(--text); }
+
+/* STEUERUNG: Autopilot und Tagesbau als Schalter, Fortschritt, Wochenbudget, Bau-Knöpfe */
+.st-zeile { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--line); }
+.st-zeile:first-child { border-top: 0; }
+.st-zeile b { font: 600 13px/1.3 var(--sans); }
+.st-zeile .st-text { grid-column: 2; font-size: 12px; line-height: 1.45; color: var(--muted); overflow-wrap: anywhere; }
+.st-zeile .balken { grid-column: 2; }
+.schalter { position: relative; width: 38px; height: 22px; border-radius: 11px; border: 1px solid var(--line-2); background: var(--panel-2); padding: 0; flex: none;
+  grid-row: span 2; transition: background-color .15s, border-color .15s; }
+.schalter i { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--muted); transition: transform .18s ease-out, background-color .15s; }
+.schalter[aria-checked="true"] { background: color-mix(in srgb, var(--ok) 22%, var(--panel-2)); border-color: color-mix(in srgb, var(--ok) 60%, transparent); }
+.schalter[aria-checked="true"] i { transform: translateX(16px); background: var(--ok); }
+.schalter:disabled { opacity: .45; cursor: default; }
+.balken { height: 6px; border-radius: 3px; background: var(--panel-2); border: 1px solid var(--line); overflow: hidden; position: relative; }
+.balken i { position: absolute; inset: 0 auto 0 0; background: var(--ok); border-radius: 3px; }
+.balken.warn i { background: var(--warn); } .balken.bad i { background: var(--bad); }
+.balken u { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--text); opacity: .5; }
+.st-kopfzeile { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.st-kopfzeile .tag { margin-left: auto; }
+.st-knoepfe { display: flex; gap: 8px; flex-wrap: wrap; padding: 10px 14px 12px; border-top: 1px solid var(--line); }
+
+/* CREW: Pixel-Figuren der Agenten (pixel.js), Info-Karte beim Drüberfahren */
+.crew { display: flex; gap: 2px; overflow-x: auto; padding: 8px 10px 6px; border-bottom: 1px solid var(--line); scrollbar-width: thin; }
+.crew[hidden] { display: none; }
+.crew-figur { display: grid; justify-items: center; gap: 1px; min-width: 66px; padding: 4px 4px 6px; border: 1px solid transparent; border-radius: 6px; background: none; color: inherit; }
+.crew-figur:hover, .crew-figur[aria-expanded="true"] { background: var(--panel-2); border-color: var(--line); }
+.crew-figur canvas { width: 64px; height: 56px; image-rendering: pixelated; }
+.cf-name { font: 600 10px/1.3 var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+.cf-status { font: 500 9.5px/1.3 var(--mono); color: var(--dim); max-width: 74px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.crew-figur.arbeitet .cf-status { color: var(--ok); } .crew-figur.fragt .cf-status { color: var(--warn); } .crew-figur.fehler .cf-status { color: var(--bad); }
+.crew-karte { position: fixed; z-index: 45; width: 300px; max-width: calc(100vw - 24px); background: var(--panel-2); border: 1px solid var(--line-2); border-radius: 6px; padding: 12px; display: grid; gap: 8px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .35); animation: auftritt .18s ease-out both; }
+.crew-karte canvas { width: 100%; aspect-ratio: 64 / 40; height: auto; image-rendering: pixelated; border-radius: 4px; border: 1px solid var(--line); }
+.ck-kopf { display: flex; align-items: baseline; gap: 8px; }
+.ck-kopf b { font: 600 15px/1.3 var(--sans); }
+.ck-kopf span { font: 500 10px/1.3 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-left: auto; }
+.crew-karte p { font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+.crew-karte .ck-status { color: var(--text); }
+.ck-knoepfe { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* AGENTEN: Figur links, darunter Frage-Block und Terminal */
+.a-reihe { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; align-items: start; }
+.a-figur { width: 52px; height: 46px; image-rendering: pixelated; margin-top: -2px; }
+.a-mitte { display: grid; gap: 4px; min-width: 0; }
+.a-macht { font: 500 11px/1.45 var(--mono); color: var(--text); overflow-wrap: anywhere; }
+.a-macht:empty { display: none; }
+.a-fb:empty { display: none; }
+.a-kurzfrage { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 7px 10px; border: 1px solid color-mix(in srgb, var(--warn) 40%, var(--line)); border-radius: 4px; }
+.a-kurzfrage span:nth-child(2) { font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.hinweis.hervor { background: var(--panel-2); }
+.a-macht span { color: var(--muted); }
+
+/* FRAGE-BLOCK: Frage des Agenten mit Optionen und eigener Antwort (JETZT, Agentenkarte, Chat) */
+.fb { display: grid; gap: 8px; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--warn) 45%, var(--line-2)); border-radius: 6px; background: var(--bg); min-width: 0; }
+.fb-titel { font: 600 10px/1.3 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--warn); }
+.fb-text { font: 400 13.5px/1.5 var(--sans); white-space: pre-wrap; overflow-wrap: anywhere; max-height: 16em; overflow: auto; }
+.fb-details { margin: 0; padding: 6px 9px; border-radius: 4px; background: var(--panel-2); font: 400 11px/1.5 var(--mono); color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere; max-height: 9em; overflow: auto; }
+.fb-optionen { display: grid; gap: 6px; }
+.fb-opt { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; align-items: start; width: 100%; padding: 7px 10px; border-radius: 4px; border: 1px solid var(--line-2);
+  background: var(--panel); color: var(--text); text-align: left; font: 500 13px/1.4 var(--sans); transition: border-color .15s, background-color .15s; }
+.fb-opt:hover { border-color: var(--accent); background: var(--panel-2); }
+.fb-opt b { font: 700 11px/19px var(--mono); color: var(--muted); }
+.fb-opt small { display: block; font-size: 11.5px; line-height: 1.4; color: var(--muted); margin-top: 1px; }
+.fb-opt.still { border-style: dashed; color: var(--muted); }
+.fb-opt:disabled { opacity: .5; cursor: default; }
+.fb form { display: flex; gap: 6px; flex-wrap: wrap; margin: 0; }
+.fb form input, .fb form textarea { flex: 1 1 220px; min-width: 0; min-height: 32px; padding: 7px 10px; border-radius: 4px; border: 1px solid var(--line-2); background: var(--panel); color: var(--text);
+  font: 400 13px/1.4 var(--sans); resize: vertical; }
+.fb form input:focus, .fb form textarea:focus { outline: none; border-color: var(--accent); }
+.hinweis .h-form .fb { margin-top: 2px; }
+
+/* CHAT: Verlauf einer Sitzung als Gespräch, unten Antwortfeld */
+.chat-lade .d-body { display: block; padding: 14px 16px; }
+.chat-verlauf { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.cv { display: grid; gap: 3px; max-width: 88%; min-width: 0; }
+.cv p { margin: 0; padding: 8px 11px; border-radius: 8px; font: 400 13px/1.5 var(--sans); white-space: pre-wrap; overflow-wrap: anywhere; }
+.cv-agent p { background: var(--panel-2); border: 1px solid var(--line); border-top-left-radius: 2px; }
+.cv-du { justify-self: end; } .cv-du p { background: var(--accent-weak); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); border-top-right-radius: 2px; }
+.cv-wer { font: 500 9.5px/1.3 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.cv-du .cv-wer { justify-self: end; }
+.cv-werkzeug { max-width: 100%; }
+.cv-werkzeug details { border: 1px solid var(--line); border-radius: 4px; background: var(--bg); }
+.cv-werkzeug summary { list-style: none; cursor: pointer; display: flex; gap: 8px; align-items: baseline; padding: 5px 9px; font: 500 11px/1.4 var(--mono); color: var(--muted); min-width: 0; }
+.cv-werkzeug summary::-webkit-details-marker { display: none; }
+.cv-werkzeug summary b { color: var(--text); font-weight: 600; flex: none; }
+.cv-werkzeug summary span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.cv-werkzeug pre { margin: 0; padding: 6px 9px 8px; border-top: 1px solid var(--line); font: 400 11px/1.5 var(--mono); color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere; max-height: 14em; overflow: auto; }
+.cv-info { font: 400 11px/1.45 var(--mono); color: var(--dim); }
+.chat-fuss { border-top: 1px solid var(--line); padding: 12px 16px; display: grid; gap: 8px; }
+.chat-fuss .a-antwort input { height: 34px; }
+.chat-leer { color: var(--muted); font-size: 13px; padding: 8px 0; }
+
+/* ZAHLEN im Stil der Plattform (Profilkopf + Raster mit Views) */
+.pf { padding: 14px 14px 12px; display: grid; gap: 12px; border-bottom: 1px solid var(--line); }
+.pf-kopf { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; }
+.pf-ring { width: 62px; height: 62px; border-radius: 50%; padding: 3px; display: grid; place-items: center; }
+.pf-ring > span { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; display: grid; place-items: center; background: var(--panel-2); border: 2px solid var(--panel);
+  font: 700 18px/1 var(--sans); color: var(--muted); }
+.pf-ring img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pf-name { display: grid; gap: 2px; min-width: 0; }
+.pf-name b { font: 700 15px/1.25 var(--sans); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pf-name span { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pf-zahlen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); text-align: center; }
+.pf-zahlen b { display: block; font: 700 17px/1.2 var(--sans); }
+.pf-zahlen span { font-size: 12px; color: var(--muted); }
+.pf-woche { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); }
+.pf-woche b { color: var(--text); font-weight: 600; }
+.pf-woche .gut { color: var(--ok); }
+.pf-raster { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; margin: 0 -14px; }
+.pf-reel { position: relative; aspect-ratio: 3 / 4; background: var(--panel-2); overflow: hidden; display: block; color: #fff; text-decoration: none; }
+.pf-reel img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pf-reel span { position: absolute; left: 6px; bottom: 5px; display: flex; align-items: center; gap: 3px; font: 600 12px/1 var(--sans); text-shadow: 0 1px 3px rgba(0, 0, 0, .7); }
+.pf-reel span svg { width: 12px; height: 12px; fill: #fff; stroke: none; }
+.pf-reel::after { content: ""; position: absolute; inset: 55% 0 0; background: linear-gradient(transparent, rgba(0, 0, 0, .45)); pointer-events: none; }
+.pf-stand { font: 500 10px/1.3 var(--mono); color: var(--dim); }
+.pf-hinweis { font-size: 12px; color: var(--muted); }
+/* Instagram: Story-Ring in Markenfarben (bewusste Ausnahme nur hier, Sebastian 22.10.: „im Instagram-Stil“) */
+.pf-instagram .pf-ring { background: conic-gradient(from 210deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5, #feda75); }
+.pf-instagram .pf-kopf .pf-marke { font: italic 600 15px/1 "Snell Roundhand", "Brush Script MT", cursive; color: var(--text); }
+/* TikTok: schwarz, Doppelkante Cyan/Rot */
+.pf-tiktok { background: #000; color: #fff; }
+.pf-tiktok .pf-ring { background: #25f4ee; box-shadow: 2px 0 0 #fe2c55; }
+.pf-tiktok .pf-name span, .pf-tiktok .pf-zahlen span, .pf-tiktok .pf-woche, .pf-tiktok .pf-stand { color: #a8a8a8; }
+.pf-tiktok .pf-woche b { color: #fff; }
+/* YouTube: roter Play-Punkt */
+.pf-youtube .pf-ring { background: #ff0033; }
+.pf-marke { font: 700 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
 /* Zeile unter der Kopfzeile, wenn der Server weg ist */
 .offline { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; margin: 12px 16px 0; padding: 9px 14px; border: 1px solid var(--line-2); border-radius: 6px; background: var(--panel); }
 .offline p { font-size: 13.5px; }
@@ -525,8 +656,13 @@ dialog::backdrop { background: var(--scrim); }
       </section>
     </div>
     <div class="spalte rechts">
+      <section class="panel" id="p-steuerung" aria-labelledby="h-steuerung" hidden>
+        <header class="p-kopf"><h2 id="h-steuerung">Steuerung</h2><span class="p-zahl" id="steuerung-zahl"></span></header>
+        <div class="p-inhalt" id="steuerung" style="--i:0"></div>
+      </section>
       <section class="panel" id="p-agenten" aria-labelledby="h-agenten">
         <header class="p-kopf"><h2 id="h-agenten">Agenten</h2><span class="p-zahl" id="agenten-zahl"></span></header>
+        <div class="crew" id="crew" role="list" aria-label="Crew" hidden></div>
         <div class="p-inhalt" id="agenten" style="--i:1"><div class="skelett-zeile"><span class="sk"></span><span class="sk breit"></span><span class="sk"></span></div><div class="skelett-zeile"><span class="sk"></span><span class="sk breit"></span><span class="sk"></span></div></div>
       </section>
       <section class="panel" id="p-log" aria-labelledby="h-log">
@@ -537,7 +673,8 @@ dialog::backdrop { background: var(--scrim); }
         <div class="p-fuss" id="log-fuss" hidden></div>
       </section>
       <section class="panel" id="p-zahlen" aria-labelledby="h-zahlen">
-        <header class="p-kopf"><h2 id="h-zahlen">Zahlen</h2></header>
+        <header class="p-kopf"><h2 id="h-zahlen">Zahlen</h2><span class="p-zahl" id="zahlen-zahl"></span></header>
+        <div class="pf" id="plattform" hidden></div>
         <div class="p-inhalt zahlen" id="zahlen" style="--i:3"><div class="zahl"><span class="sk"></span><span class="sk breit"></span></div><div class="zahl"><span class="sk"></span><span class="sk breit"></span></div><div class="zahl"><span class="sk"></span><span class="sk breit"></span></div></div>
       </section>
     </div>
@@ -551,11 +688,19 @@ dialog::backdrop { background: var(--scrim); }
   <div class="d-body"><div class="d-medien" id="d-medien"></div><div class="d-spalte"><div class="d-frei" id="d-frei" hidden></div><div class="d-info" id="d-info"></div></div></div>
   <div class="d-fuss" id="d-fuss"></div>
 </aside>
+<aside class="schublade chat-lade" id="chat" aria-labelledby="c-titel" hidden>
+  <header class="d-kopf"><div><p class="d-ueber" id="c-ueber"></p><h2 id="c-titel"></h2><div class="d-status" id="c-status"></div></div>
+    <button type="button" class="knopf icon" data-aktion="chat-zu" aria-label="Schließen (Esc)" title="Schließen (Esc)" id="c-zu"></button></header>
+  <div class="d-body" id="c-body"><ol class="chat-verlauf" id="chat-verlauf"></ol></div>
+  <div class="chat-fuss" id="chat-fuss"></div>
+</aside>
+<div class="crew-karte" id="crew-karte" role="dialog" aria-modal="false" aria-labelledby="ck-name" hidden></div>
 <div class="menue" id="menue" role="menu" aria-label="Weitere Aktionen" hidden></div>
 <dialog id="frage" aria-labelledby="f-titel"></dialog>
 <dialog id="auftrag" aria-labelledby="a-titel"></dialog>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 
+<script src="/pixel.js"></script>
 <script>
 'use strict';
 const TOKEN = document.querySelector('meta[name="ms-token"]').content;
@@ -589,7 +734,7 @@ const PHASE = { vorlage: 'Vorlage', skript: 'Skript', stimme: 'Stimme', storyboa
 const SCHRITTE = [['skript', 'Skript'], ['stimme', 'Stimme'], ['szenen', 'Szenen'], ['ton', 'Ton'], ['render', 'Render'], ['pruefung', 'Prüfung'], ['fertig', 'Fertig']];
 const SCHRITT_VON = { vorlage: 0, skript: 0, stimme: 1, storyboard: 2, szenen: 2, ton: 3, render: 4, vergleich: 4, pruefung: 5, fertig: 7, geplant: 7, gepostet: 7 };
 const KANAL_SCHRITT = { vorbild: 'Vorbild', zerlegt: 'Zerlegen', bibel: 'Bibel', pilot: 'Pilot', gemessen: 'Messen', kit: 'Baukasten', bereit: 'Bereit' };
-const ART = { einrichten: 'Einrichten', vorlagen: 'Vorlagen finden', 'kanal-lernen': 'Kanal lernen', folge: 'Nächste Folge', weiter: 'Weitermachen', pruefen: 'Prüfen' };
+const ART = { einrichten: 'Einrichten', vorlagen: 'Vorlagen finden', 'kanal-lernen': 'Kanal lernen', folge: 'Nächste Folge', weiter: 'Weitermachen', pruefen: 'Prüfen', autobau: 'Autopilot-Bau' };
 const ZUSTAND = { arbeitet: ['Arbeitet', 'ok'], wartet: ['Wartet', 'warn'], fehler: ['Fehler', 'bad'], beendet: ['Beendet', ''] };
 const LOGART = { info: 'Info', fertig: 'Erledigt', warnung: 'Warnung', fehler: 'Fehler', frage: 'Frage', kosten: 'Kosten' };
 const DATEI = { 'SKRIPT.md': 'Skript', 'STORYBOARD.md': 'Storyboard', 'PRUEFBERICHT.md': 'Prüfbericht', 'HANDOFF.md': 'Übergabe', 'CAPTION.md': 'Caption' };
@@ -623,6 +768,13 @@ let erledigtAuf = false;       // erledigte Sitzungen einzeln zeigen
 let postenVorher = null;       // letzter Stand des laufenden Posts (Meldung, wenn er fertig wird)
 let detailId = null;
 let neustartLaeuft = false;
+let chatName = null;           // offene Chat-Schublade (Sitzung)
+let chatTimer = 0;
+let crewOffen = null;          // Crew-Karte: offenes Mitglied
+let crewGepinnt = false;       // per Klick festgehalten (sonst nur beim Drüberfahren)
+let crewStopp = null;          // Szene der Crew-Karte anhalten
+let crewZuTimer = 0;
+const PIXEL = typeof window.PixelCrew === 'object' ? window.PixelCrew : null;   // fehlt pixel.js, bleibt alles ohne Figuren
 
 // ------------------------------------------------------------ Hilfen
 function setHTML(el, html) { if (el && el._html !== html) { el.innerHTML = html; el._html = html; } }
@@ -783,7 +935,8 @@ setInterval(tick, 1000);
 
 // ------------------------------------------------------------ Zeichnen
 function zeichnen() {
-  zeichneKopf(); zeichneJetzt(); zeichnePlan(); zeichneVorrat(); zeichneKanaele(); zeichneArbeit(); zeichneGepostet(); zeichneAgenten(); zeichneLog(); zeichneZahlen();
+  zeichneKopf(); zeichneJetzt(); zeichneSteuerung(); zeichnePlan(); zeichneVorrat(); zeichneKanaele(); zeichneArbeit(); zeichneGepostet();
+  zeichneCrew(); zeichneAgenten(); zeichneLog(); zeichneZahlen();
   if (detailId) detailAktualisieren(false);
   if (ersterAufbau) {
     ersterAufbau = false;
@@ -848,8 +1001,8 @@ function leerKnopf(klein) {
 }
 
 // JETZT: was braucht mich? Hinweise vom Server + Sitzungen (hängt, wartet, erledigt)
-const RANG = { fehler: 0, haengt: 0, ceo: 0, freigabe: 1, postet: 1, vorrat: 2, aus: 2, wartet: 2, fehlt: 3, info: 4, erledigt: 5 };
-const TAGFARBE = { fehler: 'bad', haengt: 'bad', ceo: 'bad', freigabe: 'warn', postet: 'ok', vorrat: 'bad', aus: 'warn', wartet: 'warn', fehlt: 'warn', info: '', erledigt: '' };
+const RANG = { fehler: 0, haengt: 0, ceo: 0, frage: 1, freigabe: 1, postet: 1, vorrat: 2, aus: 2, wartet: 2, fehlt: 3, info: 4, erledigt: 5 };
+const TAGFARBE = { fehler: 'bad', haengt: 'bad', ceo: 'bad', frage: 'warn', freigabe: 'warn', postet: 'ok', vorrat: 'bad', aus: 'warn', wartet: 'warn', fehlt: 'warn', info: '', erledigt: '' };
 const FG_FORM = '<div class="h-form" hidden><form class="fg-kommentar"><input type="text" name="kommentar" maxlength="2000" autocomplete="off" placeholder="Was soll anders werden? Der Agent setzt genau das um." aria-label="Kommentar zur Freigabe"><button type="submit" class="knopf klein"></button><button type="button" class="knopf klein still" data-aktion="fg-zu">Abbrechen</button></form><p class="fg-hinweis"></p></div>';
 function sitzungTitel(s) { return s.titel || (ART[s.art] ? `Agent „${ART[s.art]}“` : s.name); }
 function folgeVonSitzung(s) {
@@ -872,6 +1025,11 @@ function hinweiseListe() {
     } else if (s.zustand === 'wartet') {
       if (f && FERTIG.includes(f.phase)) { erledigt.push({ s, f }); continue; }
       if (ceoOffen.has(s.name) || ['gefragt', 'eskaliert'].includes(s.ceo?.status)) continue;   // der CEO ist dran bzw. Zeile „CEO fragt“
+      if (steuerbar && (s.frage || s.nachricht)) {   // Frage samt Optionen direkt in JETZT beantworten (Sebastian 22.10.)
+        h.push({ art: 'frage', tag: s.frage?.art === 'freigabe' ? 'Freigabe' : 'Frage', sitzung: s.name, s,
+          text: `${sitzungTitel(s)} ${s.frage?.art === 'freigabe' ? 'möchte etwas ausführen und wartet auf dein Okay.' : 'fragt dich etwas.'}` });
+        continue;
+      }
       h.push({ art: 'wartet', tag: 'Wartet', sitzung: s.name,
         text: `${sitzungTitel(s)} wartet auf deine Antwort im Terminal${s.grund && s.grund.includes('Auswahl') ? ' (Auswahl)' : ''}.`,
         knopf: steuerbar ? { label: 'Ansehen', aktion: 'ansehen', sitzung: s.name } : null });
@@ -899,17 +1057,25 @@ function zeichneJetzt() {
   const liste = zeigen.slice();
   if (zeigen.length < alle.length || jetztAlle && alle.length > 5) liste.push({ mehr: true });
   const erster = liste.find(x => x.art === 'ceo' || x.art === 'freigabe');   // nur diese Zeile bekommt den Hauptknopf
-  const schluessel = x => x.mehr ? 'mehr' : x.art === 'freigabe' ? `fg|${x.folge}|${x.freigabe?.seit || ''}`
+  const schluessel = x => x.mehr ? 'mehr' : x.art === 'freigabe' ? `fg|${x.folge}|${x.freigabe?.seit || ''}` : x.art === 'frage' ? `frage|${x.sitzung}`
     : x.art === 'ceo' ? `ceo|${x.sitzung}|${x.zeit || ''}` : `${x.art}|${x.sitzung || x.folge || ''}|${x.tag}|${(x.text || '').slice(0, 40)}`;
   abgleich(box, liste, schluessel, x => {
     if (x.mehr) return element('div', 'p-fuss', '<button type="button" class="knopf still klein" data-aktion="jetzt-alle"></button>');
     if (x.art === 'freigabe') return element('div', 'hinweis', '<span class="tag warn">Freigabe</span><p></p><span class="h-knopf"></span>' + FG_FORM);
     if (x.art === 'ceo') return element('div', 'hinweis', '<span class="tag bad">CEO fragt</span><p></p><span class="h-knopf"></span><div class="h-form"><pre class="h-zeilen" hidden></pre><form class="a-antwort"><input type="text" name="text" maxlength="2000" autocomplete="off" placeholder="Deine Antwort an den Agenten" aria-label="Antwort an den Agenten"><button type="submit" class="knopf klein">Antworten</button></form></div>');
+    if (x.art === 'frage') return element('div', 'hinweis', '<span class="tag warn"></span><p></p><span class="h-knopf"></span><div class="h-form"></div>');
     return element('div', 'hinweis', '<span class="tag"></span><p></p><span class="h-knopf"></span>');
   }, (el, x) => {
     if (x.mehr) { setText($('button', el), jetztAlle ? 'Weniger zeigen' : `Alle ${alle.length} zeigen`); return; }
     if (x.art === 'freigabe') return jetztFreigabe(el, x, x === erster);
     if (x.art === 'ceo') return jetztCeo(el, x, x === erster);
+    if (x.art === 'frage') {
+      setText(el.children[0], x.tag);
+      setText(el.children[1], x.text);
+      setHTML($('.h-knopf', el), `<button type="button" class="knopf klein" data-aktion="chat" data-sitzung="${esc(x.sitzung)}" title="Ganzen Verlauf als Chat öffnen">Chat</button><button type="button" class="knopf klein still" data-aktion="oeffnen" data-sitzung="${esc(x.sitzung)}" title="Terminalfenster öffnen (tmux attach)">${icon('terminal')}Terminal</button>`);
+      setHTML($('.h-form', el), frageBlockHTML(x.s));
+      return;
+    }
     const tag = el.children[0];
     setClass(tag, `tag ${TAGFARBE[x.art] ?? ''}`);
     setText(tag, x.tag || x.art);
@@ -1020,6 +1186,7 @@ function slotTag(e, naechster) {
   if (e.zustand === 'gepostet') return ['Gepostet', 'ok'];
   if (e.zustand === 'geplant') return naechster ? ['Als Nächstes', 'akzent'] : ['Geplant', 'text'];
   if (e.zustand === 'faellt_aus') return ['Fällt aus', 'bad'];
+  if (e.zustand === 'erwartet') return ['Aus Produktion', 'text'];
   if (e.zustand === 'vorbei') return /nicht als gepostet/.test(e.grund || '') ? ['Offen', 'warn'] : ['Vorbei', ''];
   return [e.zustand || '?', ''];
 }
@@ -1046,6 +1213,7 @@ function zeichnePlan() {
   const teile = [];
   if (n('gepostet')) teile.push(`${n('gepostet')} gepostet`);
   if (n('geplant')) teile.push(`${n('geplant')} geplant`);
+  if (n('erwartet')) teile.push(`${n('erwartet')} aus Produktion`);
   if (n('faellt_aus')) teile.push(`${n('faellt_aus')} fallen aus`);
   const d = new Date(); if (planTag === 'morgen') d.setDate(d.getDate() + 1);
   setText($('#plan-zahl'), liste.length ? `${tagName(d)} · ${teile.join(' · ')}` : tagName(d));
@@ -1273,7 +1441,7 @@ function zeichneGepostet() {
 }
 
 // AGENTEN
-const AGENT_HTML = '<div class="a-kopf"><span class="tag"></span><span class="a-titel"></span><span class="a-zeit"></span></div><p class="a-info"></p><p class="a-ceo" hidden></p><p class="a-frage" hidden>Der Agent schreibt:</p><pre class="a-term" tabindex="0" aria-label="Letzte Terminalzeilen"></pre><form class="a-antwort" hidden><input type="text" name="text" maxlength="2000" autocomplete="off" placeholder="Antwort an den Agenten, z. B. „Ja, mach so weiter“" aria-label="Antwort an den Agenten"><button type="submit" class="knopf klein primaer">Antworten</button><button type="button" class="knopf klein" data-aktion="selbst" title="Schickt: Entscheide selbst sinnvoll und mach ohne Rückfrage weiter.">Entscheide selbst</button></form><div class="a-unten"><button type="button" class="a-auf" data-aktion="term-auf"></button><span class="a-knoepfe" style="display:contents"></span></div>';
+const AGENT_HTML = '<div class="a-reihe"><canvas class="a-figur" aria-hidden="true"></canvas><div class="a-mitte"><div class="a-kopf"><span class="tag"></span><span class="a-titel"></span><span class="a-zeit"></span></div><p class="a-macht"></p><p class="a-info"></p><p class="a-ceo" hidden></p></div></div><div class="a-fb"></div><pre class="a-term" tabindex="0" aria-label="Letzte Terminalzeilen"></pre><div class="a-unten"><button type="button" class="a-auf" data-aktion="term-auf"></button><span class="a-knoepfe" style="display:contents"></span></div>';
 // Erledigt = Folge fertig oder gepostet und die Sitzung tut nichts mehr (wartet oder ist beendet)
 function istErledigt(s) {
   const f = folgeVonSitzung(s) ? folgeVon(folgeVonSitzung(s)) : null;
@@ -1330,7 +1498,8 @@ function ceoKarte(el, c) {
   setClass($('.a-info', el), c.zustand === 'fehler' ? 'a-info bad' : 'a-info');
   setText($('.a-info', el), !c.laeuft ? 'Beantwortet Fragen der Bau-Agenten selbst, nur Kritisches kommt zu dir. Die Sitzung startet bei der ersten Frage.'
     : c.tot ? 'Die CEO-Sitzung ist beendet.' : namen.length ? `Entscheidet gerade für ${namen.join(', ')}.` : 'Beantwortet Fragen der Bau-Agenten selbst, nur Kritisches kommt zu dir.');
-  $('.a-ceo', el).hidden = true; $('.a-frage', el).hidden = true; $('.a-antwort', el).hidden = true;
+  $('.a-ceo', el).hidden = true; setHTML($('.a-fb', el), ''); setHTML($('.a-macht', el), '');
+  if (PIXEL) PIXEL.figur($('.a-figur', el), { figur: 'ceo', art: !c.laeuft || c.tot ? 'schlaeft' : c.zustand === 'arbeitet' ? 'denkt' : c.zustand === 'fehler' ? 'fehler' : 'wartet', label: 'CEO' });
   const pre = $('.a-term', el), auf = termAuf.has(c.name);
   const zeilen = (c.zeilen || []).filter((z, i, a) => z.trim() || (i > 0 && a[i - 1].trim()));
   const kern = zeilen.filter(z => z.trim() && !RAUSCHEN.test(z));
@@ -1344,6 +1513,15 @@ function ceoKarte(el, c) {
   setText(aufKnopf, auf ? 'Weniger Zeilen' : `Alle ${zeilen.length} Zeilen`);
   setHTML($('.a-knoepfe', el), lebt ? `<button type="button" class="knopf klein" data-aktion="oeffnen" data-sitzung="${esc(c.name)}" title="Terminalfenster öffnen (tmux attach), nur ansehen">${icon('terminal')}Ansehen</button>` : '');
 }
+// Figur der Sitzung: Tätigkeit aus dem Terminal (macht.art), Frage, Fehler, fertig
+function figurArt(s, erledigt) {
+  if (s.tot) return 'beendet';
+  if (erledigt) return 'fertig';
+  if (s.zustand === 'fehler') return 'fehler';
+  if (s.zustand === 'wartet') return s.frage || /\?\s*$/.test(s.nachricht || '') ? 'fragt' : 'wartet';
+  const a = s.macht?.art;
+  return PIXEL && PIXEL.ARTEN.includes(a) ? a : 'arbeitet';
+}
 function agentKarte(el, s) {
   const f = folgeVonSitzung(s) ? folgeVon(folgeVonSitzung(s)) : null;
   const erledigt = !s.tot && s.zustand === 'wartet' && f && FERTIG.includes(f.phase);
@@ -1354,12 +1532,18 @@ function agentKarte(el, s) {
   $('.a-titel', el).title = `${sitzungTitel(s)} · tmux ${s.name}`;
   setHTML($('.a-zeit', el), s.letzte_ausgabe ? `<span data-rel="${esc(s.letzte_ausgabe)}"></span>` : '');
   $('.a-zeit', el).title = 'Letzte Ausgabe im Terminal';
+  const art = figurArt(s, erledigt);
+  if (PIXEL) PIXEL.figur($('.a-figur', el), { figur: s.figur || 'regie', art, label: `${sitzungTitel(s)}: ${art}` });
+  else $('.a-figur', el).hidden = true;
+  const m = s.macht || {};
+  setHTML($('.a-macht', el), !s.tot && !erledigt && s.zustand === 'arbeitet' && m.text
+    ? `${esc(m.text)}${m.werkzeug ? ` <span>· ${esc(m.werkzeug)}</span>` : ''}` : '');
   let info = '', infoArt = 'a-info';
   if (s.tot) info = s.grund && s.grund !== 'beendet' ? `Beendet: ${s.grund}.` : 'Fertig, die Sitzung ist beendet.';
   else if (s.zustand === 'fehler') { info = s.haenger ? `Keine Ausgabe mehr: ${s.grund}. „Weiter“ stößt ihn an.` : `${s.grund}. „Weiter“ schickt ihm „weiter“.`; infoArt = 'a-info bad'; }
   else if (erledigt) info = `„${f.titel || folgeId(f)}“ ist schon ${f.phase === 'gepostet' ? 'gepostet' : 'fertig'}. Die Sitzung wartet nur noch und kann gestoppt werden.`;
-  else if (s.zustand === 'wartet') info = s.grund && s.grund.includes('Auswahl') ? 'Fragt nach einer Auswahl. Die steht unten; wählen geht mit „Ansehen“ im Terminal.' : 'Wartet auf deine Antwort. Was er wissen will, steht unten. Antworte direkt hier.';
-  else if (s.auftrag) info = s.auftrag;
+  else if (s.zustand === 'wartet') info = s.frage ? 'Wartet auf dich. Wähl unten eine Antwort oder schreib selbst.' : s.nachricht ? 'Wartet auf deine Antwort. Seine letzte Nachricht steht unten.' : 'Wartet auf den nächsten Auftrag.';
+  else if (s.auftrag) info = s.auftrag.replace(/\s*Autopilot-Bau:[\s\S]*$/, ' (Autopilot, ohne Rückfragen)');
   setClass($('.a-info', el), infoArt);
   setText($('.a-info', el), info);
   const c = s.ceo, ceoZeile = $('.a-ceo', el);
@@ -1367,20 +1551,20 @@ function agentKarte(el, s) {
   if (c) setHTML(ceoZeile, c.status === 'gefragt' ? '<span class="tag">CEO</span><span>entscheidet …</span>'
     : c.status === 'eskaliert' ? '<span class="tag bad">CEO</span><span>hat die Frage an dich gegeben, siehe „Jetzt“.</span>'
     : `<span class="tag">CEO</span><span title="${esc(c.antwort)}">${esc(c.antwort || 'hat geantwortet')}</span>`);
+  // Frage-Block: Frage + Optionen oder letzte Nachricht + Antwortfeld (Sebastian 22.10.: „ich kann nicht sehen, was er will“)
+  const fragt = !s.tot && !erledigt && !s.nur_ansehen && (s.zustand === 'wartet' && (s.frage || s.nachricht) || s.zustand === 'fehler');
+  const inJetzt = fragt && s.zustand === 'wartet' && !['gefragt', 'eskaliert'].includes(s.ceo?.status);   // steht als Frage oben in JETZT
+  const kurzFrage = s.frage ? (s.frage.art === 'freigabe' ? 'Möchte etwas ausführen.' : (s.frage.text || s.frage.titel || '').split('\n')[0]) : (s.nachricht || '').split('\n').pop();
+  setHTML($('.a-fb', el), !fragt ? '' : inJetzt
+    ? `<div class="a-kurzfrage"><span class="tag warn">${s.frage?.art === 'freigabe' ? 'Freigabe' : 'Frage'}</span><span>${esc(kurzFrage)}</span><button type="button" class="knopf klein primaer" data-aktion="zur-frage" data-sitzung="${esc(s.name)}">Antworten</button></div>`
+    : frageBlockHTML(s));
   // Terminal: eingeklappt die letzten 3 Zeilen, aufgeklappt alles (Scrollstand bleibt beim Polling)
   const pre = $('.a-term', el), auf = termAuf.has(s.name);
   const zeilen = (s.zeilen || []).filter((z, i, a) => z.trim() || (i > 0 && a[i - 1].trim()));
   const kern = zeilen.filter(z => z.trim() && !RAUSCHEN.test(z));
-  // Wartet er auf eine Antwort, zeigen wir seine letzte Nachricht ausführlich (Sebastian 20.10.: „keine Ahnung, was der von mir will“)
-  const fragt = !s.tot && !erledigt && !s.nur_ansehen && (s.zustand === 'wartet' || s.zustand === 'fehler');
-  const text = (auf ? zeilen : (kern.length ? kern : zeilen.filter(z => z.trim())).slice(fragt ? -14 : -3)).join('\n');
-  $('.a-frage', el).hidden = !(fragt && s.zustand === 'wartet');
-  const form = $('.a-antwort', el);
-  form.hidden = !fragt;
-  form.dataset.sitzung = s.name;
-  $('[data-aktion="selbst"]', form).dataset.sitzung = s.name;
+  const text = (auf ? zeilen : (kern.length ? kern : zeilen.filter(z => z.trim())).slice(-3)).join('\n');
   pre.classList.toggle('auf', auf);
-  pre.hidden = erledigt && !auf;
+  pre.hidden = (erledigt || fragt) && !auf;
   if (pre.textContent !== text) {
     const unten = !pre._gesehen || pre.scrollTop + pre.clientHeight >= pre.scrollHeight - 12;
     pre.textContent = text;
@@ -1389,24 +1573,216 @@ function agentKarte(el, s) {
   }
   const aufKnopf = $('.a-auf', el);
   aufKnopf.dataset.sitzung = s.name;
-  setText(aufKnopf, auf ? 'Weniger Zeilen' : `Alle ${zeilen.length} Zeilen`);
-  aufKnopf.hidden = zeilen.length <= 3 && !erledigt;
-  if (erledigt && !auf) setText(aufKnopf, 'Terminal zeigen');
+  setText(aufKnopf, auf ? 'Weniger Zeilen' : (fragt || erledigt) ? 'Terminal zeigen' : `Alle ${zeilen.length} Zeilen`);
+  aufKnopf.hidden = zeilen.length <= 3 && !erledigt && !fragt;
   const n = esc(s.name);
+  const chat = `<button type="button" class="knopf klein" data-aktion="chat" data-sitzung="${n}" title="Verlauf als Chat, mit Antwortfeld">Chat</button>`;
   let k = '';
   if (s.nur_ansehen) k = f ? `<button type="button" class="knopf klein" data-detail="${esc(folgeId(f))}">Folge</button>` : '';
   else if (s.tot) k = `<button type="button" class="knopf klein" data-aktion="stopp" data-sitzung="${n}" data-tot="1">Schließen</button>`;
   else if (erledigt) {
-    k = `<button type="button" class="knopf klein" data-aktion="oeffnen" data-sitzung="${n}" title="Terminalfenster öffnen (tmux attach)">${icon('terminal')}Ansehen</button>`
+    k = chat + `<button type="button" class="knopf klein" data-aktion="oeffnen" data-sitzung="${n}" title="Terminalfenster öffnen (tmux attach)">${icon('terminal')}Ansehen</button>`
       + `<button type="button" class="knopf klein gefahr" data-aktion="stopp" data-sitzung="${n}" title="Sitzung beenden (fragt vorher)">${icon('stopp')}Stoppen</button>`;
   } else {
     const wichtig = s.zustand === 'fehler';
-    k = `<button type="button" class="knopf klein${wichtig ? ' primaer' : ''}" data-aktion="weiter" data-sitzung="${n}" title="Schickt „weiter“ und Enter in die Sitzung">${icon('pfeil')}Weiter</button>`
+    k = (s.frage ? '' : `<button type="button" class="knopf klein${wichtig ? ' primaer' : ''}" data-aktion="weiter" data-sitzung="${n}" title="Schickt „weiter“ und Enter in die Sitzung">${icon('pfeil')}Weiter</button>`)
+      + chat
       + `<button type="button" class="knopf klein" data-aktion="oeffnen" data-sitzung="${n}" title="Terminalfenster öffnen (tmux attach)">${icon('terminal')}Ansehen</button>`
       + `<button type="button" class="knopf klein gefahr" data-aktion="stopp" data-sitzung="${n}" title="Sitzung beenden (fragt vorher)">${icon('stopp')}Stoppen</button>`;
   }
   setHTML($('.a-knoepfe', el), k);
 }
+
+// FRAGE-BLOCK: Auswahl (Optionen + eigene Antwort), Freigabe (Ja/Nein) oder Klartext-Frage (Antwortfeld)
+const LABEL_DE = [[/^Yes$/i, 'Ja'], [/^No$/i, 'Nein'], [/^Yes, (and )?(don.t ask again|always allow|allow all)/i, 'Ja, und künftig ohne Rückfrage'],
+  [/^No, and tell Claude/i, 'Nein, und sagen, was anders soll'], [/^Chat about this/i, 'Darüber reden statt wählen']];
+function optLabel(l) { for (const [rx, de] of LABEL_DE) if (rx.test(l)) return de; return l; }
+function frageBlockHTML(s) {
+  const n = esc(s.name), f = s.frage;
+  if (f && (f.optionen || []).length) {
+    const kopf = f.art === 'freigabe' ? 'Freigabe' : (f.titel || 'Frage');
+    const text = f.art === 'freigabe' ? 'Darf der Agent das ausführen?' : (f.text || '');
+    const opts = f.optionen.filter(o => !o.frei).map(o => `<button type="button" class="fb-opt${o.chat ? ' still' : ''}" data-aktion="wahl" data-sitzung="${n}" data-nr="${o.nr}" title="${esc(o.label)}"><b>${o.nr}</b><span>${esc(optLabel(o.label))}${o.info ? `<small>${esc(o.info)}</small>` : ''}</span></button>`).join('');
+    const frei = f.frei_nr ? `<form class="fb-frei" data-sitzung="${n}" data-nr="${f.frei_nr}"><input type="text" name="text" maxlength="2000" autocomplete="off" placeholder="Oder eigene Antwort schreiben …" aria-label="Eigene Antwort"><button type="submit" class="knopf klein primaer">Senden</button></form>` : '';
+    return `<div class="fb"><p class="fb-titel">${esc(kopf)}</p>${text ? `<p class="fb-text">${esc(text)}</p>` : ''}${(f.details || []).length ? `<pre class="fb-details">${esc(f.details.join('\n'))}</pre>` : ''}<div class="fb-optionen">${opts}</div>${frei}</div>`;
+  }
+  const fehler = s.zustand === 'fehler', text = s.nachricht || '';
+  const kopf = fehler ? '<p class="fb-titel" style="color:var(--bad)">Steht</p>' : `<p class="fb-titel">${/\?\s*$/.test(text) ? 'Frage' : 'Letzte Nachricht'}</p>`;
+  const inhalt = text ? `<p class="fb-text">${esc(text)}</p>` : fehler ? `<p class="fb-text">${esc(s.grund || 'Fehler')}</p>` : '';
+  return `<div class="fb">${kopf}${inhalt}<form class="a-antwort" data-sitzung="${n}"><input type="text" name="text" maxlength="2000" autocomplete="off" placeholder="Antwort an den Agenten …" aria-label="Antwort an den Agenten"><button type="submit" class="knopf klein primaer">Antworten</button><button type="button" class="knopf klein" data-aktion="selbst" data-sitzung="${n}" title="Schickt: Entscheide selbst sinnvoll und mach ohne Rückfrage weiter.">Entscheide selbst</button></form></div>`;
+}
+
+// CREW: Pixel-Figuren über den Agenten, Info-Karte mit ruhiger Szene
+const CREW_KURZ = { schlaeft: 'schläft', wartet: 'bereit', fragt: 'fragt dich', fehler: 'Fehler', arbeitet: 'arbeitet', denkt: 'denkt nach', delegiert: 'gibt ab',
+  rendert: 'rendert', schreibt: 'schreibt', liest: 'liest', sucht: 'sucht', recherchiert: 'recherchiert', stimme: 'spricht ein', ton: 'mischt',
+  hoert: 'hört nach', werkzeug: 'im Terminal', plant: 'plant', lernt: 'lernt', fertig: 'fertig', beendet: 'schläft' };
+function crewArt(st) { const a = st?.art || 'schlaeft'; return a === 'beendet' ? 'schlaeft' : PIXEL && PIXEL.ARTEN.includes(a) ? a : 'arbeitet'; }
+function zeichneCrew() {
+  const box = $('#crew'), crew = S.crew || [];
+  box.hidden = !crew.length || !PIXEL;
+  if (box.hidden) return;
+  abgleich(box, crew, c => c.id, () => {
+    const b = element('button', 'crew-figur', '<canvas aria-hidden="true"></canvas><span class="cf-name"></span><span class="cf-status"></span>');
+    b.type = 'button'; b.setAttribute('role', 'listitem'); b.dataset.aktion = 'crew';
+    return b;
+  }, (el, c) => {
+    const art = crewArt(c.status);
+    el.dataset.crew = c.id;
+    setClass(el, `crew-figur ${['fragt', 'fehler', 'schlaeft', 'wartet'].includes(art) ? art : 'arbeitet'}`);
+    PIXEL.figur($('canvas', el), { figur: c.figur, art, an: c.status?.an });
+    setText($('.cf-name', el), c.name);
+    setText($('.cf-status', el), CREW_KURZ[art] || art);
+    el.title = '';
+    el.setAttribute('aria-label', `${c.name}: ${c.status?.text || CREW_KURZ[art] || ''}`);
+    el.setAttribute('aria-expanded', String(crewOffen === c.id));
+  });
+  if (crewOffen) crewKarteZeichnen();
+}
+function crewKarteOeffnen(id, ausloeser) {
+  const c = (S?.crew || []).find(x => x.id === id);
+  if (!c || !PIXEL) return;
+  clearTimeout(crewZuTimer);
+  const karte = $('#crew-karte');
+  if (crewOffen !== id) {
+    if (crewStopp) crewStopp();
+    crewOffen = id;
+    karte.innerHTML = '<canvas aria-hidden="true"></canvas><div class="ck-kopf"><b id="ck-name"></b><span></span></div><p class="ck-rolle"></p><p class="ck-status"></p><div class="ck-knoepfe"></div>';
+    karte._html = null;
+    crewStopp = PIXEL.szene($('canvas', karte), { figur: c.figur, art: crewArt(c.status) === 'schlaeft' ? 'schlaeft' : 'arbeitet', an: c.status?.an });
+  }
+  karte.hidden = false;
+  crewKarteZeichnen();
+  const r = ausloeser.getBoundingClientRect(), b = Math.min(300, innerWidth - 24);
+  karte.style.left = `${Math.max(12, Math.min(innerWidth - b - 12, r.left + r.width / 2 - b / 2))}px`;
+  const unten = r.bottom + 8, hoch = karte.offsetHeight || 320;
+  karte.style.top = `${unten + hoch > innerHeight - 8 ? Math.max(8, r.top - hoch - 8) : unten}px`;
+  document.querySelectorAll('.crew-figur').forEach(x => x.setAttribute('aria-expanded', String(x.dataset.crew === id)));
+}
+function crewKarteZeichnen() {
+  const c = (S?.crew || []).find(x => x.id === crewOffen), karte = $('#crew-karte');
+  if (!c) return crewKarteZu(true);
+  setText($('#ck-name'), c.name);
+  setText($('.ck-kopf span', karte), c.modell || '');
+  setText($('.ck-rolle', karte), `${c.rolle ? c.rolle[0].toUpperCase() + c.rolle.slice(1) + '. ' : ''}${c.text || ''}`);
+  const art = crewArt(c.status);
+  setHTML($('.ck-status', karte), `<span class="tag ${art === 'fehler' ? 'bad' : art === 'fragt' ? 'warn' : art === 'schlaeft' || art === 'wartet' ? '' : 'ok'}">${esc(CREW_KURZ[art] || art)}</span> ${esc(c.status?.text || '')}`);
+  const sitz = (c.status?.sitzungen || []).filter(n => (S.sitzungen || []).some(s => s.name === n && !s.nur_ansehen));
+  setHTML($('.ck-knoepfe', karte), sitz.slice(0, 3).map(n => `<button type="button" class="knopf klein" data-aktion="chat" data-sitzung="${esc(n)}">Chat ${esc((S.sitzungen.find(s => s.name === n)?.titel || n).replace(/^Tagesproduktion /, ''))}</button>`).join('')
+    + (sitz.length ? '' : `<button type="button" class="knopf klein still" data-aktion="agenten">Zu den Agenten</button>`));
+}
+function crewKarteZu(sofort) {
+  clearTimeout(crewZuTimer);
+  const zu = () => {
+    if (crewStopp) crewStopp();
+    crewStopp = null; crewOffen = null; crewGepinnt = false;
+    $('#crew-karte').hidden = true;
+    document.querySelectorAll('.crew-figur').forEach(x => x.setAttribute('aria-expanded', 'false'));
+  };
+  if (sofort) zu(); else crewZuTimer = setTimeout(() => { if (!crewGepinnt) zu(); }, 220);
+}
+
+// STEUERUNG: Autopilot und Tagesbau als Schalter, Wochenbudget, Bau-Knöpfe (Sebastian 22.10.: „den Knopf offensichtlicher machen“)
+function zeichneSteuerung() {
+  const panel = $('#p-steuerung'), st = S.steuerung;
+  panel.hidden = !st;
+  if (!st) return;
+  const da = art => (S.aktionen || []).some(a => a.art === art);
+  const z = [];
+  if (st.autopilot) {
+    const an = !!st.autopilot.an, art = an ? 'autopilot-aus' : 'autopilot-an';
+    z.push(`<div class="st-zeile"><button type="button" class="schalter" role="switch" aria-checked="${an}" data-aktion="adapter" data-art="${art}"${da(art) ? '' : ' disabled'} aria-label="Autopilot ${an ? 'ausschalten' : 'einschalten'}"><i></i></button><div class="st-kopfzeile"><b>Autopilot</b><span class="tag ${an ? 'ok' : 'warn'}">${an ? 'an' : 'aus'}</span></div><p class="st-text">${esc(st.autopilot.text || '')}</p></div>`);
+  }
+  if (st.produktion) {
+    const p = st.produktion, an = !!p.an, art = an ? 'produktion-aus' : 'produktion-an';
+    const anteil = p.pro_tag ? Math.min(1, (p.heute || 0) / p.pro_tag) : 0;
+    z.push(`<div class="st-zeile"><button type="button" class="schalter" role="switch" aria-checked="${an}" data-aktion="adapter" data-art="${art}"${da(art) ? '' : ' disabled'} aria-label="Tagesbau ${an ? 'stoppen' : 'starten'}"><i></i></button><div class="st-kopfzeile"><b>Tagesbau</b><span class="tag ${p.laufend ? 'ok' : ''}">${p.laufend ? `${p.laufend} ${p.laufend === 1 ? 'baut' : 'bauen'}` : an ? 'bereit' : 'aus'}</span></div><div class="balken" title="${esc(`${p.heute || 0} von ${p.pro_tag} Bauten heute gestartet`)}"><i style="width:${(anteil * 100).toFixed(1)}%"></i></div><p class="st-text">${esc(p.text || '')}</p></div>`);
+  }
+  if (st.budget && st.budget.prozent != null) {
+    const b = st.budget, pr = Number(b.prozent) || 0, gr = Number(b.grenze) || 100;
+    const cls = pr >= gr ? 'bad' : pr >= gr * 0.85 ? 'warn' : '';
+    z.push(`<div class="st-zeile"><span class="tag" style="grid-row:span 2">Woche</span><div class="balken ${cls}" title="${esc(`${pr} % vom Wochenlimit, Bremse bei ${gr} %`)}"><i style="width:${Math.min(100, pr)}%"></i><u style="left:${Math.min(100, gr)}%"></u></div><p class="st-text">${esc(b.text || '')}</p></div>`);
+  }
+  const kn = (st.knoepfe || []).filter(k => da(k.art)).map(k => `<button type="button" class="knopf${k.primaer ? ' primaer' : ''}" data-aktion="adapter" data-art="${esc(k.art)}" title="${esc(k.hinweis || '')}">${icon(k.icon || 'plus')}${esc(k.label)}</button>`).join('');
+  if (kn) z.push(`<div class="st-knoepfe">${kn}</div>`);
+  setHTML($('#steuerung'), z.join(''));
+  setText($('#steuerung-zahl'), st.zahl || '');
+}
+function zuSteuerung() {
+  const p = $('#p-steuerung');
+  if (p.hidden) return zuDenAgenten();
+  p.scrollIntoView({ behavior: WENIG_BEWEGUNG ? 'auto' : 'smooth', block: 'start' });
+  p.classList.add('hervor');
+  setTimeout(() => p.classList.remove('hervor'), 1600);
+}
+
+// CHAT: Verlauf einer Sitzung als Gespräch, Antwort unten (Polling nur, solange offen)
+const WERKZEUG_DE = { Bash: 'Terminal', Read: 'Liest', Write: 'Schreibt', Edit: 'Ändert', MultiEdit: 'Ändert', Update: 'Ändert', Grep: 'Sucht', Glob: 'Sucht', WebFetch: 'Web', WebSearch: 'Websuche', Skill: 'Skill', TodoWrite: 'Plan', Task: 'Subagent', Agent: 'Subagent' };
+async function chatOeffnen(name) {
+  if (detailId) detailSchliessen();
+  crewKarteZu(true);
+  chatName = name;
+  const lade = $('#chat'), schleier = $('#schleier');
+  schleier.hidden = false; lade.hidden = false;
+  requestAnimationFrame(() => { schleier.classList.add('an'); lade.classList.add('an'); });
+  setHTML($('#chat-verlauf'), '<li class="chat-leer">Lade den Verlauf …</li>');
+  setHTML($('#chat-fuss'), '');
+  chatKopf();
+  await chatLaden(true);
+  $('#c-zu').focus();
+}
+function chatSchliessen() {
+  if (!chatName) return;
+  chatName = null;
+  clearTimeout(chatTimer);
+  const lade = $('#chat'), schleier = $('#schleier');
+  lade.classList.remove('an');
+  if (!detailId) schleier.classList.remove('an');
+  setTimeout(() => { if (!chatName) { lade.hidden = true; if (!detailId) schleier.hidden = true; } }, 220);
+}
+function chatKopf() {
+  const s = (S?.sitzungen || []).find(x => x.name === chatName) || { name: chatName };
+  setText($('#c-ueber'), `Chat · ${chatName}`);
+  setText($('#c-titel'), sitzungTitel(s));
+  const [zt, zf] = s.tot ? ['Beendet', ''] : s.haenger ? ['Hängt', 'bad'] : ZUSTAND[s.zustand] || ['', ''];
+  setHTML($('#c-status'), (zt ? `<span class="tag ${zf}">${esc(zt)}</span>` : '') + (s.macht?.text && s.zustand === 'arbeitet' ? `<span class="leise" style="font-size:12px">${esc(s.macht.text)}</span>` : ''));
+}
+async function chatLaden(erst) {
+  const name = chatName;
+  if (!name) return;
+  try {
+    const r = await fetch(`/api/sitzung/${encodeURIComponent(name)}/verlauf`, { cache: 'no-store' });
+    const j = await r.json().catch(() => ({}));
+    if (name !== chatName) return;
+    if (!r.ok || !j.ok) setHTML($('#chat-verlauf'), `<li class="chat-leer">${esc(j.fehler || 'Der Verlauf ist gerade nicht lesbar.')}</li>`);
+    else chatZeichnen(j, erst);
+  } catch (e) {
+    if (name === chatName) setHTML($('#chat-verlauf'), '<li class="chat-leer">Server nicht erreichbar, ich versuche es gleich wieder.</li>');
+  }
+  clearTimeout(chatTimer);
+  if (chatName === name) chatTimer = setTimeout(() => chatLaden(false), document.hidden ? 10000 : 3000);
+}
+function chatZeichnen(j, erst) {
+  chatKopf();
+  const body = $('#c-body');
+  const unten = erst || body.scrollTop + body.clientHeight >= body.scrollHeight - 40;
+  const s = (S?.sitzungen || []).find(x => x.name === chatName) || { name: chatName };
+  const wer = sitzungTitel(s).replace(/^Tagesproduktion /, '');
+  const html = (j.bloecke || []).map(b => {
+    if (b.wer === 'du') return `<li class="cv cv-du"><span class="cv-wer">Du</span><p>${esc(b.text)}</p></li>`;
+    if (b.wer === 'agent') return `<li class="cv cv-agent"><span class="cv-wer">${esc(wer)}</span><p>${esc(b.text)}</p></li>`;
+    if (b.wer === 'werkzeug') return `<li class="cv cv-werkzeug"><details><summary><b>${esc(WERKZEUG_DE[b.werkzeug] || b.werkzeug)}</b><span>${esc(b.text)}</span></summary>${b.ergebnis ? `<pre>${esc(b.ergebnis)}</pre>` : ''}</details></li>`;
+    return `<li class="cv-info">${esc(b.text)}</li>`;
+  }).join('') || '<li class="chat-leer">Im sichtbaren Verlauf steht noch nichts.</li>';
+  setHTML($('#chat-verlauf'), html);
+  if (unten) body.scrollTop = body.scrollHeight;
+  const nachricht = j.frage ? '' : (j.nachricht || '');
+  const fragt = j.frage || s.zustand === 'wartet' || s.zustand === 'fehler';
+  const fb = j.frage ? frageBlockHTML({ ...s, name: chatName, frage: j.frage })
+    : `<form class="a-antwort" data-sitzung="${esc(chatName)}"><input type="text" name="text" maxlength="2000" autocomplete="off" placeholder="${fragt ? 'Antwort an den Agenten …' : 'Nachricht an den Agenten (kommt an, sobald er fertig ist) …'}" aria-label="Nachricht an den Agenten"><button type="submit" class="knopf klein primaer">Senden</button><button type="button" class="knopf klein" data-aktion="selbst" data-sitzung="${esc(chatName)}" title="Schickt: Entscheide selbst sinnvoll und mach ohne Rückfrage weiter.">Entscheide selbst</button></form>`;
+  setHTML($('#chat-fuss'), s.tot ? '<p class="chat-leer">Die Sitzung ist beendet.</p>' : s.nur_ansehen ? '<p class="chat-leer">Diese Sitzung kannst du hier nur ansehen.</p>' : fb);
+  void nachricht;
+}
+
 
 // LOG
 function logPasst(e) {
@@ -1438,8 +1814,44 @@ function zeichneLog() {
   }).join(''));
 }
 
-// ZAHLEN
+// ZAHLEN: Profil im Stil der Plattform (Instagram, TikTok, YouTube) über den Pipeline-Zahlen
+const PF = { instagram: { name: 'Instagram', beitraege: 'Beiträge', follower: 'Follower', folgt: 'Gefolgt' },
+  tiktok: { name: 'TikTok', beitraege: 'Videos', follower: 'Follower', folgt: 'Likes' },
+  youtube: { name: 'YouTube', beitraege: 'Videos', follower: 'Abonnenten', folgt: 'Aufrufe' } };
+function kurz(n) {
+  if (n == null || n === '') return '–';
+  const x = Number(n);
+  if (!isFinite(x)) return String(n);
+  const a = Math.abs(x);
+  if (a >= 1e6) return `${zahl.format(Math.round(x / 1e5) / 10)} Mio.`;
+  if (a >= 1e4) return `${zahl.format(Math.round(x / 100) / 10)} Tsd.`;
+  return ganz.format(x);
+}
+function zeichnePlattform() {
+  const box = $('#plattform'), pf = S.plattform;
+  box.hidden = !pf;
+  if (!pf) { setText($('#zahlen-zahl'), ''); return; }
+  const art = PF[pf.art] ? pf.art : 'instagram', L = PF[art];
+  setClass(box, `pf pf-${art}`);
+  setText($('#zahlen-zahl'), L.name);
+  const handle = String(pf.handle || '').replace(/^@/, '');
+  const bildHtml = pf._bild ? `<img src="${esc(dateiURL(pf._bild))}" alt="">` : esc(handle.slice(0, 1).toUpperCase() || '?');
+  const z = pf.zeitraum || {};
+  const woche = [];
+  if (z.views != null) woche.push(`<span><b>${kurz(z.views)}</b> Aufrufe</span>`);
+  if (z.reichweite != null) woche.push(`<span><b>${kurz(z.reichweite)}</b> erreicht</span>`);
+  if (z.follower_neu != null) woche.push(`<span class="${z.follower_neu > 0 ? 'gut' : ''}"><b>${z.follower_neu > 0 ? '+' : ''}${kurz(z.follower_neu)}</b> Follower</span>`);
+  if (z.interaktionen != null) woche.push(`<span><b>${kurz(z.interaktionen)}</b> Interaktionen</span>`);
+  const reels = (pf.reels || []).slice(0, 6).map(r => `<a class="pf-reel"${r.link ? ` href="${esc(r.link)}" target="_blank" rel="noopener noreferrer"` : ''} title="${esc([r.titel, r.likes != null ? `${kurz(r.likes)} Likes` : '', r.kommentare != null ? `${kurz(r.kommentare)} Kommentare` : ''].filter(Boolean).join(' · '))}">${r._vorschau ? `<img src="${esc(dateiURL(r._vorschau))}" alt="" loading="lazy">` : ''}<span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3.5v9l7.5-4.5z"/></svg>${kurz(r.views)}</span></a>`).join('');
+  setHTML(box, `<div class="pf-kopf"><span class="pf-ring"><span>${bildHtml}</span></span><div class="pf-name"><b>${esc(handle ? '@' + handle : L.name)}</b><span>${esc(pf.name || '')}</span></div>${pf.profil_link ? `<a class="knopf klein icon" href="${esc(pf.profil_link)}" target="_blank" rel="noopener noreferrer" title="Profil öffnen" aria-label="Profil öffnen">${icon('extern')}</a>` : ''}</div>`
+    + `<div class="pf-zahlen"><div><b>${kurz(pf.beitraege)}</b><span>${L.beitraege}</span></div><div><b>${kurz(pf.follower)}</b><span>${L.follower}</span></div><div><b>${kurz(pf.folgt)}</b><span>${L.folgt}</span></div></div>`
+    + (woche.length ? `<div class="pf-woche"><span class="pf-marke">${esc(z.tage || 7)} Tage</span>${woche.join('')}</div>` : '')
+    + (reels ? `<div class="pf-raster">${reels}</div>` : '')
+    + (pf.hinweis ? `<p class="pf-hinweis">${esc(pf.hinweis)}</p>` : '')
+    + (pf.stand ? `<p class="pf-stand">Stand ${esc(wann(pf.stand))}${pf.quelle ? ` · ${esc(pf.quelle)}` : ''}</p>` : ''));
+}
 function zeichneZahlen() {
+  zeichnePlattform();
   const k = S.kennzahlen;
   const zelle = (label, wert, hint = '', art = '') => `<div class="zahl"><span class="z-label">${esc(label)}</span><span class="z-wert ${art}">${esc(wert)}</span>${hint ? `<span class="z-hint">${esc(hint)}</span>` : ''}</div>`;
   if (Array.isArray(k)) {
@@ -1742,7 +2154,25 @@ async function sitzungAntwort(name, text, knopf) {
   schleife();
   return r.ok;
 }
+async function sitzungWahl(name, nr, text, knopf) {
+  const form = knopf?.closest('.fb');
+  form?.querySelectorAll('button').forEach(b => { b.disabled = true; });
+  const r = await post(`/api/sitzung/${encodeURIComponent(name)}/wahl`, { nr: Number(nr), text: text || '' });
+  form?.querySelectorAll('button').forEach(b => { b.disabled = false; });
+  toast(r.ok ? (r.text ? `Antwort an ${name}: „${r.text}“` : `An ${name}: ${optLabel(r.gewaehlt || '')}`) : r.fehler, r.ok ? 'ok' : 'fehler');
+  schleife();
+  if (chatName === name) setTimeout(() => chatLaden(false), 900);
+  return r.ok;
+}
 document.addEventListener('submit', async ev => {
+  const frei = ev.target.closest && ev.target.closest('.fb-frei');
+  if (frei) {
+    ev.preventDefault();
+    const feld = frei.querySelector('input[name="text"]');
+    if (!feld.value.trim()) return toast('Schreib zuerst deine Antwort.', 'fehler');
+    if (await sitzungWahl(frei.dataset.sitzung, frei.dataset.nr, feld.value, frei.querySelector('button[type="submit"]'))) feld.value = '';
+    return;
+  }
   const fg = ev.target.closest && ev.target.closest('.fg-kommentar');
   if (fg) {
     ev.preventDefault();
@@ -1755,7 +2185,10 @@ document.addEventListener('submit', async ev => {
   if (!form) return;
   ev.preventDefault();
   const feld = form.querySelector('input[name="text"]');
-  if (await sitzungAntwort(form.dataset.sitzung, feld.value, form.querySelector('button[type="submit"]'))) feld.value = '';
+  if (await sitzungAntwort(form.dataset.sitzung, feld.value, form.querySelector('button[type="submit"]'))) {
+    feld.value = '';
+    if (chatName === form.dataset.sitzung) setTimeout(() => chatLaden(false), 900);
+  }
 });
 async function sitzungOeffnen(name) {
   const r = await post(`/api/sitzung/${encodeURIComponent(name)}/oeffnen`);
@@ -1859,7 +2292,7 @@ async function erledigteSchliessen(knopf) {
 async function haupt(knopf) {
   const h = hauptAktion();
   if (!h) return;
-  if (h.anzeige) return zuDenAgenten();
+  if (h.anzeige) return zuSteuerung();
   if (h.art === '__los') return los(knopf);
   return adapterAktion(h.art, knopf);
 }
@@ -1906,7 +2339,8 @@ document.addEventListener('click', async ev => {
   if (!t.closest('#menue') && !t.closest('#mehr')) schliesseMenue();
   const zu = t.closest('[data-zu]');
   if (zu) { zu.closest('dialog')?.close(); return; }
-  if (t.closest('#schleier')) return detailSchliessen();
+  if (t.closest('#schleier')) { if (chatName) return chatSchliessen(); return detailSchliessen(); }
+  if (!t.closest('#crew-karte') && !t.closest('.crew-figur') && crewOffen) crewKarteZu(true);
   if (t.closest('#mehr')) { $('#menue').hidden ? oeffneMenue() : schliesseMenue(); return; }
   const m = t.closest('[data-m-aktion]');
   if (m) {
@@ -1949,6 +2383,21 @@ document.addEventListener('click', async ev => {
   if (a === 'erledigte-schliessen') return erledigteSchliessen(el);
   if (a === 'erledigt-auf') { erledigtAuf = !erledigtAuf; return zeichneAgenten(); }
   if (a === 'weiter') return sitzungWeiter(el.dataset.sitzung, el);
+  if (a === 'wahl') return sitzungWahl(el.dataset.sitzung, el.dataset.nr, '', el);
+  if (a === 'chat') return chatOeffnen(el.dataset.sitzung);
+  if (a === 'chat-zu') return chatSchliessen();
+  if (a === 'zur-frage') {
+    const z = [...$('#jetzt').children].find(c => c.dataset.key === `frage|${el.dataset.sitzung}`);
+    if (!z) return chatOeffnen(el.dataset.sitzung);
+    $('#p-jetzt').scrollIntoView({ behavior: WENIG_BEWEGUNG ? 'auto' : 'smooth', block: 'start' });
+    z.classList.add('hervor'); setTimeout(() => z.classList.remove('hervor'), 1600);
+    setTimeout(() => z.querySelector('.fb-opt, .fb input')?.focus({ preventScroll: true }), WENIG_BEWEGUNG ? 0 : 400);
+    return;
+  }
+  if (a === 'crew') {
+    if (crewOffen === el.dataset.crew && crewGepinnt) return crewKarteZu(true);
+    crewKarteOeffnen(el.dataset.crew, el); crewGepinnt = true; return;
+  }
   if (a === 'selbst') return sitzungAntwort(el.dataset.sitzung, 'Entscheide selbst sinnvoll und mach ohne Rückfrage weiter.', el);
   if (a === 'oeffnen') return sitzungOeffnen(el.dataset.sitzung);
   if (a === 'stopp') return sitzungStopp(el.dataset.sitzung, !!el.dataset.tot);
@@ -1973,6 +2422,8 @@ document.addEventListener('click', async ev => {
 document.addEventListener('keydown', ev => {
   if (ev.key === 'Escape') {
     if (!$('#menue').hidden) { schliesseMenue(); $('#mehr').focus(); ev.preventDefault(); return; }
+    if (crewOffen) { crewKarteZu(true); ev.preventDefault(); return; }
+    if (chatName && !$('#frage').open) { chatSchliessen(); ev.preventDefault(); return; }
     if (detailId && !$('#frage').open && !$('#auftrag').open) { detailSchliessen(); ev.preventDefault(); }
   }
   if (!$('#menue').hidden && (ev.key === 'ArrowDown' || ev.key === 'ArrowUp')) {
@@ -1994,6 +2445,26 @@ $('#schublade').addEventListener('keydown', ev => {
 let breiteAlt = innerWidth;
 addEventListener('resize', () => { if (Math.abs(innerWidth - breiteAlt) < 2) return; breiteAlt = innerWidth; schliesseMenue(); if (S) zeichneGepostet(); });
 
+// Crew-Karte beim Drüberfahren oder Fokus; bleibt offen, solange Maus oder Fokus auf Figur oder Karte sind
+document.addEventListener('mouseover', ev => {
+  const f = ev.target.closest && ev.target.closest('.crew-figur');
+  if (f && !crewGepinnt) crewKarteOeffnen(f.dataset.crew, f);
+  else if (ev.target.closest && ev.target.closest('#crew-karte')) clearTimeout(crewZuTimer);
+});
+document.addEventListener('mouseout', ev => {
+  const von = ev.target.closest && (ev.target.closest('.crew-figur') || ev.target.closest('#crew-karte'));
+  const nach = ev.relatedTarget && ev.relatedTarget.closest && (ev.relatedTarget.closest('.crew-figur') || ev.relatedTarget.closest('#crew-karte'));
+  if (von && !nach && !crewGepinnt) crewKarteZu(false);
+});
+document.addEventListener('focusin', ev => {
+  const f = ev.target.closest && ev.target.closest('.crew-figur');
+  if (f) crewKarteOeffnen(f.dataset.crew, f);
+});
+document.addEventListener('focusout', ev => {
+  const nach = ev.relatedTarget && ev.relatedTarget.closest && (ev.relatedTarget.closest('.crew-figur') || ev.relatedTarget.closest('#crew-karte'));
+  if (ev.target.closest && ev.target.closest('.crew-figur, #crew-karte') && !nach && !crewGepinnt) crewKarteZu(false);
+});
+$('#c-zu').innerHTML = icon('zu');
 $('#mehr').innerHTML = icon('mehr');
 $('#d-zu').innerHTML = icon('zu');
 schleife();

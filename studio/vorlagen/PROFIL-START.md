@@ -22,6 +22,7 @@ Du kannst sie jederzeit selbst ändern. Leere Felder heißen: noch nicht entschi
 - Plattformen: (Instagram Reels / TikTok / YouTube Shorts)
 - Format: (9:16, Länge in Sekunden)
 - Vorbild-Kanäle: (Handle oder Link, und was dir daran gefällt)
+- Eigener Kanal: (deine Handles; deine Top-Videos sind die erste Ideen-Quelle)
 - Eigener Twist: (was bei dir anders sein soll als beim Vorbild)
 
 ## Stimme

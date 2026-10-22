@@ -19,6 +19,17 @@ Ziel: Das Register `__ARBEIT__/vorlagen/register.json` kennt die Videos des Vorb
 | Einzelner Link | `__HEIM__/ms vorlagen add <url> --views 250000` | gratis | ein Eintrag. Instagram-Views ohne Login nur von Hand |
 | Apify-Export | `__HEIM__/ms vorlagen import <datei.json>` | gratis | Export aus der Apify-Konsole |
 
+## Reihenfolge der Quellen (Sebastian 22.10.2026)
+1. **Der eigene Kanal des Nutzers** (Handle aus PROFIL.md): Seine eigenen Top-Videos sind bewiesen. Sie werden im gelernten Stil neu gebaut, der Hook bleibt, der Rest wird leicht umformuliert.
+   - TikTok und YouTube sind gratis.
+   - Instagram geht nur per Apify mit Ja.
+2. **Das Hauptvorbild** (der gelernte Kanal):
+   - zuerst die neuesten Top-Videos (`--seit` = vor 3 Wochen)
+   - danach ältere, die noch nicht gebaut sind
+3. **Weitere Creator** aus dem Register.
+
+In jeder Stufe gilt: **Viele Kommentare zählen am meisten** (`--nach kommentare`), dann Views bzw. Faktor. Eine feste Views-Grenze gibt es nicht. Ein Video mit vielen Kommentaren und 30.000 Views schlägt eines mit 200.000 Views und kaum Kommentaren.
+
 ## Ablauf
 
 1. Kanal lesen (Tabelle oben). Gratis-Quellen zuerst.
@@ -27,7 +38,7 @@ Ziel: Das Register `__ARBEIT__/vorlagen/register.json` kennt die Videos des Vorb
    - Frage stellen: `__HEIM__/ms status kanal:<slug> --wartet "Apify: 30 Reels von @kanal für ca. 0,08 $ holen?"`
    - Erst nach dem Ja: derselbe Befehl mit `--ja`. Danach `--wartet-weg` und den Ist-Betrag buchen, nicht die Schätzung. Das Werkzeug bucht nicht selbst, es nennt den Betrag am Ende („Status SUCCEEDED, 30 Ergebnisse, Kosten 0.071 $“): `__HEIM__/ms status kanal:<slug> --kosten 0.071 USD "Apify 30 Reels @kanal"`.
    - Fehlt `APIFY_TOKEN` in `__ARBEIT__/.env`: Nutzer bitten, ihn dort einzutragen. Den Wert nie lesen oder ausgeben.
-3. Ausreißer filtern: `__HEIM__/ms vorlagen liste --creator <name> --min-views 100000 --faktor 2`.
+3. Kandidaten sortieren: `__HEIM__/ms vorlagen liste --creator <name> --nach kommentare --seit <JJJJ-MM-TT vor 3 Wochen>`, danach dasselbe ohne `--seit` für ältere. Zum Vergleich `--nach faktor`.
    Faktor = Views geteilt durch den Median des Creators auf derselben Plattform. Der Median zählt nur Videos, die mindestens 3 Tage alt sind, und braucht mindestens 3 Werte. Er steht über der Tabelle.
 4. Auswählen (3 bis 5 IDs):
    - höchster Faktor zuerst, bei Gleichstand mehr Views

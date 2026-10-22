@@ -15,7 +15,14 @@ Weitere Adapter-Felder (alle optional, die Seite blendet aus, was fehlt): vorrat
   caption, postbar, grund}] (Knopf = auftrag „posten“ mit folge/trial), posten {folge, laeuft, ok, text}, produktion {an, label, grund …},
   baue [{sitzung, folge, start, lebt}], ceo (Sitzung zum Ansehen), freigabe je Folge {frage, optionen:[{id, label, art gut|schlecht|neutral,
   kommentar, bestaetigen, hinweis}]}. In `aktionen`: versteckt (nicht im Menü), anzeige (Stand statt Knopf), icon.
-Weitere Routen: /fonts/<datei>.woff2 (nur aus dashboard/fonts/), POST /api/neustart (Token): antwortet, dann ersetzt sich
+STUDIO v3 (22.10.2026): crew [{id, name, figur, agent, rolle, text, modell, status {art, text, sitzungen}}] (Pixel-Crew, pixel.js),
+  plattform {art instagram|tiktok|youtube, handle, name, bild, profil_link, follower, folgt, beitraege, zeitraum {views, reichweite,
+  interaktionen, follower_neu, tage}, reels [{link, vorschau, views, likes, kommentare, folge_id}], stand, hinweis},
+  steuerung {autopilot {an, text}, produktion {an, heute, pro_tag, parallel, laufend, fenster, text}, budget {prozent, grenze, text},
+  knoepfe [art …]}. Sitzungen tragen frage (Menü: optionen, frei_nr, enter), nachricht und macht {art, text, werkzeug, agent}.
+  POST /api/sitzung/<name>/wahl {nr, text} wählt eine Option (Adapter: sitzung(name, 'wahl', {nr, text})),
+  GET /api/sitzung/<name>/verlauf liefert das Terminal als Gespräch (Adapter: sitzung(name, 'verlauf')).
+Weitere Routen: /fonts/<datei>.woff2 (nur aus dashboard/fonts/), /pixel.js, POST /api/neustart (Token): antwortet, dann ersetzt sich
 der Prozess per os.execv mit denselben Argumenten (neues Token, die Seite lädt danach neu).
 Sicherheit: bindet nur 127.0.0.1, prüft bei jeder Anfrage den Host-Header (gegen DNS-Rebinding), POST nur mit
 Sitzungs-Token (neu bei jedem Start) und passendem Origin, Knöpfe starten nur feste Aufträge (ms starten),
@@ -57,7 +64,19 @@ SCHRIFT_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._-]{0,80}\.woff2$')
 SCHRIFTEN = HIER / 'fonts'
 MAX_BODY = 10_000
 ADAPTER = None   # Modul aus --adapter (eigene Pipeline), sonst eingebauter Motion-Studio-Modus
-SITZUNG_WAS = ('weiter', 'oeffnen', 'stopp', 'antwort')
+SITZUNG_WAS = ('weiter', 'oeffnen', 'stopp', 'antwort', 'wahl')
+PIXEL_JS = HIER / 'pixel.js'
+# Crew im Motion-Studio-Modus: die vier Agenten des Pakets (Pixel-Figuren in der Seite, pixel.js)
+CREW_EINGEBAUT = [
+    {'id': 'regie', 'name': 'Regie', 'figur': 'regie', 'agent': 'motion-regie', 'rolle': 'führt das Studio',
+     'text': 'Plant jede Folge, schreibt Skript und Storyboard, verteilt die Arbeit an das Team und rendert am Ende.'},
+    {'id': 'analyse', 'name': 'Analyse', 'figur': 'analyse', 'agent': 'motion-analyse', 'rolle': 'zerlegt Vorbilder',
+     'text': 'Zerlegt Vorbild-Videos in Schnitte, Farben, Kamera, Text und Ton und schreibt daraus die Bibel des Kanals.'},
+    {'id': 'bauer', 'name': 'Bauer', 'figur': 'bauer', 'agent': 'motion-bauer', 'rolle': 'baut die Szenen',
+     'text': 'Baut die Szenen in 2D, als 3D im Browser oder in Blender. Oft laufen mehrere Bauer parallel.'},
+    {'id': 'pruefer', 'name': 'Prüfer', 'figur': 'pruefer', 'agent': 'motion-pruefer', 'rolle': 'prüft mit frischen Augen',
+     'text': 'Sieht das fertige Video ohne Bau-Kontext an und schreibt einen Prüfbericht mit Zeitstempeln.'},
+]
 SERVER_ID = secrets.token_hex(4)   # neu bei jedem Start: die Seite erkennt daran einen Neustart (Token veraltet)
 
 
@@ -280,7 +299,107 @@ def stand() -> dict:
         'vorschlag': _vorschlag(folgen, kanaele, sitzungen, profil_da, zuletzt),
         'adapter': False, 'titel': 'Motion-Studio', 'faehig': {'gepostet': True, 'geplant': True, 'ordner': True},
         'sendeplan': _sendeplan_eingebaut(folgen), 'hinweise': _hinweise_eingebaut(folgen, kanaele, profil_da),
+        'crew': starten.crew_status(CREW_EINGEBAUT, sitzungen, folgen) + [_autopilot_figur()],
+        **_steuerung_eingebaut(kanaele, zuletzt),
     }
+
+
+AUTOPILOT_ARTEN = ('produktion-an', 'produktion-aus', 'bauen', 'anstossen')
+
+
+def _ap():
+    import autopilot  # noqa: E402  (studio/tools, liegt im Pfad)
+    return autopilot
+
+
+def _autopilot_figur() -> dict:
+    s = _ap().stand()
+    c = s['konfig']
+    if not c['an']:
+        st = {'art': 'schlaeft', 'text': 'Tagesbau ist aus', 'an': False, 'sitzungen': []}
+    elif s['laufend']:
+        st = {'art': 'arbeitet', 'text': f'{s["laufend"]} Bau{"ten" if s["laufend"] != 1 else ""} läuft', 'an': True,
+              'sitzungen': [b['sitzung'] for b in s['baue'] if b.get('sitzung')]}
+    else:
+        st = {'art': 'wartet', 'text': s['grund'] or 'startet beim nächsten Durchlauf einen Bau', 'an': True, 'sitzungen': []}
+    return {'id': 'autopilot', 'name': 'Autopilot', 'figur': 'autopilot', 'rolle': 'startet den Tagesbau', 'modell': 'alle 15 min',
+            'text': 'Startet jeden Tag im Bau-Fenster neue Folgen für deinen Kanal, höchstens zwei gleichzeitig, token-sparsam mit Sonnet '
+                    'und ohne Auto-Gedächtnis. Erreicht Claude das Nutzungslimit, macht er Pause. Gepostet wird nichts.', 'status': st}
+
+
+def _steuerung_eingebaut(kanaele: list[dict], zuletzt: str | None) -> dict:
+    """Panel STEUERUNG im Motion-Studio-Modus: Tagesbau (ms autopilot) als Schalter, sofort bauen, Durchlauf anstoßen."""
+    ap = _ap()
+    s = ap.stand()
+    c = s['konfig']
+    kanal = _ap_kanal(c, kanaele, zuletzt)
+    modell = {'claude-sonnet-5-5': 'Sonnet 5.5', 'claude-opus-5-5': 'Opus 5.5', 'claude-fable-5-1': 'Fable 5.1'}.get(c['modell'], c['modell'])
+    text = (f'{s["heute"]} von {c["pro_tag"]} Bauten heute · {c["parallel"]} gleichzeitig · {c["fenster"][0]} bis {c["fenster"][1]} Uhr · '
+            f'{modell}{f" · Kanal {kanal}" if kanal else ""}. ')
+    text += (s['grund'] if c['an'] and s['grund'] else 'Der nächste Durchlauf startet einen Bau.' if c['an'] else
+             'Aus. Eingeschaltet baut Motion-Studio jeden Tag selbst neue Folgen.' if kanal else 'Erst einen Kanal fertig lernen, dann geht der Tagesbau.')
+    if c['an'] and not s['zeitplan']:
+        text += ' Der Zeitplan fehlt: einmal aus- und wieder einschalten.'
+    aktionen = []
+    if c['an']:
+        aktionen.append({'art': 'produktion-aus', 'label': 'Tagesbau stoppen', 'versteckt': True,
+                         'bestaetigen': 'Tagesbau stoppen? Es starten keine neuen Bauten mehr, laufende laufen zu Ende.'})
+    elif kanal:
+        aktionen.append({'art': 'produktion-an', 'label': 'Tagesbau starten', 'versteckt': True,
+                         'bestaetigen': f'Tagesbau starten? Motion-Studio baut dann jeden Tag bis zu {c["pro_tag"]} Folgen für Kanal {kanal}, '
+                                        f'höchstens {c["parallel"]} gleichzeitig, zwischen {c["fenster"][0]} und {c["fenster"][1]} Uhr, mit {modell} '
+                                        'und ohne Rückfragen. Bezahlte Schritte nur bis „Ohne Nachfrage frei bis“ aus deinem Profil, darüber wartet der Bau auf dich. Ein Zeitplan '
+                                        '(alle 15 min) wird angelegt. Gepostet wird nichts.'})
+    knoepfe = []
+    if kanal:
+        aktionen.append({'art': 'bauen', 'label': '1 Folge jetzt bauen', 'versteckt': True,
+                         'bestaetigen': f'Jetzt eine Folge für Kanal {kanal} bauen? Der Agent startet sofort ({modell}), zählt nicht zum Tagesziel.'})
+        knoepfe.append({'art': 'bauen', 'label': '1 Folge jetzt bauen', 'primaer': True, 'icon': 'plus'})
+    if c['an']:
+        aktionen.append({'art': 'anstossen', 'label': 'Durchlauf jetzt', 'versteckt': True})
+        knoepfe.append({'art': 'anstossen', 'label': 'Produktion jetzt anstoßen', 'icon': 'neu',
+                        'hinweis': 'führt den Autopilot sofort aus statt in bis zu 15 min'})
+    return {'steuerung': {'produktion': {'an': bool(c['an']), 'heute': s['heute'], 'pro_tag': c['pro_tag'], 'parallel': c['parallel'],
+                                         'laufend': s['laufend'], 'fenster': c['fenster'], 'text': text},
+                          'knoepfe': knoepfe, 'zahl': modell}, 'aktionen': aktionen}
+
+
+def _ap_kanal(c: dict, kanaele: list[dict] | None = None, zuletzt: str | None = None) -> str:
+    """Kanal für den Tagesbau: der eingestellte, sonst der zuletzt benutzte oder erste fertig gelernte."""
+    if kanaele is None:
+        kanaele = [s for s in _alle_status_sicher() if s.get('art') == 'kanal']
+    bereit = [k.get('id') or k['_ordner'].split('/', 1)[1] for k in kanaele if k.get('phase') == 'bereit']
+    return c['kanal'] if c['kanal'] in bereit else (zuletzt if zuletzt in bereit else (bereit[0] if bereit else ''))
+
+
+def _autopilot_auftrag(art: str) -> dict:
+    ap = _ap()
+    c = ap.konfig()
+    kanal = _ap_kanal(c)
+    if art == 'produktion-aus':
+        c['an'] = False
+        ap.konfig_schreiben(c)
+        ap.merke('Tagesbau aus (Dashboard)', 'warnung')
+        return {'meldung': 'Tagesbau ist aus. Laufende Bauten laufen zu Ende.'}
+    if not kanal:
+        raise SystemExit('FEHLER: Erst einen Kanal fertig lernen.')
+    if art == 'bauen':
+        with ap.sperre():
+            z = ap.zustand()
+            c['kanal'] = kanal
+            erg = ap.bau_starten(c, z, extra=True)
+            ap.zustand_schreiben(z)
+        sitz = erg.get('sitzung')
+        return {'meldung': f'Bau gestartet{f" ({sitz})" if sitz else ""}. Rechts bei „Agenten“ zuschauen.'}
+    if art == 'produktion-an':
+        c.update(an=True, kanal=kanal)
+        ap.konfig_schreiben(c)
+        hinweis = '' if ap.zeitplan_da() else ' ' + ap.einrichten()
+        ap.merke(f'Tagesbau an (Dashboard): Kanal {kanal}, {c["pro_tag"]} pro Tag')
+    erg = ap.lauf()
+    return {'meldung': ('Tagesbau ist an.' if art == 'produktion-an' else 'Durchlauf fertig.')
+            + (' Der erste Bau läuft.' if erg['gestartet'] else f' Gerade startet nichts: {erg["grund"]}')
+            + (hinweis if art == 'produktion-an' else '')}
 
 
 # ---------------------------------------------------------------- Adapter (eigene Pipeline)
@@ -375,6 +494,15 @@ def _adapter_stand() -> dict:
         plan[tag] = slots
     if plan:
         d['sendeplan'] = plan
+    pf = d.get('plattform')
+    if isinstance(pf, dict):   # Profilbild und Reel-Vorschauen nur als /datei-Pfad, Links nur http(s)
+        pf['_bild'] = _token(pf.pop('bild', None), wurzeln)
+        for r in [r for r in (pf.get('reels') or []) if isinstance(r, dict)]:
+            r['_vorschau'] = _token(r.pop('vorschau', None), wurzeln)
+            if not LINK_RE.match(str(r.get('link') or '')):
+                r['link'] = ''
+        if not LINK_RE.match(str(pf.get('profil_link') or '')):
+            pf['profil_link'] = ''
     if not isinstance(d.get('hinweise'), list):
         d['hinweise'] = []
     else:
@@ -531,6 +659,14 @@ class Handler(BaseHTTPRequestHandler):
                 return self._datei(parse_qs(url.query).get('pfad', [''])[0])
             if url.path.startswith('/fonts/'):
                 return self._schrift(url.path[len('/fonts/'):])
+            if url.path == '/pixel.js':
+                roh = PIXEL_JS.read_bytes()
+                self._kopf(200, 'text/javascript; charset=utf-8', len(roh), {'Cache-Control': 'no-store'})
+                self.wfile.write(roh)
+                return None
+            teile = [t for t in url.path.split('/') if t]
+            if len(teile) == 4 and teile[:2] == ['api', 'sitzung'] and teile[3] == 'verlauf':
+                return self._json(200, {'ok': True, **self._verlauf(teile[2])})
             return self._fehler(404, 'Gibt es nicht')
         except (BrokenPipeError, ConnectionResetError):
             pass
@@ -538,6 +674,14 @@ class Handler(BaseHTTPRequestHandler):
             return self._fehler(400, str(e).replace('FEHLER: ', ''))
         except Exception as e:  # z. B. kaputte STATUS.json: Seite soll weiterlaufen
             return self._fehler(500, f'Interner Fehler: {type(e).__name__}: {e}')
+
+    def _verlauf(self, name: str) -> dict:
+        """Terminal als Gespräch (nur lesen). Mit Adapter nur, wenn er sitzung(name, 'verlauf') kann."""
+        if ADAPTER is not None:
+            if not _faehig('sitzung'):
+                raise SystemExit('FEHLER: Dieser Adapter zeigt keinen Verlauf.')
+            return ADAPTER.sitzung(name, 'verlauf') or {}
+        return starten.verlauf(name)
 
     def _seite(self):
         html = (HIER / 'index.html').read_text(encoding='utf-8').replace('__MS_TOKEN__', self.server.token) \
@@ -643,6 +787,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._neustart()
             if ADAPTER is not None:
                 return self._adapter_post(teile, daten)
+            if teile == ['api', 'auftrag'] and str(daten.get('art') or '') in AUTOPILOT_ARTEN:
+                return self._json(200, {'ok': True, **_autopilot_auftrag(str(daten['art']))})
             if teile == ['api', 'auftrag']:
                 art = str(daten.get('art') or '')
                 if art not in starten.AUFTRAEGE:
@@ -662,6 +808,8 @@ class Handler(BaseHTTPRequestHandler):
                     return self._json(200, {'ok': True, **starten.stopp(name, wer='dashboard')})
                 if was == 'antwort':
                     return self._json(200, {'ok': True, **starten.antworten(name, daten.get('text'), wer='dashboard')})
+                if was == 'wahl':
+                    return self._json(200, {'ok': True, **starten.waehlen(name, daten.get('nr'), daten.get('text'), wer='dashboard')})
             if len(teile) == 4 and teile[:2] == ['api', 'folge']:
                 if teile[3] == 'gepostet':
                     return self._json(200, {'ok': True, **folge_gepostet(teile[2], daten)})
@@ -704,6 +852,8 @@ class Handler(BaseHTTPRequestHandler):
         if len(teile) == 4 and teile[:2] == ['api', 'sitzung'] and teile[3] in SITZUNG_WAS and _faehig('sitzung'):
             if teile[3] == 'antwort':
                 return self._json(200, {'ok': True, **(ADAPTER.sitzung(teile[2], 'antwort', daten.get('text')) or {})})
+            if teile[3] == 'wahl':
+                return self._json(200, {'ok': True, **(ADAPTER.sitzung(teile[2], 'wahl', {'nr': daten.get('nr'), 'text': daten.get('text')}) or {})})
             return self._json(200, {'ok': True, **(ADAPTER.sitzung(teile[2], teile[3]) or {})})
         if len(teile) == 4 and teile[:2] == ['api', 'folge'] and teile[3] in ('gepostet', 'geplant') \
                 and _faehig(f'folge_{teile[3]}'):

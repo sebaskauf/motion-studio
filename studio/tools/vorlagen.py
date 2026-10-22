@@ -197,7 +197,8 @@ def ytdlp_json(args: list, zeit=600) -> dict:
 def info_holen(url: str) -> dict:
     """Metadaten eines einzelnen Videos (Views, Likes, Datum, Dauer, Titel, Creator) ohne Download."""
     d = ytdlp_json(['-J', '--skip-download', '--no-playlist', url], zeit=120)
-    return {'views': d.get('view_count'), 'likes': d.get('like_count'), 'datum': _datum(d.get('upload_date') or d.get('timestamp')),
+    return {'views': d.get('view_count'), 'likes': d.get('like_count'), 'kommentare': d.get('comment_count'),
+            'datum': _datum(d.get('upload_date') or d.get('timestamp')),
             'dauer': round(d['duration'], 1) if d.get('duration') else None, 'titel': (d.get('title') or '')[:160],
             'creator': _creator(d.get('uploader_id') or d.get('channel') or d.get('uploader'))}
 
@@ -453,7 +454,11 @@ def cmd_liste(a):
         es = [e for e in es if (e.get('views') or 0) >= a.min_views]
     if a.faktor:
         es = [e for e in es if (e.get('faktor') or 0) >= a.faktor]
-    es = sorted(es, key=lambda e: -((e.get('faktor') or 0) if a.nach == 'faktor' else (e.get('views') or 0)))
+    if a.seit:
+        es = [e for e in es if str(e.get('datum') or '') >= a.seit]
+    schluessel = {'faktor': lambda e: (-(e.get('faktor') or 0),), 'views': lambda e: (-(e.get('views') or 0),),
+                  'kommentare': lambda e: (-(e.get('kommentare') or 0), -(e.get('views') or 0))}[a.nach]
+    es = sorted(es, key=schluessel)
     if a.json:
         print(json.dumps(es[:a.n], ensure_ascii=False, indent=1))
         return
@@ -552,7 +557,9 @@ def main():
     p.add_argument('--creator')
     p.add_argument('--status', choices=STATI)
     p.add_argument('--plattform', choices=['youtube', 'instagram', 'tiktok', 'web', 'datei'])
-    p.add_argument('--nach', choices=['views', 'faktor'], default='views')
+    p.add_argument('--nach', choices=['views', 'faktor', 'kommentare'], default='views',
+                   help='kommentare: viele Kommentare zuerst (Sebastian 22.10.: „sehr relevant“), dann Views')
+    p.add_argument('--seit', help='nur Videos ab JJJJ-MM-TT (z. B. die neuesten 3 Wochen)')
     p.add_argument('--n', type=int, default=40)
     p.add_argument('--json', action='store_true')
     p = sub.add_parser('zeige', help='einen Eintrag zeigen')
