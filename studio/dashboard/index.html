@@ -1323,14 +1323,18 @@ function zeichneKanaele() {
     const mw = k.messwerte || {};
     const teile = [k.phase === 'bereit' ? 'Bereit für Folgen' : `lernt noch, als Nächstes ${esc(KANAL_SCHRITT[ph[i + 1]] || 'Vorbild')}`, plural(anzahl, 'Folge', 'Folgen')];
     if (k._eta) teile.push(`<b>fertig etwa ${esc(uhr(k._eta))}</b>`);
-    const ls = k.phase !== 'bereit' && (letzterSchritt(k.id) || (S.log || []).find(e => (e.ziel || '').includes('-nachbau') || (e.ziel || '').includes('-pilot')));
-    if (ls && Date.now() - Date.parse(ls.zeit) < 20 * 60e3) teile.push(`gerade: ${esc(String(ls.text).slice(0, 90))}`);
-    else if (k.phase !== 'bereit' && k._laeuft === false) teile.push('pausiert, „Weiterlernen“ setzt fort');
+    // letzter Schritt dieses Kanals oder einer seiner Folgen (Pilot), nie der eines anderen Kanals; 15 min wie LOG_AKTIV_MIN im Server
+    const ls = k.phase !== 'bereit' && [k.id, ...(S.folgen || []).filter(f => f.kanal === k.id).map(folgeId)]
+      .map(letzterSchritt).filter(Boolean).sort((a, b) => Date.parse(b.zeit) - Date.parse(a.zeit))[0];
+    if (ls && Date.now() - Date.parse(ls.zeit) < 15 * 60e3) teile.push(`gerade: ${esc(String(ls.text).slice(0, 90))}`);
+    // Still: meist ist der Regie-Chat an einem API-Abbruch stehen geblieben. Erst dort „weiter“, sonst gäbe es zwei Regien
+    else if (k.phase !== 'bereit' && k._laeuft === false) teile.push(`keine Meldung${ls ? ` seit ${esc(wann(ls.zeit))}` : ''} · steht der Regie-Chat, dort „weiter“ schreiben, ist er zu: „Weiterlernen“`);
     if (mw.delta_e != null) teile.push(`ΔE ${esc(zahl.format(mw.delta_e))}`);
     if (mw.ssim != null) teile.push(`SSIM ${esc(zahl.format(mw.ssim))}`);
     setHTML($('.kn-fuss', el), teile.map(t => `<span>${t}</span>`).join(''));
     setHTML($('.kn-knopf', el), k.phase === 'bereit'
       ? `<button type="button" class="knopf klein" data-aktion="dialog" data-art="folge" data-kanal="${esc(k.id)}">Nächste Folge</button>`
+      : k._laeuft ? '' // lernt gerade: kein Knopf, der eine zweite Regie startet
       : `<button type="button" class="knopf klein" data-aktion="dialog" data-art="weiter-offen" data-kanal="${esc(k.id)}">Weiterlernen</button>`);
   });
 }

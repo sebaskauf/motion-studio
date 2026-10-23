@@ -282,7 +282,7 @@ def stand() -> dict:
         sitzungen = []
         print(f'Hinweis: Sitzungen nicht lesbar: {e}', file=sys.stderr)
     alle_kosten = [k for s in alle for k in (s.get('kosten') or []) if isinstance(k, dict)]
-    _kanal_eta(kanaele, sitzungen)
+    _kanal_eta(kanaele, folgen, sitzungen)
     profil_da = (arbeit / 'PROFIL.md').is_file()
     zuletzt = _zuletzt_kanal(folgen, kanaele)
     phasen = [f.get('phase') for f in folgen]
@@ -310,12 +310,15 @@ AUTOPILOT_ARTEN = ('produktion-an', 'produktion-aus', 'bauen', 'anstossen')
 CREW_VON_WER = {'motion-regie': 'regie', 'motion-studio': 'regie', 'motion-bauer': 'bauer', 'motion-analyse': 'analyse', 'motion-pruefer': 'pruefer'}
 
 
-def _crew_aus_log(crew: list[dict], minuten: int = 4) -> list[dict]:
+LOG_AKTIV_MIN = 15   # Bauer melden sich beim Bauen bis zu 15 min nicht (gemessen 23.10. an 3 Nachbauten, bei 4 min schliefen sie die halbe Zeit)
+
+
+def _crew_aus_log(crew: list[dict], minuten: int = LOG_AKTIV_MIN) -> list[dict]:
     """Wer in den letzten Minuten ins Live-Log geschrieben hat, arbeitet gerade. So stimmt die Crew auch ohne tmux
     (Windows, Regie im normalen Chat). Fehler und Fragen aus den Sitzungen haben Vorrang."""
     grenze = datetime.now().astimezone() - timedelta(minutes=minuten)
     neu = {}
-    for e in _log_ende(60):
+    for e in _log_ende(200):
         t = _zeit_lokal(e.get('zeit'))
         cid = CREW_VON_WER.get(str(e.get('wer') or ''))
         if cid and t and t >= grenze and cid not in neu:
@@ -422,22 +425,31 @@ def _autopilot_auftrag(art: str) -> dict:
             + (hinweis if art == 'produktion-an' else '')}
 
 
-# Kanal lernen: Richtwerte je Schritt in Minuten (gemessen 23.10.: Hook-Nachbau 0 bis 18 s in rund 80 min)
-KANAL_MINUTEN = {'vorbild': 15, 'zerlegt': 40, 'bibel': 10, 'pilot': 100, 'gemessen': 15, 'kit': 30, 'bereit': 0}
+# Kanal lernen: Minuten bis diese Phase erreicht ist. `pilot` setzt `ms neu --pilot` beim Anlegen, gebaut und gemessen
+# wird danach bis `gemessen` (23.10. an zwei Hook-Nachbauten mit 3 Bauern: 114 und gut 125 min)
+KANAL_MINUTEN = {'vorbild': 15, 'zerlegt': 40, 'bibel': 10, 'pilot': 5, 'gemessen': 110, 'kit': 30, 'bereit': 0}
 
 
-def _kanal_eta(kanaele: list[dict], sitzungen: list[dict]) -> None:
-    """Fertig-Zeit für Kanäle, die gerade lernen (Sebastian 23.10.: „im Studio steht, wann es fertig wird“). Nur wenn eine
-    Lern-Sitzung läuft, sonst pausiert. Grob: Summe der Richtwerte der offenen Schritte ab jetzt."""
-    lernt = any(not s.get('tot') and s.get('art') in ('kanal-lernen', 'weiter') for s in sitzungen or [])
+def _kanal_eta(kanaele: list[dict], folgen: list[dict], sitzungen: list[dict]) -> None:
+    """Fertig-Zeit für Kanäle, die gerade lernen (Sebastian 23.10.: „im Studio steht, wann es fertig wird“). Läuft = eine
+    Lern-Sitzung (tmux) oder ein Live-Log-Eintrag zum Kanal oder zu seiner Folge in den letzten Minuten, denn die Regie
+    lernt im normalen Chat ohne eigene Sitzung. Grob: Richtwerte der offenen Schritte ab dem letzten gemeldeten Schritt."""
+    sitzung = any(not s.get('tot') and s.get('art') in ('kanal-lernen', 'weiter') for s in sitzungen or [])
+    jetzt = datetime.now().astimezone()
+    frisch = {str(e.get('ziel') or '') for e in _log_ende(200)
+              if (_zeit_lokal(e.get('zeit')) or jetzt - timedelta(days=1)) >= jetzt - timedelta(minutes=LOG_AKTIV_MIN)}
     phasen = list(_ms.KANAL_PHASEN)
     for k in kanaele:
         if k.get('phase') == 'bereit':
             continue
+        ziele = {f'kanaele/{k.get("id")}', f'kanal:{k.get("id")}'} | {f['_ordner'] for f in folgen if f.get('kanal') == k.get('id')}
+        lernt = sitzung or bool(frisch & ziele)
         i = phasen.index(k['phase']) if k.get('phase') in phasen else -1
-        rest = sum(KANAL_MINUTEN.get(p, 0) for p in phasen[i + 1:])
+        rest = sum(KANAL_MINUTEN.get(p, 0) for p in phasen[i + 1:phasen.index('gemessen') + 1])   # bis der Nachbau zum Ansehen steht
+        anker = _zeit_lokal(((k.get('phasen') or {}).get(k.get('phase')) or {}).get('zeit') or k.get('aktualisiert')) or jetzt
         k['_laeuft'] = lernt
-        k['_eta'] = (datetime.now() + timedelta(minutes=rest)).astimezone().isoformat(timespec='minutes') if lernt and rest else None
+        k['_eta'] = max(anker + timedelta(minutes=rest), jetzt + timedelta(minutes=5)).isoformat(timespec='minutes') \
+            if lernt and rest and not k.get('wartet_auf') else None
 
 
 # ---------------------------------------------------------------- Adapter (eigene Pipeline)

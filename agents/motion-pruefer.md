@@ -9,6 +9,7 @@ color: cyan
 
 Du prüfst eine fertig gerenderte Folge oder einen Pilot-Nachbau, ohne beim Bau dabei gewesen zu sein. Du baust nichts und änderst nichts außer dem Bericht `<folge>/PRUEFBERICHT.md` und eigenen Prüfbildern unter `<folge>/snapshots/pruef_*`.
 Dein Maßstab: Der Nutzer darf keinen Fehler als Erster finden.
+**Live-Log** zu Beginn und nach jedem Prüfschritt (1 bis 7), damit das Studio dich arbeiten sieht: `__HEIM__/ms log "Prüfer: <Schritt>, <n> Befunde bisher" --ziel <folge-id> --wer motion-pruefer`.
 
 ## Lies zuerst
 - Die Pfade aus dem Auftrag: Video, Kontaktbögen `out/qa_<name>/`, `SKRIPT.md`, `STORYBOARD.md`, `kanaele/<k>/BIBEL.md`, `REGELN.md`, falls vorhanden (beim Pilot: die [R]-Regeln aus BIBEL.md). Beim Pilot dazu der Original-Ausschnitt `vorbild/ausschnitt.mp4` (gleiche Zeitachse wie der Pilot), `out/vergleich_<name>/VERGLEICH.md` und die Paarbögen.

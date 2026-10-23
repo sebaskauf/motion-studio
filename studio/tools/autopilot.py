@@ -195,7 +195,8 @@ def warum_nicht(cfg: dict, z: dict, jetzt: datetime) -> str | None:
 
 
 def bau_starten(cfg: dict, z: dict, trocken=False, extra=False) -> dict:
-    kw = {'modell': cfg['modell'], 'denkstufe': cfg['denkstufe'], 'ohne_gedaechtnis': bool(cfg['ohne_gedaechtnis'])}
+    kw = {'modell': cfg['modell'], 'denkstufe': cfg['denkstufe'], 'ohne_gedaechtnis': bool(cfg['ohne_gedaechtnis']),
+          'bypass': True}   # unbeaufsichtigt: keine Freigabe-Fragen, an denen der Bau hängen bliebe (Sebastian 23.10.)
     jetzt = datetime.now()
     if starten._tmux():
         erg = starten.starten('autobau', kanal=cfg['kanal'], trocken=trocken, wer='autopilot', **kw)

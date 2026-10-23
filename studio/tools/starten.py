@@ -122,9 +122,11 @@ def _programm(name: str) -> str:
 
 
 def claude_befehl(text: str, modell: str | None = None, denkstufe: str | None = None, ohne_gedaechtnis: bool = False,
-                  kopflos: bool = False) -> list[str]:
+                  kopflos: bool = False, bypass: bool = False) -> list[str]:
     """claude-Aufruf. Token-Diät für Autopilot-Bauten: eigenes Modell (z. B. Sonnet), Denkstufe, ohne Auto-Gedächtnis
-    (--settings autoMemoryEnabled:false spart rund 20 % Startkontext, gemessen 22.10.2026). kopflos = `claude -p` ohne Terminal."""
+    (--settings autoMemoryEnabled:false spart rund 20 % Startkontext, gemessen 22.10.2026). kopflos = `claude -p` ohne Terminal.
+    bypass = ohne Freigabe-Fragen: Im Tagesbau klickt niemand, und die Bauer brauchen eigene Mess-Skripte (python3), die nicht
+    auf der erlaubten Liste stehen (gemessen 23.10.: rund 85 % ihrer Befehle). Die Regie starten Mitglieder ebenso mit bypass."""
     ersatz = os.environ.get('MS_CLAUDE_BEFEHL')
     basis = shlex.split(ersatz) if ersatz else ['claude']
     basis[0] = _programm(basis[0])
@@ -136,8 +138,10 @@ def claude_befehl(text: str, modell: str | None = None, denkstufe: str | None = 
             extra += ['--effort', denkstufe]
         if ohne_gedaechtnis:
             extra += ['--settings', '{"autoMemoryEnabled":false}']
+        if bypass:
+            extra += ['--permission-mode', 'bypassPermissions']
         if kopflos:
-            extra += ['-p', '--permission-mode', 'acceptEdits']
+            extra += ['-p'] + ([] if bypass else ['--permission-mode', 'acceptEdits'])
     return basis + extra + ['--agent', AGENT, text]
 
 
@@ -197,9 +201,9 @@ def _fenster_aus() -> bool:
 
 
 def starten(art: str, kanal=None, url=None, folge=None, trocken=False, wer='studio', modell=None, denkstufe=None,
-            ohne_gedaechtnis=False) -> dict:
+            ohne_gedaechtnis=False, bypass=False) -> dict:
     text = auftrag_text(art, kanal, url, folge)
-    cmd = claude_befehl(text, modell=modell, denkstufe=denkstufe, ohne_gedaechtnis=ohne_gedaechtnis)
+    cmd = claude_befehl(text, modell=modell, denkstufe=denkstufe, ohne_gedaechtnis=ohne_gedaechtnis, bypass=bypass)
     cwd = _arbeitsordner()
     umg = _umgebung()
     aus = {'auftrag': art, 'text': text, 'befehl': cmd, 'befehl_text': shlex.join(cmd), 'ordner': str(cwd),
