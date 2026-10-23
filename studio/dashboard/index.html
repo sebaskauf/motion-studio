@@ -2020,6 +2020,7 @@ function menueEintraege() {
   e.push({ trenner: true }, { titel: 'Seite' });
   e.push({ aktion: 'neu-laden', label: 'Seite neu laden', hint: 'lädt nur diese Ansicht neu', icon: 'neu' });
   e.push({ aktion: 'neustart', label: 'Server neu starten', hint: 'z. B. nach einem Update, dauert 2 Sekunden', icon: 'neu' });
+  if (S?.version) e.push({ trenner: true }, { titel: `Version ${S.version}` });
   return e;
 }
 function oeffneMenue() {

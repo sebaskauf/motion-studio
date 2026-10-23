@@ -300,6 +300,7 @@ def stand() -> dict:
         'adapter': False, 'titel': 'Motion-Studio', 'faehig': {'gepostet': True, 'geplant': True, 'ordner': True},
         'sendeplan': _sendeplan_eingebaut(folgen), 'hinweise': _hinweise_eingebaut(folgen, kanaele, profil_da),
         'crew': starten.crew_status(CREW_EINGEBAUT, sitzungen, folgen) + [_autopilot_figur()],
+        'version': _ms.config().get('version'),
         **_steuerung_eingebaut(kanaele, zuletzt),
     }
 

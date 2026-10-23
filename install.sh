@@ -291,6 +291,21 @@ else
   }
   [ -f "$HEIM/config.json" ] || printf '{\n "installiert": "%s"\n}\n' "$ZEIT" > "$HEIM/config.json"
   setze arbeitsordner "$C_ARBEIT"; setze claude_ordner "$C_CFG"; setze repo "$C_REPO"
+  VER="$(git -C "$REPO" log -1 --format='%h vom %cs' 2>/dev/null)"
+  [ -n "$VER" ] && setze version "$VER"
+fi
+
+# ---------------------------------------------------------------- Laufendes Studio auf die neue Version bringen
+# Ein Dashboard-Server aus der alten Installation liefert sonst die neue Seite mit altem Code aus (z. B. ohne Pixel-Crew).
+# Neustart über die Seite selbst (/api/neustart mit Sitzungs-Token, wie der Menüpunkt „Server neu starten“).
+PORT="$(sed -n 's/.*"dashboard_port"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p' "$HEIM/config.json" 2>/dev/null | head -1)"
+PORT="${PORT:-8777}"
+if command -v curl >/dev/null 2>&1 && curl -s -m 2 -o /dev/null "http://127.0.0.1:$PORT/api/stand"; then
+  TOK="$(curl -s -m 3 "http://127.0.0.1:$PORT/" | sed -n 's/.*name="ms-token" content="\([^"]*\)".*/\1/p' | head -1)"
+  if [ -n "$TOK" ] && curl -s -m 5 -o /dev/null -X POST -H "X-MS-Token: $TOK" -H "Origin: http://127.0.0.1:$PORT" \
+       -H "Content-Type: application/json" -d '{}' "http://127.0.0.1:$PORT/api/neustart"; then
+    STUDIO_NEU="Studio auf Port $PORT neu gestartet, es läuft jetzt die neue Version."
+  fi
 fi
 
 # ---------------------------------------------------------------- Bericht
@@ -298,6 +313,7 @@ echo "Motion-Studio installiert."
 echo "  Agenten:       $(echo $AGENTEN | wc -w | tr -d ' ') in $CFG/agents ($(echo $AGENTEN | sed 's/ /, /g'))"
 echo "  Skills:        $(echo $SKILLS | wc -w | tr -d ' ') in $CFG/skills"
 echo "  Werkzeuge:     $HEIM (Einstieg: $H_AUSSEN/ms)"
+[ -n "${STUDIO_NEU:-}" ] && echo "  $STUDIO_NEU"
 echo "  Arbeitsordner: $A_AUSSEN"
 [ -n "$NEU_ANGELEGT" ] && echo "    neu angelegt:$NEU_ANGELEGT"
 [ -f "$ARBEIT/PROFIL.md" ] && ! echo "$NEU_ANGELEGT" | grep -q PROFIL && echo "    dein PROFIL.md und LERNLOG.md sind geblieben"

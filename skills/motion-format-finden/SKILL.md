@@ -28,6 +28,5 @@ Kommt NACH dem Setup, als erster Schritt der Produktion (Sebastian 23.10.2026). 
 | @speedy_devv | Technik erklärt in 3D-Makro (Touchscreen, Chips), dunkel, leuchtende Felder, ruhige Stimme, Wort-Captions | schwer (3D) |
 | @scroll.engineer | Ingenieurs-Wunder erklärt, Low-Poly-3D, filmisches Abendlicht, Labels im Bild | schwer (3D) |
 | @rick.theengineer | IT-Sicherheit und Backend erklärt, isometrisches Schnittmodell, UI-Fenster, Figur als Erzähler | sehr schwer (Figur) |
-| @nocodealex | KI-Tools und Claude-News, 3D-Toon-Figur in wechselnden Welten, schnelle Schnitte, Keyword-CTA | mittel |
 
 Die Liste ist ein Startpunkt. Passt keiner zur Nische des Nutzers, such mit ihm über seine Nische.
