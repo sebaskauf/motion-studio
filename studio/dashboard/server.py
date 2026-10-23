@@ -300,13 +300,31 @@ def stand() -> dict:
         'vorschlag': _vorschlag(folgen, kanaele, sitzungen, profil_da, zuletzt),
         'adapter': False, 'titel': 'Motion-Studio', 'faehig': {'gepostet': True, 'geplant': True, 'ordner': True},
         'sendeplan': _sendeplan_eingebaut(folgen), 'hinweise': _hinweise_eingebaut(folgen, kanaele, profil_da),
-        'crew': starten.crew_status(CREW_EINGEBAUT, sitzungen, folgen) + [_autopilot_figur()],
+        'crew': _crew_aus_log(starten.crew_status(CREW_EINGEBAUT, sitzungen, folgen)) + [_autopilot_figur()],
         'version': _ms.config().get('version'),
         **_steuerung_eingebaut(kanaele, zuletzt),
     }
 
 
 AUTOPILOT_ARTEN = ('produktion-an', 'produktion-aus', 'bauen', 'anstossen')
+CREW_VON_WER = {'motion-regie': 'regie', 'motion-studio': 'regie', 'motion-bauer': 'bauer', 'motion-analyse': 'analyse', 'motion-pruefer': 'pruefer'}
+
+
+def _crew_aus_log(crew: list[dict], minuten: int = 4) -> list[dict]:
+    """Wer in den letzten Minuten ins Live-Log geschrieben hat, arbeitet gerade. So stimmt die Crew auch ohne tmux
+    (Windows, Regie im normalen Chat). Fehler und Fragen aus den Sitzungen haben Vorrang."""
+    grenze = datetime.now().astimezone() - timedelta(minutes=minuten)
+    neu = {}
+    for e in _log_ende(60):
+        t = _zeit_lokal(e.get('zeit'))
+        cid = CREW_VON_WER.get(str(e.get('wer') or ''))
+        if cid and t and t >= grenze and cid not in neu:
+            neu[cid] = e
+    for c in crew:
+        e = neu.get(c['id'])
+        if e and c['status'].get('art') in ('schlaeft', 'wartet', 'beendet'):
+            c['status'] = {**c['status'], 'art': 'arbeitet', 'text': str(e.get('text') or '')[:120]}
+    return crew
 
 
 def _ap():

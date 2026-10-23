@@ -36,7 +36,7 @@ Nur die Hauptsitzung kann Analyse, Bauer und Prüfer starten. Fehlt dir das Agen
 | „Sounds einrichten“, Sound-Bibliothek leer | Skill `motion-sound-bibliothek` |
 | „bau dieses Video nach: <Link oder Datei>“, „1:1 nachbauen“, ein einzelnes Video | Skill `motion-nachbau` (alles erkennen, nachbauen, messen, postbare Kopie) |
 | „lern den Kanal @x“, neues Vorbild, Stil eines Kanals übernehmen | Skill `motion-kanal-lernen` |
-| Setup fertig, aber noch kein Kanal und keine Folge, „wie fange ich an“, „was soll ich machen“ | Skill `motion-format-finden`: zwei Fragen (Short-Form oder YouTube? Welcher Stil von welchem Account?), dann OHNE Rückfrage `ms starten kanal-lernen --url …` (eigene Sitzung, Studio zeigt Fortschritt und Fertig-Zeit). Arten von Videos und eigener Twist erst nach dem Nachbau |
+| Setup fertig, aber noch kein Kanal und keine Folge, „wie fange ich an“, „was soll ich machen“ | Skill `motion-format-finden`: zwei Fragen (Short-Form oder YouTube? Welcher Stil von welchem Account?), dann OHNE Rückfrage in dieser Sitzung Skill motion-kanal-lernen (keine zweite Regie-Sitzung starten; das Studio zeigt Fortschritt und Fertig-Zeit aus Status und Live-Log). Arten von Videos und eigener Twist erst nach dem Nachbau |
 | „nächste Folge“, „neues Video“, „mach ein Reel über …“ | Skill `motion-folge` (braucht einen Kanal mit Status `bereit`, sonst erst Phase B) |
 | „such Vorlagen“, „was läuft gerade bei @x“ | Skill `motion-vorlagen-finden` |
 | „mach weiter“, „was ist offen“ | `__HEIM__/ms status`, an der Phase der offenen Folge weitermachen |

@@ -35,8 +35,8 @@ Nicht fragen, ob nachgebaut werden soll (Sebastian 23.10.: das muss vor eigenen 
    Das dauert etwa 2 bis 3 Stunden.
    Im Studio siehst du jeden Schritt, die Agenten bei der Arbeit und wann es ungefähr fertig ist.
    Wenn der Nachbau steht, zeige ich ihn dir und frage, was für Videos du damit machen willst.“
-3. Starten als eigene Sitzung, damit dieser Chat frei bleibt und das Studio alles zeigt: `__HEIM__/ms starten kanal-lernen --url <@handle oder Link>`. Ohne tmux (Windows) öffnet sich ein eigenes Fenster.
-4. Ablauf in dieser Sitzung: Skill motion-kanal-lernen. Er läuft ohne Zwischenfragen durch bis zum Urteil über den Nachbau.
+3. In DIESER Sitzung weiter mit Skill motion-kanal-lernen. Keine zweite Regie-Sitzung starten, das Studio zeigt den Fortschritt ohnehin: Schrittleiste des Kanals, Fertig-Zeit, „gerade: …“ und die arbeitenden Agenten aus dem Live-Log. Das klappt nur, wenn jeder Schritt mit `ms status` bzw. `ms log` gemeldet wird.
+4. Er läuft ohne Zwischenfragen durch bis zum Urteil über den Nachbau.
 
 ## Teil B, erst NACH dem Nachbau (motion-kanal-lernen Schritt 7)
 - „Welche Arten von Videos willst du in diesem Stil machen? Worüber?“ Zum Beispiel Technik erklärt, KI-News und Tools, Wissenschaft, Geschichte, Geld oder das eigene Fachgebiet. Eintragen: Nische und Thema, Zielgruppe.

@@ -1323,6 +1323,8 @@ function zeichneKanaele() {
     const mw = k.messwerte || {};
     const teile = [k.phase === 'bereit' ? 'Bereit für Folgen' : `lernt noch, als Nächstes ${esc(KANAL_SCHRITT[ph[i + 1]] || 'Vorbild')}`, plural(anzahl, 'Folge', 'Folgen')];
     if (k._eta) teile.push(`<b>fertig etwa ${esc(uhr(k._eta))}</b>`);
+    const ls = k.phase !== 'bereit' && (letzterSchritt(k.id) || (S.log || []).find(e => (e.ziel || '').includes('-nachbau') || (e.ziel || '').includes('-pilot')));
+    if (ls && Date.now() - Date.parse(ls.zeit) < 20 * 60e3) teile.push(`gerade: ${esc(String(ls.text).slice(0, 90))}`);
     else if (k.phase !== 'bereit' && k._laeuft === false) teile.push('pausiert, „Weiterlernen“ setzt fort');
     if (mw.delta_e != null) teile.push(`ΔE ${esc(zahl.format(mw.delta_e))}`);
     if (mw.ssim != null) teile.push(`SSIM ${esc(zahl.format(mw.ssim))}`);
@@ -1381,6 +1383,10 @@ function zeichneArbeit() {
     if (f.fehler) grund = `<span class="tag bad">Fehler</span><p>${esc(f.fehler)}</p>`;
     else if (f.freigabe) grund = `<span class="tag warn">Freigabe</span><p>${esc(f.freigabe.frage)}</p>`;
     else if (f.wartet_auf) grund = `<span class="tag warn">Wartet</span><p>${esc(wartetSatz(f.wartet_auf))}</p>`;
+    else if (letzterSchritt(id) && Date.now() - Date.parse(letzterSchritt(id).zeit) < 20 * 60e3) {
+      const e = letzterSchritt(id);
+      grund = `<span class="tag ok">Gerade</span><p>${esc(e.text)} <span class="leise">· ${esc(e.wer === 'motion-studio' ? 'Werkzeug' : e.wer || '')} · <span data-rel="${esc(e.zeit)}"></span></span></p>`;
+    }
     else if (s && s.zustand === 'arbeitet') grund = `<span class="tag ok">Arbeitet</span><p class="leise">${esc(sitzungTitel(s))} läuft gerade.</p>`;
     else if (s && s.zustand === 'fehler') grund = `<span class="tag bad">${s.haenger ? 'Hängt' : 'Fehler'}</span><p>${esc(s.grund)}</p>`;
     else if (f.hinweis) grund = `<span class="tag ${f.phase === 'fertig' ? 'warn' : ''}">${f.phase === 'fertig' ? 'Fehlt' : 'Info'}</span><p class="${f.phase === 'fertig' ? '' : 'leise'}">${esc(f.hinweis)}</p>`;
@@ -1391,6 +1397,10 @@ function zeichneArbeit() {
     k.push(`<button type="button" class="knopf klein" data-detail="${esc(id)}">Details</button>`);
     setHTML($('.f-knoepfe', el), k.join(''));
   });
+}
+// Letzter Log-Eintrag zu einer Folge oder einem Kanal (Sebastian 23.10.: „an welchem Schritt man gerade ist“)
+function letzterSchritt(id) {
+  return (S.log || []).find(e => e.ziel && (e.ziel === id || e.ziel.endsWith('/' + id) || e.ziel === `kanal:${id}`) && e.text) || null;
 }
 // Bau der Tagesproduktion, dessen Folge noch keinen Ordner hat (Thema wird gewählt)
 function neuerBau(el, b) {

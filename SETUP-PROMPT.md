@@ -72,7 +72,7 @@ SCHRITT 5: ABSCHLUSS
    - Updates holst du später mit einem Satz an die Regie: „Aktualisiere Motion-Studio“ (oder im Terminal `ms update`). Das holt die neueste Fassung, installiert sie und startet das Studio neu. Die Version steht im Studio im Menü „⋯“.
 5. Sag mir, wie es dann weitergeht:
    - Die Regie fragt zwei Dinge: Short-Form oder lange YouTube-Videos? Welchen Stil willst du, von welchem Account? Ohne eigenen Favoriten zeigt sie Beispiele.
-   - Dann bringt sie sich den Stil automatisch bei und baut ein Video davon 1:1 nach. Das läuft im Hintergrund, im Studio siehst du jeden Schritt und wann es ungefähr fertig ist.
+   - Dann bringt sie sich den Stil automatisch bei und baut ein Video davon 1:1 nach, ohne Zwischenfragen. Im Studio siehst du jeden Schritt, die Agenten bei der Arbeit und wann es ungefähr fertig ist.
    - Danach zeigt sie dir den Nachbau und fragt, was für Videos du in dem Stil machen willst und was dein eigener Twist ist. Dann geht die Produktion los. So gelten die erlaubten Befehle, und die Regie kann Analyse, Bauer und Prüfer starten. Genau so starte ich ab jetzt immer. Danach sage ich einfach, was ich will, zum Beispiel:
    - "Ich hab noch kein Format, hilf mir eins zu finden"
    - "Lern den Kanal @<vorbild>"

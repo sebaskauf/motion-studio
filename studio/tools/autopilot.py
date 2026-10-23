@@ -36,6 +36,7 @@ STANDARD = {'an': False, 'kanal': '', 'pro_tag': 5, 'parallel': 2, 'fenster': ['
             'denkstufe': 'high', 'puffer': 10, 'ohne_gedaechtnis': True, 'max_stunden': 6}
 MODELLE = {'sonnet': 'claude-sonnet-5-5', 'opus': 'claude-opus-5-5', 'fable': 'claude-fable-5-1'}
 LIMIT_RE = re.compile(r'usage limit|limit reached|rate.?limit|weekly limit|5-hour limit|/rate-limit-options|resets? (at|in)', re.I)
+API_RE = re.compile(r'API Error|Connection (lost|error)|overloaded|Internal server error|ECONNRESET|ETIMEDOUT', re.I)
 ERLEDIGT_S = 15 * 60     # wartet eine Bau-Sitzung so lange ohne Frage am Prompt, ist sie fertig: schließen, Platz frei
 LABEL = 'de.motionstudio.autopilot'
 AUFGABE_WIN = 'MotionStudio Autopilot'
@@ -142,6 +143,14 @@ def aufraeumen(z: dict, jetzt: datetime) -> None:
             text = '\n'.join(s.get('zeilen') or [])
             if LIMIT_RE.search(text):
                 z['limit_bis'] = (jetzt + timedelta(hours=1)).isoformat(timespec='minutes')
+            # Abgerissene Verbindung zur API (kommt vor): selbst „weiter“ schicken statt auf den Nutzer zu warten, höchstens 3 Mal je Bau
+            elif s.get('zustand') == 'fehler' and API_RE.search(str(s.get('grund') or '')) and b.get('weiter', 0) < 3:
+                try:
+                    starten.weiter(b['sitzung'], wer='autopilot', protokoll=False)
+                    b['weiter'] = b.get('weiter', 0) + 1
+                    merke(f'Bau {b["sitzung"]}: API-Abbruch, „weiter“ geschickt ({b["weiter"]}/3).', 'warnung')
+                except SystemExit:
+                    pass
             if s.get('zustand') == 'wartet' and not s.get('frage') and (s.get('macht') or {}).get('art') == 'wartet' \
                     and s.get('still_seit', 0) >= ERLEDIGT_S:
                 starten.stopp(b['sitzung'], wer='autopilot', protokoll=False)
