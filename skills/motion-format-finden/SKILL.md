@@ -1,6 +1,6 @@
 ---
 name: motion-format-finden
-description: Start der Produktion nach dem Setup. Zwei Fragen (Short-Form oder lange YouTube-Videos, welcher Stil von welchem Account mit Beispielen), dann automatisch Stil lernen und ein Video 1:1 nachbauen (eigene Sitzung, im Studio sichtbar), erst danach welche Arten von Videos und welcher eigene Twist. Laden beim ersten Produktionsstart ohne Kanal, bei „wie fange ich an“, „ich habe noch kein Format“, „welches Format“, „Ideen für einen Kanal“.
+description: Start der Produktion nach dem Setup. Zwei Fragen (Short-Form oder lange YouTube-Videos, welcher Stil von welchem Account mit Beispielen), dann automatisch Stil lernen und ein Video 1:1 nachbauen (in dieser Sitzung, Fortschritt im Studio), erst danach welche Arten von Videos und welcher eigene Twist. Laden beim ersten Produktionsstart ohne Kanal, bei „wie fange ich an“, „ich habe noch kein Format“, „welches Format“, „Ideen für einen Kanal“.
 ---
 
 # Format finden: zwei Fragen, dann automatisch lernen
