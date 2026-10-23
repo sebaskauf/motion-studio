@@ -30,17 +30,15 @@ ffmpeg, Python 3.9+, Node.js 22+, HyperFrames + HyperFrames-Skills + Chrome für
 
 ## Stufe 2: Profil (Pflicht, Interview)
 Fragen einzeln stellen, Antwort sofort in `__ARBEIT__/PROFIL.md` eintragen (Kopf bleibt `setup: unvollständig`, bis alles steht). Vorschläge machen, wo der Nutzer unsicher ist.
+**Hier nur das Technische und das Geld.** Nicht nach Kanal, Nische oder Vorbild fragen (Sebastian 23.10.: „Was macht dein Kanal?“ ist die falsche erste Frage). Das kommt erst nach dem Setup, als Start der Produktion mit der Frage „Hast du schon ein Format, oder suchen wir zusammen eins?“ (motion-regie, Skill motion-format-finden). Die Felder Nische, Vorbild-Kanäle und Eigener Twist bleiben bis dahin leer.
 1. System: selbst aus `ms check` übernehmen (Mac mit Apple Silicon/Intel, Windows, Linux). Nur bestätigen lassen.
-2. Nische und Thema, Zielgruppe in einem Satz.
-3. Sprache der Videos.
-4. Plattformen und Format (Standard 9:16, 20 bis 60 Sekunden).
-5. Vorbild-Kanäle: Handle oder Link und was ihm daran gefällt. Mehrere sind gut, gelernt wird einer nach dem anderen.
-5b. Eigener Kanal: Handle(s), auf denen er postet. Seine eigenen Top-Videos sind die erste Ideen-Quelle (Skill motion-vorlagen-finden, Reihenfolge der Quellen), dann das Vorbild, dann andere Creator.
-6. Eigener Twist: was bei ihm anders sein soll.
-7. Stimme: Anbieter ElevenLabs (kostet, beste Qualität), Higgsfield (wenn er es schon hat) oder eigene Aufnahme (gratis, oft am glaubwürdigsten, auch für Dateien aus anderen Programmen). Bei ElevenLabs: Stimm-ID (voice_id), Modell, Einstellungen, falls schon bekannt. Felder wie in PROFIL.md, Abschnitt Stimme (Skill motion-stimme liest sie).
-8. Budget pro Monat und pro Folge, welche bezahlten Dienste erlaubt sind. Standard „Ohne Nachfrage frei bis: 0“, also jede Ausgabe vorher fragen.
-9. Skript vor dem Bau zeigen: ja/nein (Standard ja).
-10. Rhythmus: Folgen pro Woche, Posting-Tage.
+2. Sprache der Videos.
+3. Plattformen und Format (Standard 9:16, 20 bis 60 Sekunden).
+4. Eigener Kanal: Handle(s), auf denen er postet oder posten will (leer lassen, wenn es noch keinen gibt).
+5. Stimme: Anbieter ElevenLabs (kostet, beste Qualität), Higgsfield (wenn er es schon hat) oder eigene Aufnahme (gratis, oft am glaubwürdigsten, auch für Dateien aus anderen Programmen). Bei ElevenLabs: Stimm-ID (voice_id), Modell, Einstellungen, falls schon bekannt. Felder wie in PROFIL.md, Abschnitt Stimme (Skill motion-stimme liest sie).
+6. Budget pro Monat und pro Folge, welche bezahlten Dienste erlaubt sind. Standard „Ohne Nachfrage frei bis: 0“, also jede Ausgabe vorher fragen.
+7. Skript vor dem Bau zeigen: ja/nein (Standard ja).
+8. Rhythmus: Folgen pro Woche, Posting-Tage.
 Am Ende `setup: fertig`, `erstellt` und `aktualisiert` mit Datum, Werkzeug-Zeile aus `ms check --kurz`. Das Profil einmal ganz zeigen und fragen, ob etwas fehlt.
 
 ## Stufe 3: Sound (für Phase C nötig)

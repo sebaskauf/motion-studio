@@ -35,7 +35,7 @@ Alles Feste erledigt `einbauen.py` (nur Python-Standardbibliothek). Du entscheid
    |---|---|---|
    | 0 | Fertig, oder der Tab war schon drin | Weiter mit Schritt 4 |
    | 2 | Der Nutzer muss entscheiden | Text vorlesen, fragen, dann noch einmal aufrufen |
-   | 1 | Fehler | Genaue Meldung zeigen, nichts selbst „reparieren“ am Vault |
+   | 1 | Fehler | Genaue Meldung zeigen. Am Vault nichts selbst reparieren. Code-Änderungen im Quellordner sind erlaubt (Abschnitt „Von Hand“) |
 
    Fälle bei Code 2:
    - **Mehrere Vaults:** fragen welcher, dann mit `--vault`.
@@ -51,6 +51,15 @@ Alles Feste erledigt `einbauen.py` (nur Python-Standardbibliothek). Du entscheid
 5. **Zurück, falls etwas nicht stimmt:**
    - Im Plugin-Ordner liegt `main.js.bak-vor-studio-<zeit>`. Wieder in `main.js` umbenennen und neu laden.
    - Ein kaputtes Cockpit ist schlimmer als ein fehlender Tab.
+
+## Von Hand, wenn das Skript an App.tsx scheitert
+Der Quellcode des Agentic OS gehört dem Nutzer: Anpassen und erweitern ist ausdrücklich erlaubt. Tabs anderer Systeme zum Beispiel holst du so nach. Von Hand tabu sind nur die Dateien im Vault (`main.js` und `styles.css` dort). Die schreibt immer `einbauen.py`, mit Sicherung und Prüfung.
+Meldet `einbauen.py` „App.tsx sieht anders aus als erwartet“, baue die vier Stellen im Quellordner `src/App.tsx` selbst ein. Such sie über den Inhalt, nicht über Zeilennummern:
+1. Import direkt nach dem Import von CutterView: `import { StudioView } from "./StudioView";`
+2. Typ `TabId` um `"STUDIO"` ergänzen, falls es den Typ gibt. Ist `tab` ein `string`, entfällt das.
+3. In der Tab-Liste `TABS` den Eintrag `["STUDIO", "STUDIO"]` anhängen.
+4. In der Verzweigung, die `tab === "CUTTER"` abfängt: `) : tab === "STUDIO" ? ( <StudioView /> ) : (`
+Dann `einbauen.py` noch einmal starten: Es erkennt die fertigen Stellen, baut, prüft und kopiert.
 
 ## Was das Skript ändert
 

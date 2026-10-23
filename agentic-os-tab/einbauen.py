@@ -124,7 +124,7 @@ def app_patchen(app: str) -> str:
         else:
             app = r.sub(r'\1 tab === "STUDIO" ? (\n\t\t\t\t<StudioView />\n\t\t\t) :', app, count=1)
     if fehler:
-        raus(1, 'App.tsx sieht anders aus als erwartet: ' + '; '.join(fehler) + '. Bau die vier Stellen von Hand ein (EINBAU.md, Schritt 3).')
+        raus(1, 'App.tsx sieht anders aus als erwartet: ' + '; '.join(fehler) + '. Bau die vier Stellen von Hand im Quellordner ein (EINBAU.md, Abschnitt „Von Hand“) und starte mich danach noch einmal.')
     return app
 
 
