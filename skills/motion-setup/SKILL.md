@@ -30,7 +30,7 @@ ffmpeg, Python 3.9+, Node.js 22+, HyperFrames + HyperFrames-Skills + Chrome für
 
 ## Stufe 2: Profil (Pflicht, Interview)
 Fragen einzeln stellen, Antwort sofort in `__ARBEIT__/PROFIL.md` eintragen (Kopf bleibt `setup: unvollständig`, bis alles steht). Vorschläge machen, wo der Nutzer unsicher ist.
-**Hier nur das Technische und das Geld.** Nicht nach Kanal, Nische oder Vorbild fragen (Sebastian 23.10.: „Was macht dein Kanal?“ ist die falsche erste Frage). Das kommt erst nach dem Setup, als Start der Produktion mit der Frage „Hast du schon ein Format, oder suchen wir zusammen eins?“ (motion-regie, Skill motion-format-finden). Die Felder Nische, Vorbild-Kanäle und Eigener Twist bleiben bis dahin leer.
+**Hier nur das Technische und das Geld.** Nicht nach Kanal, Nische oder Vorbild fragen (Sebastian 23.10.: „Was macht dein Kanal?“ ist die falsche erste Frage). Das kommt erst nach dem Setup, als Start der Produktion mit drei Kernfragen: Short-Form oder lange YouTube-Videos, welcher Stil von welchem Account, welche Arten von Videos (Skill motion-format-finden). Die Felder Nische, Vorbild-Kanäle und Eigener Twist bleiben bis dahin leer.
 1. System: selbst aus `ms check` übernehmen (Mac mit Apple Silicon/Intel, Windows, Linux). Nur bestätigen lassen.
 2. Sprache der Videos.
 3. Plattformen und Format (Standard 9:16, 20 bis 60 Sekunden).
