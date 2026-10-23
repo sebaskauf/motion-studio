@@ -264,8 +264,9 @@ fi
 
 # ---------------------------------------------------------------- config.json im HEIM (Rest bleibt erhalten)
 C_ARBEIT="$A_AUSSEN"; C_CFG="$(aussen "$CFG")"; C_REPO="$(aussen "$REPO")"
+VER="$(git -C "$REPO" log -1 --format='%h vom %cs' 2>/dev/null)"   # zeigt das Studio im Menü „⋯“
 if [ -n "$PY" ]; then
-  MS_C="$HEIM/config.json" MS_A="$C_ARBEIT" MS_K="$C_CFG" MS_R="$C_REPO" "$PY" - <<'PYEOF'
+  MS_C="$HEIM/config.json" MS_A="$C_ARBEIT" MS_K="$C_CFG" MS_R="$C_REPO" MS_V="$VER" "$PY" - <<'PYEOF'
 import json, os
 p = os.environ['MS_C']
 try:
@@ -274,6 +275,8 @@ try:
 except (OSError, ValueError):
     d = {}
 d.update({'arbeitsordner': os.environ['MS_A'], 'claude_ordner': os.environ['MS_K'], 'repo': os.environ['MS_R']})
+if os.environ.get('MS_V'):
+    d['version'] = os.environ['MS_V']
 with open(p, 'w', encoding='utf-8') as f:
     json.dump(d, f, ensure_ascii=False, indent=1)
     f.write('\n')
@@ -291,7 +294,6 @@ else
   }
   [ -f "$HEIM/config.json" ] || printf '{\n "installiert": "%s"\n}\n' "$ZEIT" > "$HEIM/config.json"
   setze arbeitsordner "$C_ARBEIT"; setze claude_ordner "$C_CFG"; setze repo "$C_REPO"
-  VER="$(git -C "$REPO" log -1 --format='%h vom %cs' 2>/dev/null)"
   [ -n "$VER" ] && setze version "$VER"
 fi
 
