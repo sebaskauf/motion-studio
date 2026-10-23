@@ -181,7 +181,7 @@ def ytdlp_json(args: list, zeit=600) -> dict:
     """yt-dlp ohne Cookies, Ausgabe als JSON. Fehler kommen als lesbare Meldung zurück (kein Traceback)."""
     import subprocess
     try:
-        r = _ms.befehl(['yt-dlp', '--no-warnings', '--no-update', *args], pruefen=False, timeout=zeit,
+        r = _ms.befehl([_ms.ytdlp(), '--no-warnings', '--no-update', *args], pruefen=False, timeout=zeit,
                        stdin=subprocess.DEVNULL)
     except subprocess.TimeoutExpired:
         raise RuntimeError(f'keine Antwort nach {zeit} s')

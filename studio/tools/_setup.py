@@ -257,7 +257,7 @@ def p_programm(pid, name, stufe, pflicht, args, muster=r'(\d+(?:\.\d+)+)', prog=
         except ValueError:
             alter = 0
         if alter > 90:
-            upd = {'Darwin': 'brew upgrade yt-dlp', 'Windows': 'winget upgrade -e --id yt-dlp.yt-dlp'}.get(_ms.SYSTEM, 'pipx upgrade yt-dlp')
+            upd = f'{_ms.HEIM / "ms"} setup venv   (bringt ein aktuelles yt-dlp in die Studio-Umgebung)'
             return _p(pid, name, stufe, pflicht, False, v, f'{alter} Tage alt, YouTube-Downloads brechen dann oft mit 403 ab', installieren=upd)
     return _p(pid, name, stufe, pflicht, True, v, '' if v or code == 0 else f'antwortet mit Code {code}')
 
@@ -456,7 +456,7 @@ def pruefungen(stufen: list[str], kurz: bool = False) -> list[dict]:
     auf(p_hyperframes)
     auf(p_hf_skills, kurz)
     auf(p_chrome)
-    auf(p_programm, 'yt-dlp', 'yt-dlp', 'basis', True, ['--version'], r'(\d{4}\.\d+\.\d+)')
+    auf(p_programm, 'yt-dlp', 'yt-dlp', 'basis', True, ['--version'], r'(\d{4}\.\d+\.\d+)', _ms.ytdlp())
     auf(p_transkription)
     auf(p_programm, 'git', 'git', 'basis', True, ['--version'])
     auf(p_programm, 'claude', 'Claude Code', 'basis', False, ['--version'])

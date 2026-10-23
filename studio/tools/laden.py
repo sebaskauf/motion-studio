@@ -52,7 +52,7 @@ def http_laden(url: str, ziel: Path, was='Video'):
 def ytdlp_laden(url: str, tmp: Path) -> tuple[Path, dict]:
     """Bestes Video bis 1080p (h264 bevorzugt, läuft überall) plus Ton, als mp4. Ohne Cookies."""
     vorlage = str(tmp / 'v.%(ext)s')
-    r = _ms.befehl(['yt-dlp', '--no-warnings', '--no-update', '--no-playlist', '-f', 'bv*+ba/b',
+    r = _ms.befehl([_ms.ytdlp(), '--no-warnings', '--no-update', '--no-playlist', '-f', 'bv*+ba/b',
                     '-S', 'res:1080,vcodec:h264,acodec:m4a', '--merge-output-format', 'mp4', '--write-info-json',
                     '-o', vorlage, url], pruefen=False, stdin=subprocess.DEVNULL)
     dateien = [p for p in tmp.glob('v.*') if p.suffix not in ('.json', '.part', '.ytdl')]

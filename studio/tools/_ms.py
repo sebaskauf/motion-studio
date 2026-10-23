@@ -93,6 +93,14 @@ def befehl(liste, pruefen=True, still=True, **kw) -> subprocess.CompletedProcess
     return r
 
 
+def ytdlp() -> str:
+    """yt-dlp aus HEIM/.venv (über ms setup venv immer aktuell), sonst das aus dem PATH."""
+    for p in (HEIM / '.venv/bin/yt-dlp', HEIM / '.venv/Scripts/yt-dlp.exe'):
+        if p.exists():
+            return str(p)
+    return 'yt-dlp'
+
+
 def config() -> dict:
     return json_lesen(HEIM / 'config.json', {}) or {}
 

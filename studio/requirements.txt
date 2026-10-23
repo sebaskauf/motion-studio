@@ -2,6 +2,8 @@
 numpy>=1.24
 pillow>=10.0
 scipy>=1.10
+# Videos laden: aktuell aus pip statt aus Homebrew/winget (deren Paketlisten hängen oft Monate hinterher, alte Versionen brechen mit 403 ab)
+yt-dlp>=2025.10
 # Texterkennung in Videos über Apples Vision (nur Mac, fertige Pakete, kein Compiler nötig)
 pyobjc-framework-Vision>=10.0; sys_platform == "darwin"
 pyobjc-framework-Quartz>=10.0; sys_platform == "darwin"
