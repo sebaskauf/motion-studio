@@ -96,7 +96,8 @@ def auftrag_text(art: str, kanal=None, url=None, folge=None) -> str:
         return f'Finde neue Vorlagen für Kanal {k}. Nenne vor jedem bezahlten Lauf die Kosten und frag mich.'
     if art == 'kanal-lernen':
         u = _url_pruefen(url)
-        return f'Lerne den Kanal {u}: zerlegen, Pilot 1:1 nachbauen, messen, Baukasten.'
+        return (f'Lerne den Kanal {u}: zerlegen, Pilot 1:1 nachbauen, messen, Baukasten. Läuft automatisch durch: '
+                'frag nur bei Kosten über der Freigabe, bei Fehlern, die du nicht löst, und beim Urteil über den Nachbau.')
     if art == 'folge':
         k = _kanal_pruefen(kanal)
         return f'Bau die nächste Folge für Kanal {k}.'

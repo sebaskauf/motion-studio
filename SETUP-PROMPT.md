@@ -69,11 +69,10 @@ SCHRITT 5: ABSCHLUSS
 4. Sag mir, dass ich Claude Code einmal neu starten soll, und zwar im Arbeitsordner mit der Regie als Hauptsitzung:
    - Mac/Linux: `cd <Arbeitsordner> && claude --agent motion-regie`
    - Windows PowerShell: `cd <Arbeitsordner>; claude --agent motion-regie`
-5. Sag mir, wie es dann weitergeht: Die Produktion beginnt mit drei kurzen Fragen der Regie, eine nach der anderen:
-   - Short-Form (Reels, TikTok, YouTube Shorts) oder lange YouTube-Videos?
-   - Welchen Stil willst du, von welchem Account? Ohne eigenen Favoriten zeigt sie Beispiel-Accounts.
-   - Welche Arten von Videos willst du damit machen?
-   Danach lernt sie den Stil des Accounts oder baut dir erst ein Video davon 1:1 nach. So gelten die erlaubten Befehle, und die Regie kann Analyse, Bauer und Prüfer starten. Genau so starte ich ab jetzt immer. Danach sage ich einfach, was ich will, zum Beispiel:
+5. Sag mir, wie es dann weitergeht:
+   - Die Regie fragt zwei Dinge: Short-Form oder lange YouTube-Videos? Welchen Stil willst du, von welchem Account? Ohne eigenen Favoriten zeigt sie Beispiele.
+   - Dann bringt sie sich den Stil automatisch bei und baut ein Video davon 1:1 nach. Das läuft im Hintergrund, im Studio siehst du jeden Schritt und wann es ungefähr fertig ist.
+   - Danach zeigt sie dir den Nachbau und fragt, was für Videos du in dem Stil machen willst und was dein eigener Twist ist. Dann geht die Produktion los. So gelten die erlaubten Befehle, und die Regie kann Analyse, Bauer und Prüfer starten. Genau so starte ich ab jetzt immer. Danach sage ich einfach, was ich will, zum Beispiel:
    - "Ich hab noch kein Format, hilf mir eins zu finden"
    - "Lern den Kanal @<vorbild>"
    - "Bau mir dieses Video 1:1 nach: <Link>"

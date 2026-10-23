@@ -1,11 +1,11 @@
 ---
 name: motion-format-finden
-description: Start der Produktion nach dem Setup. Drei Kernfragen, eine nach der anderen. Erstens Short-Form oder lange YouTube-Videos, zweitens welcher Stil von welchem Account (mit Beispiel-Accounts, wenn der Nutzer keinen hat), drittens welche Arten von Videos er damit machen will. Danach Kanal lernen oder ein Video nachbauen. Laden beim ersten Produktionsstart ohne Kanal, bei „wie fange ich an“, „ich habe noch kein Format“, „welches Format“, „Ideen für einen Kanal“.
+description: Start der Produktion nach dem Setup. Zwei Fragen (Short-Form oder lange YouTube-Videos, welcher Stil von welchem Account mit Beispielen), dann automatisch Stil lernen und ein Video 1:1 nachbauen (eigene Sitzung, im Studio sichtbar), erst danach welche Arten von Videos und welcher eigene Twist. Laden beim ersten Produktionsstart ohne Kanal, bei „wie fange ich an“, „ich habe noch kein Format“, „welches Format“, „Ideen für einen Kanal“.
 ---
 
-# Format finden: drei Kernfragen
+# Format finden: zwei Fragen, dann automatisch lernen
 
-Kommt NACH dem Setup, als erster Schritt der Produktion (Sebastian 23.10.2026). Nicht mehr fragen als diese drei, jede einzeln, Antwort sofort in `__ARBEIT__/PROFIL.md` (Abschnitt Kanal und Inhalt).
+Kommt NACH dem Setup, als erster Schritt der Produktion (Sebastian 23.10.2026). Vor dem Lernen nur Frage 1 und 2, jede einzeln, Antwort sofort in `__ARBEIT__/PROFIL.md` (Abschnitt Kanal und Inhalt).
 
 ## 1. „Willst du Short-Form-Videos machen (Reels, TikTok, YouTube Shorts) oder lange YouTube-Videos?“
 - **Short-Form:**
@@ -27,14 +27,23 @@ Kommt NACH dem Setup, als erster Schritt der Produktion (Sebastian 23.10.2026). 
   - 3D geht im Browser oder in Blender.
   - Figuren mit Schauspiel sind am schwersten.
 
-## 3. „Welche Arten von Videos willst du damit machen? Worüber?“
-- Zum Beispiel: Technik erklärt, KI-News und Tools, Wissenschaft, Geschichte, Geld und Wirtschaft, sein eigenes Fachgebiet.
-- Eintragen: Nische und Thema, dazu die Zielgruppe in einem Satz.
-- Passt das Thema nicht zum Stil-Vorbild (andere Nische), ist das gut: Stil vom Vorbild, Inhalte von ihm.
+## Danach automatisch: Stil lernen und ein Video 1:1 nachbauen
+Nicht fragen, ob nachgebaut werden soll (Sebastian 23.10.: das muss vor eigenen Videos passieren).
+1. Instagram-Vorbild und die Kosten (rund 3 Cent pro Video über Apify) liegen über „Ohne Nachfrage frei bis“: EINE Frage, „Zum Lernen hole ich 3 bis 5 Videos von @x, etwa 0,10 $. Okay?“ Sonst nichts fragen.
+2. Kurzer Hinweis an den Nutzer, ein Absatz:
+   „Ich bringe mir jetzt den Stil von @x bei: Videos laden, zerlegen, eins 1:1 nachbauen und messen.
+   Das dauert etwa 2 bis 3 Stunden.
+   Im Studio siehst du jeden Schritt, die Agenten bei der Arbeit und wann es ungefähr fertig ist.
+   Wenn der Nachbau steht, zeige ich ihn dir und frage, was für Videos du damit machen willst.“
+3. Starten als eigene Sitzung, damit dieser Chat frei bleibt und das Studio alles zeigt: `__HEIM__/ms starten kanal-lernen --url <@handle oder Link>`. Ohne tmux (Windows) öffnet sich ein eigenes Fenster.
+4. Ablauf in dieser Sitzung: Skill motion-kanal-lernen. Er läuft ohne Zwischenfragen durch bis zum Urteil über den Nachbau.
 
-## Danach
-- Stil eines ganzen Accounts lernen und dann laufend Folgen bauen: Skill **motion-kanal-lernen**.
-- Erst ein einzelnes Video ausprobieren: Skill **motion-nachbau**.
+## Teil B, erst NACH dem Nachbau (motion-kanal-lernen Schritt 7)
+- „Welche Arten von Videos willst du in diesem Stil machen? Worüber?“ Zum Beispiel Technik erklärt, KI-News und Tools, Wissenschaft, Geschichte, Geld oder das eigene Fachgebiet. Eintragen: Nische und Thema, Zielgruppe.
+- „Was soll bei dir anders sein, dein eigener Twist?“ Eintragen: Eigener Twist.
+- Passt das Thema nicht zur Nische des Vorbilds, ist das gut: der Stil kommt vom Vorbild, die Inhalte kommen vom Nutzer.
+
+Ein einzelnes fremdes Video ohne Kanal-Lernen nachbauen (Skill motion-nachbau) gibt es nur, wenn der Nutzer ausdrücklich genau das will („bau mir dieses Video nach“).
 
 ## Beispiele: Short-Form (9:16), Faceless Motion Design
 | Account | Format | Schwierigkeit |

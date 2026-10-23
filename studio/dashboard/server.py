@@ -282,6 +282,7 @@ def stand() -> dict:
         sitzungen = []
         print(f'Hinweis: Sitzungen nicht lesbar: {e}', file=sys.stderr)
     alle_kosten = [k for s in alle for k in (s.get('kosten') or []) if isinstance(k, dict)]
+    _kanal_eta(kanaele, sitzungen)
     profil_da = (arbeit / 'PROFIL.md').is_file()
     zuletzt = _zuletzt_kanal(folgen, kanaele)
     phasen = [f.get('phase') for f in folgen]
@@ -401,6 +402,24 @@ def _autopilot_auftrag(art: str) -> dict:
     return {'meldung': ('Tagesbau ist an.' if art == 'produktion-an' else 'Durchlauf fertig.')
             + (' Der erste Bau läuft.' if erg['gestartet'] else f' Gerade startet nichts: {erg["grund"]}')
             + (hinweis if art == 'produktion-an' else '')}
+
+
+# Kanal lernen: Richtwerte je Schritt in Minuten (gemessen 23.10.: Hook-Nachbau 0 bis 18 s in rund 80 min)
+KANAL_MINUTEN = {'vorbild': 15, 'zerlegt': 40, 'bibel': 10, 'pilot': 100, 'gemessen': 15, 'kit': 30, 'bereit': 0}
+
+
+def _kanal_eta(kanaele: list[dict], sitzungen: list[dict]) -> None:
+    """Fertig-Zeit für Kanäle, die gerade lernen (Sebastian 23.10.: „im Studio steht, wann es fertig wird“). Nur wenn eine
+    Lern-Sitzung läuft, sonst pausiert. Grob: Summe der Richtwerte der offenen Schritte ab jetzt."""
+    lernt = any(not s.get('tot') and s.get('art') in ('kanal-lernen', 'weiter') for s in sitzungen or [])
+    phasen = list(_ms.KANAL_PHASEN)
+    for k in kanaele:
+        if k.get('phase') == 'bereit':
+            continue
+        i = phasen.index(k['phase']) if k.get('phase') in phasen else -1
+        rest = sum(KANAL_MINUTEN.get(p, 0) for p in phasen[i + 1:])
+        k['_laeuft'] = lernt
+        k['_eta'] = (datetime.now() + timedelta(minutes=rest)).astimezone().isoformat(timespec='minutes') if lernt and rest else None
 
 
 # ---------------------------------------------------------------- Adapter (eigene Pipeline)

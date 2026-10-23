@@ -1322,6 +1322,8 @@ function zeichneKanaele() {
     const anzahl = (S.folgen || []).filter(f => f.kanal === k.id).length;
     const mw = k.messwerte || {};
     const teile = [k.phase === 'bereit' ? 'Bereit für Folgen' : `lernt noch, als Nächstes ${esc(KANAL_SCHRITT[ph[i + 1]] || 'Vorbild')}`, plural(anzahl, 'Folge', 'Folgen')];
+    if (k._eta) teile.push(`<b>fertig etwa ${esc(uhr(k._eta))}</b>`);
+    else if (k.phase !== 'bereit' && k._laeuft === false) teile.push('pausiert, „Weiterlernen“ setzt fort');
     if (mw.delta_e != null) teile.push(`ΔE ${esc(zahl.format(mw.delta_e))}`);
     if (mw.ssim != null) teile.push(`SSIM ${esc(zahl.format(mw.ssim))}`);
     setHTML($('.kn-fuss', el), teile.map(t => `<span>${t}</span>`).join(''));

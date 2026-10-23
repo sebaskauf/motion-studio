@@ -8,6 +8,14 @@ description: "Phase B von Motion-Studio: einen Motion-Design-Kanal lernen. Top-V
 Ergebnis: Kanal `kanaele/<slug>/` mit Status `bereit`, darin BIBEL.md, REGELN.md, SKRIPT-BAUKASTEN.md, kit/ mit KATALOG.md
 und ton-rezept.json, dazu ein gemessener Pilot-Nachbau. Danach produziert der Skill `motion-folge` in diesem Stil.
 
+**Läuft automatisch durch** (Sebastian 23.10.2026):
+- Ist das Vorbild gewählt, ist der 1:1-Nachbau Pflicht, bevor eigene Folgen kommen. Frag nicht, ob nachgebaut werden soll.
+- Zu Beginn kommt ein kurzer Hinweis an den Nutzer, danach sieht er den Fortschritt im Studio (Schrittleiste mit Fertig-Zeit).
+- Fragen nur in drei Fällen:
+  - Kosten über „Ohne Nachfrage frei bis“
+  - ein Fehler, den du nicht selbst löst
+  - das Urteil zum fertigen Nachbau in Schritt 7
+
 Grundregel: **erst messen, dann bauen, dann wieder messen.** Kein Schritt gilt als fertig ohne seinen Gate-Beleg.
 Nach jedem Schritt: `__HEIM__/ms status kanal:<slug> <phase> --notiz "<Ergebnis mit Zahl>"` und ein Satz an den Nutzer.
 Zeitbedarf (Richtwert): Vorlagen 15 min, Zerlegen 30 bis 60 min, Pilot 2 bis 4 Stunden, Kit 30 min.
@@ -38,7 +46,11 @@ Während die Analyse läuft: dem Nutzer kurz sagen, was passiert und wie lange e
 Zeig in 6 bis 10 Zeilen: Was macht den Kanal aus (Look, Schnitt, Ton, Skript), welche Spur (2D, 3D-Web, Blender), was realistisch erreichbar ist, welches Video Pilot wird und warum, Zeit und Kosten (meist 0, Stimme beim Pilot entfällt).
 Ehrlich: Figuren mit Rig und Schauspiel sind der schwerste Teil. Ist der Kanal davon getragen, sag es vorher.
 Für den Pilot das Video wählen, das den Kanal am besten zeigt und am ehesten erreichbar ist. Bei gemischten Kanälen erst 2D.
-`__HEIM__/ms status kanal:<slug> --wartet "Pilot <id> so bauen? (Plan oben)"`. Erst nach Ja weiter, dann `--wartet-weg`.
+Nicht warten:
+- Plan als Notiz eintragen: `__HEIM__/ms status kanal:<slug> --notiz "Pilot <id>: <Spur>, <was realistisch ist>"`.
+- Dem Nutzer einen Satz sagen.
+- Direkt weiter mit Schritt 4.
+- Trägt eine Figur mit Schauspiel den Kanal, das ehrlich in den Satz schreiben und trotzdem bauen.
 
 ## 4. Pilot bauen (Phase `pilot`)
 **Originalton nur zum Messen.** Der Pilot übernimmt Ton, Zeitachse und Wortzeiten des Originals, damit Szene für Szene vergleichbar ist. Er wird nie veröffentlicht.
@@ -87,7 +99,10 @@ Agent **motion-pruefer** (`subagent_type: "motion-pruefer"`), Brief nur mit Pfad
 ## 7. Urteil des Nutzers (Gate)
 Nebeneinander-Video öffnen (Original links, Nachbau rechts). Sag, was gleich ist, was nicht und warum, mit Messwerten.
 `ms status kanal:<slug> --wartet "Pilot ansehen: passt der Stil so?"`. Sein Urteil wörtlich ins Lernlog.
-Will er mehr Nähe: zurück zu Schritt 5. Passt es: weiter.
+Will er mehr Nähe: zurück zu Schritt 5. Passt es, dann erst jetzt die zwei Fragen (Teil B aus motion-format-finden), einzeln:
+1. „Welche Arten von Videos willst du in diesem Stil machen? Worüber?“ → PROFIL.md: Nische und Thema, Zielgruppe.
+2. „Was soll bei dir anders sein als beim Vorbild, dein eigener Twist?“ → PROFIL.md: Eigener Twist. Er fließt in REGELN.md und den Skript-Baukasten ein.
+Dann weiter mit Schritt 8.
 
 ## 8. Baukasten (Phase `kit`)
 Skill **motion-kanal-kit**: aus dem Pilot wiederverwendbare Bausteine nach `kanaele/<slug>/kit/` (lib, fonts, tex, beispiele), `kit/KATALOG.md`, `REGELN.md` (was den Stil ausmacht, als prüfbare Regeln), `kit/ton-rezept.json`, Captions-Stil.

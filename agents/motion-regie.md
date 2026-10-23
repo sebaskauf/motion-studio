@@ -26,7 +26,7 @@ Nur die Hauptsitzung kann Analyse, Bauer und Prüfer starten. Fehlt dir das Agen
 ## Start (jedes Mal, kostet nichts)
 1. `__HEIM__/ms check --kurz`. Steht bei `basis` FEHLT: Skill **motion-setup** laden und genau den fehlenden Teil mit dem Nutzer durchgehen. Erst wenn die Basis steht, geht es weiter.
 2. `__ARBEIT__/PROFIL.md` und `__ARBEIT__/LERNLOG.md` lesen. Das Profil sagt Sprache, Plattform, Budget und Freigaben. Das Lernlog sagt, was schon funktioniert hat.
-3. `__HEIM__/ms status`: Ist etwas offen (Folge oder Kanal nicht fertig), sag es in einem Satz und mach dort weiter, statt neu anzufangen. Steht ein `WARTET` dabei, stell genau diese Frage zuerst. Gibt es noch keinen Kanal und keine Folge und der Nutzer sagt nichts Konkretes: Produktion beginnt mit den drei Kernfragen aus Skill motion-format-finden (Tabelle unten).
+3. `__HEIM__/ms status`: Ist etwas offen (Folge oder Kanal nicht fertig), sag es in einem Satz und mach dort weiter, statt neu anzufangen. Steht ein `WARTET` dabei, stell genau diese Frage zuerst. Gibt es noch keinen Kanal und keine Folge und der Nutzer sagt nichts Konkretes: Produktion beginnt mit Skill motion-format-finden (Tabelle unten). Ist der Stil-Account klar, startet das Lernen samt 1:1-Nachbau automatisch, ohne Frage.
 4. `__HEIM__/ms log "Regie gestartet: <Auftrag in fünf Wörtern>" --wer motion-regie`
 
 ## Absicht erkennen
@@ -36,7 +36,7 @@ Nur die Hauptsitzung kann Analyse, Bauer und Prüfer starten. Fehlt dir das Agen
 | „Sounds einrichten“, Sound-Bibliothek leer | Skill `motion-sound-bibliothek` |
 | „bau dieses Video nach: <Link oder Datei>“, „1:1 nachbauen“, ein einzelnes Video | Skill `motion-nachbau` (alles erkennen, nachbauen, messen, postbare Kopie) |
 | „lern den Kanal @x“, neues Vorbild, Stil eines Kanals übernehmen | Skill `motion-kanal-lernen` |
-| Setup fertig, aber noch kein Kanal und keine Folge, „wie fange ich an“, „was soll ich machen“ | Skill `motion-format-finden`: drei Kernfragen, einzeln (Short-Form oder lange YouTube-Videos? Welcher Stil von welchem Account? Welche Arten von Videos?), dann motion-kanal-lernen bzw. motion-nachbau |
+| Setup fertig, aber noch kein Kanal und keine Folge, „wie fange ich an“, „was soll ich machen“ | Skill `motion-format-finden`: zwei Fragen (Short-Form oder YouTube? Welcher Stil von welchem Account?), dann OHNE Rückfrage `ms starten kanal-lernen --url …` (eigene Sitzung, Studio zeigt Fortschritt und Fertig-Zeit). Arten von Videos und eigener Twist erst nach dem Nachbau |
 | „nächste Folge“, „neues Video“, „mach ein Reel über …“ | Skill `motion-folge` (braucht einen Kanal mit Status `bereit`, sonst erst Phase B) |
 | „such Vorlagen“, „was läuft gerade bei @x“ | Skill `motion-vorlagen-finden` |
 | „mach weiter“, „was ist offen“ | `__HEIM__/ms status`, an der Phase der offenen Folge weitermachen |
