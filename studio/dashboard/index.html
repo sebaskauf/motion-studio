@@ -1025,7 +1025,12 @@ function hinweiseListe() {
     } else if (s.zustand === 'wartet') {
       if (f && FERTIG.includes(f.phase)) { erledigt.push({ s, f }); continue; }
       if (ceoOffen.has(s.name) || ['gefragt', 'eskaliert'].includes(s.ceo?.status)) continue;   // der CEO ist dran bzw. Zeile „CEO fragt“
-      if (steuerbar && (s.frage || s.nachricht)) {   // Frage samt Optionen direkt in JETZT beantworten (Sebastian 22.10.)
+      // Sebastian 23.10.: nur Dringendes in JETZT. Mit CEO-Aufsicht beantwortet der CEO Rückfragen selbst und gibt nur Kritisches
+      // weiter (Zeile „CEO fragt“). Ohne CEO: nur echte Fragen (Menü oder Satz mit „?“), keine normalen Nachrichten.
+      if (S.ceo || s.stufe_fertig) continue;
+      const echteFrage = !!s.frage || /\?\s*$/.test(s.nachricht || '');
+      if (!echteFrage) continue;
+      if (steuerbar) {   // Frage samt Optionen direkt in JETZT beantworten (Sebastian 22.10.)
         h.push({ art: 'frage', tag: s.frage?.art === 'freigabe' ? 'Freigabe' : 'Frage', sitzung: s.name, s,
           text: `${sitzungTitel(s)} ${s.frage?.art === 'freigabe' ? 'möchte etwas ausführen und wartet auf dein Okay.' : 'fragt dich etwas.'}` });
         continue;
@@ -1516,7 +1521,7 @@ function ceoKarte(el, c) {
 // Figur der Sitzung: Tätigkeit aus dem Terminal (macht.art), Frage, Fehler, fertig
 function figurArt(s, erledigt) {
   if (s.tot) return 'beendet';
-  if (erledigt) return 'fertig';
+  if (erledigt || s.stufe_fertig) return 'fertig';
   if (s.zustand === 'fehler') return 'fehler';
   if (s.zustand === 'wartet') return s.frage || /\?\s*$/.test(s.nachricht || '') ? 'fragt' : 'wartet';
   const a = s.macht?.art;
@@ -1542,7 +1547,13 @@ function agentKarte(el, s) {
   if (s.tot) info = s.grund && s.grund !== 'beendet' ? `Beendet: ${s.grund}.` : 'Fertig, die Sitzung ist beendet.';
   else if (s.zustand === 'fehler') { info = s.haenger ? `Keine Ausgabe mehr: ${s.grund}. „Weiter“ stößt ihn an.` : `${s.grund}. „Weiter“ schickt ihm „weiter“.`; infoArt = 'a-info bad'; }
   else if (erledigt) info = `„${f.titel || folgeId(f)}“ ist schon ${f.phase === 'gepostet' ? 'gepostet' : 'fertig'}. Die Sitzung wartet nur noch und kann gestoppt werden.`;
-  else if (s.zustand === 'wartet') info = s.frage ? 'Wartet auf dich. Wähl unten eine Antwort oder schreib selbst.' : s.nachricht ? 'Wartet auf deine Antwort. Seine letzte Nachricht steht unten.' : 'Wartet auf den nächsten Auftrag.';
+  else if (s.stufe_fertig) info = `Stufe ${s.stufe_fertig} ist fertig. Der Autopilot startet gleich Stufe ${s.stufe_fertig === 'A' ? 'B' : 'C'} in einer frischen Sitzung, du musst nichts tun.`;
+  else if (s.zustand === 'wartet') {
+    const echt = !!s.frage || /\?\s*$/.test(s.nachricht || '');
+    info = !echt ? 'Wartet, keine Frage offen. Seine letzte Nachricht steht unten.'
+      : S.ceo ? 'Hat eine Rückfrage. Der CEO beantwortet sie in der Regel selbst, du kannst aber auch hier antworten.'
+      : 'Wartet auf dich. Antworte unten oder wähl eine Option.';
+  }
   else if (s.auftrag) info = s.auftrag.replace(/\s*Autopilot-Bau:[\s\S]*$/, ' (Autopilot, ohne Rückfragen)');
   setClass($('.a-info', el), infoArt);
   setText($('.a-info', el), info);
@@ -1552,8 +1563,8 @@ function agentKarte(el, s) {
     : c.status === 'eskaliert' ? '<span class="tag bad">CEO</span><span>hat die Frage an dich gegeben, siehe „Jetzt“.</span>'
     : `<span class="tag">CEO</span><span title="${esc(c.antwort)}">${esc(c.antwort || 'hat geantwortet')}</span>`);
   // Frage-Block: Frage + Optionen oder letzte Nachricht + Antwortfeld (Sebastian 22.10.: „ich kann nicht sehen, was er will“)
-  const fragt = !s.tot && !erledigt && !s.nur_ansehen && (s.zustand === 'wartet' && (s.frage || s.nachricht) || s.zustand === 'fehler');
-  const inJetzt = fragt && s.zustand === 'wartet' && !['gefragt', 'eskaliert'].includes(s.ceo?.status);   // steht als Frage oben in JETZT
+  const fragt = !s.tot && !erledigt && !s.nur_ansehen && !s.stufe_fertig && (s.zustand === 'wartet' && (s.frage || s.nachricht) || s.zustand === 'fehler');
+  const inJetzt = fragt && s.zustand === 'wartet' && !S.ceo && (!!s.frage || /\?\s*$/.test(s.nachricht || ''));   // steht als Frage oben in JETZT
   const kurzFrage = s.frage ? (s.frage.art === 'freigabe' ? 'Möchte etwas ausführen.' : (s.frage.text || s.frage.titel || '').split('\n')[0]) : (s.nachricht || '').split('\n').pop();
   setHTML($('.a-fb', el), !fragt ? '' : inJetzt
     ? `<div class="a-kurzfrage"><span class="tag warn">${s.frage?.art === 'freigabe' ? 'Freigabe' : 'Frage'}</span><span>${esc(kurzFrage)}</span><button type="button" class="knopf klein primaer" data-aktion="zur-frage" data-sitzung="${esc(s.name)}">Antworten</button></div>`
