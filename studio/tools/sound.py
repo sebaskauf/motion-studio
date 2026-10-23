@@ -734,7 +734,7 @@ def cmd_setzen(a):
         if a.urteil:
             s['urteil'] = None if a.urteil == 'offen' else a.urteil
             if a.urteil == 'behalten' and s.get('trim_db') is None and a.trim is None:
-                s['trim_db'] = 0.0
+                s['trim_db'] = round(_ton.trim_geschaetzt(s['dauer'], s.get('hell', 0)), 1)   # wie die Abhörseite, nicht 0
         if a.trim is not None:
             s['trim_db'] = round(a.trim, 1)
         if a.art:

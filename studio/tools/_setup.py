@@ -269,6 +269,17 @@ def p_python():
     return _p('python', 'Python', 'basis', True, ok, v, f'{wo}, braucht >= {PY_MIN[0]}.{PY_MIN[1]}' if not ok else wo)
 
 
+def p_platz():
+    """Freier Speicher am Arbeitsordner. Unter 5 GB brechen HyperFrames-Skills, Renders und Modelle ab („No space left on device“)."""
+    try:
+        frei = shutil.disk_usage(_ms.arbeit() if _ms.arbeit().exists() else Path.home()).free / 1e9
+    except OSError:
+        return _p('platz', 'Freier Speicher', 'basis', False, True, detail='nicht messbar')
+    ok = frei >= 5
+    return _p('platz', 'Freier Speicher', 'basis', False, ok, f'{frei:.1f} GB',
+              '' if ok else 'unter 5 GB: Renders, Modelle und HyperFrames-Skills brechen ab', installieren='Platz schaffen (mindestens 5 GB frei)')
+
+
 def p_venv():
     vp = venv_python()
     return _p('venv', 'Python-Umgebung (.venv)', 'basis', False, vp is not None,
@@ -303,7 +314,7 @@ def p_hyperframes():
     return _p('hyperframes', 'HyperFrames (npx)', 'basis', True, True, v)
 
 
-HF_KERN = ['hyperframes', 'hyperframes-core']
+HF_KERN = ['hyperframes']   # hyperframes-core gibt es ab HyperFrames 0.8.18x nicht mehr (Windows-Test 23.10.2026)
 
 
 def hf_skills_stand(mit_check: bool = True, timeout: int = 40) -> dict:
@@ -452,6 +463,7 @@ def pruefungen(stufen: list[str], kurz: bool = False) -> list[dict]:
     auf(p_programm, 'ffprobe', 'ffprobe', 'basis', True, ['-version'], r'version\s+n?(\d+(?:\.\d+)*)')
     auf(p_python)
     auf(p_venv)
+    auf(p_platz)
     auf(p_node)
     auf(p_hyperframes)
     auf(p_hf_skills, kurz)

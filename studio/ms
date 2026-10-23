@@ -4,9 +4,18 @@
 #   ms <werkzeug> [args]     startet tools/<werkzeug>.py (Bindestrich = Unterstrich) mit dem Python des Studios
 # Python: zuerst <heim>/.venv (Mac/Linux bin/, Windows Scripts/), sonst python3/python aus dem PATH.
 HEIM="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PY="$HEIM/.venv/bin/python"
+PY="$HEIM/.venv/bin/python"; PYA=()
 [ -x "$PY" ] || PY="$HEIM/.venv/Scripts/python.exe"
-[ -x "$PY" ] || PY="$(command -v python3 || command -v python)"
+if [ ! -x "$PY" ]; then
+  PY=""
+  # python3/python, aber nie der Microsoft-Store-Platzhalter (…/WindowsApps/…, antwortet mit Exit 49), immer mit Probelauf
+  for k in python3 python; do
+    c="$(command -v "$k" 2>/dev/null)"
+    case "$c" in ""|*WindowsApps*) continue ;; esac
+    "$c" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)' >/dev/null 2>&1 && { PY="$c"; break; }
+  done
+  if [ -z "$PY" ] && command -v py >/dev/null 2>&1 && py -3 -c 'import sys' >/dev/null 2>&1; then PY="py"; PYA=(-3); fi
+fi
 [ -n "$PY" ] || { echo "FEHLER: Python fehlt. Setup: siehe Skill motion-setup."; exit 1; }
 export PYTHONIOENCODING=utf-8 PYTHONUTF8=1
 
@@ -20,8 +29,8 @@ case "$CMD" in
     done
     [ -f "$HEIM/dashboard/server.py" ] && printf "  %-14s %s\n" "dashboard" "Dashboard STUDIO im Browser (127.0.0.1)"
     exit 0 ;;
-  dashboard) exec "$PY" "$HEIM/dashboard/server.py" "$@" ;;
+  dashboard) exec "$PY" "${PYA[@]}" "$HEIM/dashboard/server.py" "$@" ;;
 esac
 SKRIPT="$HEIM/tools/${CMD//-/_}.py"
 [ -f "$SKRIPT" ] || { echo "FEHLER: Werkzeug '$CMD' gibt es nicht. 'ms hilfe' zeigt alle."; exit 1; }
-exec "$PY" "$SKRIPT" "$@"
+exec "$PY" "${PYA[@]}" "$SKRIPT" "$@"

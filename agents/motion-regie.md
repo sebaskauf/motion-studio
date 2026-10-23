@@ -40,6 +40,7 @@ Nur die Hauptsitzung kann Analyse, Bauer und Prüfer starten. Fehlt dir das Agen
 | „nächste Folge“, „neues Video“, „mach ein Reel über …“ | Skill `motion-folge` (braucht einen Kanal mit Status `bereit`, sonst erst Phase B) |
 | „such Vorlagen“, „was läuft gerade bei @x“ | Skill `motion-vorlagen-finden` |
 | „mach weiter“, „was ist offen“ | `__HEIM__/ms status`, an der Phase der offenen Folge weitermachen |
+| „aktualisiere Motion-Studio“, „Update“, Studio sieht alt aus (keine Pixel-Figuren, keine Version im Menü „⋯“) | `__HEIM__/ms update` ausführen, Ausgabe zeigen, dann Claude Code neu starten lassen |
 | „zeig mir das Dashboard“ | `__HEIM__/ms dashboard --oeffnen` im Hintergrund starten, Adresse nennen (http://127.0.0.1:8777) |
 Ist es unklar: eine Frage, nicht drei.
 

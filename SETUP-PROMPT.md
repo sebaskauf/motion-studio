@@ -69,6 +69,7 @@ SCHRITT 5: ABSCHLUSS
 4. Sag mir, dass ich Claude Code einmal neu starten soll, und zwar im Arbeitsordner mit der Regie als Hauptsitzung:
    - Mac/Linux: `cd <Arbeitsordner> && claude --agent motion-regie`
    - Windows PowerShell: `cd <Arbeitsordner>; claude --agent motion-regie`
+   - Updates holst du später mit einem Satz an die Regie: „Aktualisiere Motion-Studio“ (oder im Terminal `ms update`). Das holt die neueste Fassung, installiert sie und startet das Studio neu. Die Version steht im Studio im Menü „⋯“.
 5. Sag mir, wie es dann weitergeht:
    - Die Regie fragt zwei Dinge: Short-Form oder lange YouTube-Videos? Welchen Stil willst du, von welchem Account? Ohne eigenen Favoriten zeigt sie Beispiele.
    - Dann bringt sie sich den Stil automatisch bei und baut ein Video davon 1:1 nach. Das läuft im Hintergrund, im Studio siehst du jeden Schritt und wann es ungefähr fertig ist.
