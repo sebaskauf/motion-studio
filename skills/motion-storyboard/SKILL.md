@@ -74,8 +74,11 @@ Pro Szene:
   Wow: <…>   Übergang rein: <…>   raus: <…>
 [Pilot] Referenz: analyse/<video>/… Bilder je Szene. Ziel so nah wie möglich. Paarbilder mit
   __HEIM__/ms snap <folge-id> <zeiten> --gegen __ARBEIT__/folgen/<folge-id>/vorbild/ausschnitt.mp4 (gleiche Zeitachse).
+[Pilot] Bewegungsliste deiner Szenen (aus NACHBAU.md bzw. der Analyse): <Zeit · Element · wie es auftaucht · Dauerbewegung · Details>
+  Bewegung prüfst du mit Streifen: __HEIM__/ms snap <folge-id> <t> --streifen --gegen …/vorbild/ausschnitt.mp4
 Fertig, wenn: __HEIM__/ms szenen <folge-id> --check --lint --nur <s2,s4> ohne Fehler, jede Szene im Raster angesehen und
-  korrigiert, Kernaktionen auf dem Wort sichtbar.
+  korrigiert, Kernaktionen auf dem Wort sichtbar. [Pilot] Jeder Eintrag der Bewegungsliste einmal als Streifen gegen das
+  Original angesehen und angeglichen (wie es auftaucht, Dauerbewegung, Details).
 Dann build/fertig_<name>.json und build/sfx_<name>.json schreiben (Format im Agent motion-bauer) und kurz berichten.
 Live-Log: __HEIM__/ms log "<was gerade passiert>" --ziel <folge-id> --wer motion-bauer
 Du arbeitest im Hintergrund, niemand beantwortet Fragen. Unklar: sinnvolle Annahme treffen, weiterbauen, die Annahme

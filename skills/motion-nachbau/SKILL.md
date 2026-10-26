@@ -19,7 +19,15 @@ Für EIN konkretes Video (Sebastian 23.10.2026: „konkrete Videos eins zu eins 
    - Musikbett ja/nein und wie leise
    - Soundeffekte mit Zeit und Art
 3. Sprache: das Transkript aus `vorlagen/transkripte/<id>.txt` (aus `ms laden`). Gibt es Stimme, aber kein Transkript: noch einmal mit `ms laden … --neu`.
-4. In `kanaele/<slug>/analyse/<id>/NACHBAU.md` festhalten:
+4. **Bewegung und Details** (Sebastian 26.10.: „mehr auf Detailarbeit achten, Frame für Frame“): Standbilder und ΔE/SSIM zeigen nicht, WIE sich etwas bewegt. Deshalb pro Einstellung eine kurze **Bewegungsliste**:
+   - wie jedes Element auftaucht und verschwindet (ploppt auf, wächst aus einem Punkt, fährt rein, blendet ein), von wo aus und in welcher Reihenfolge
+   - was sich dauerhaft bewegt (Räder drehen sich weiter, Licht pulsiert, Partikel driften, Kamera driftet), auch wenn es nur Nebensache ist
+   - kleine Details, die den Look tragen (Glanzkanten, Schatten, Linienstärke, Rundungen)
+   Ansehen statt raten: dichte Bilder des Originals an jedem Moment, an dem sich etwas tut, z. B. 6 Bilder in 0,5 s:
+   `ffmpeg -v error -ss <t> -t 0.5 -i <original> -vf "fps=12,scale=270:-2,tile=6x1" -frames:v 1 streifen_<t>.jpg`, dann mit dem Read-Tool ansehen.
+   Beispiele aus dem Test 23.10.: Die Feldbögen ploppen nacheinander aus dem jeweils aktiven Pad unter dem Auto auf (im Nachbau hingen sie starr am Auto). In der Nahaufnahme drehen sich die Räder durchgehend (im Nachbau standen sie still).
+   Pro Einstellung reichen 2 bis 5 Einträge, die man sieht. Keine Doktorarbeit.
+5. In `kanaele/<slug>/analyse/<id>/NACHBAU.md` festhalten:
 
    | Bereich | Was hinein muss |
    |---|---|
@@ -28,6 +36,7 @@ Für EIN konkretes Video (Sebastian 23.10.2026: „konkrete Videos eins zu eins 
    | Szenen | Liste mit Zeiten |
    | Musik | ja/nein, Pegel |
    | Soundeffekte | Zeit und Art |
+   | Bewegungsliste | je Einstellung: Element, wie es auftaucht, Dauerbewegung, Details, Zeit |
    | Typ und Spur | 2D, 3D-Web oder Blender |
    | Schwierigstes | z. B. Figur mit Rig |
 
@@ -51,12 +60,13 @@ Wie motion-kanal-lernen Schritt 4 bis 6:
 3. `ms woerter <folge>`, Caption-Gruppen wie im Original
 4. Storyboard aus der Schnittliste: eine Szene pro Shot
 5. `ms szenen <folge> --plan`
-6. motion-bauer parallel. Im Brief stehen Referenzbilder je Szene und Paarbilder mit `ms snap … --gegen`.
+6. motion-bauer parallel. Im Brief stehen Referenzbilder je Szene, die Zeilen der Bewegungsliste je Szene und Paarbilder mit `ms snap … --gegen`. Für Bewegung: `ms snap <folge> <t> --streifen --gegen vorbild/ausschnitt.mp4` (6 Bilder im Abstand von 0,08 s, Original neben Nachbau).
 7. `ms szenen <folge>`, dann `ms render <folge> nachbau-v1`
 
 ## 5. Messen
 - `__HEIM__/ms vergleich <folge>`: ΔE (Farbabstand) und SSIM (Bildähnlichkeit) je Szene, dazu das Vergleichsvideo Original neben Nachbau.
-- Danach EINE Verbesserungsrunde an den drei schlechtesten Szenen, nur dort neu rendern, noch einmal messen.
+- Bewegung prüfen, die Zahlen sehen sie nicht: je Eintrag der Bewegungsliste ein Streifen `ms snap <folge> <t> --streifen --gegen vorbild/ausschnitt.mp4` und ansehen. Taucht es genauso auf, läuft die Dauerbewegung weiter, stimmen die Details?
+- Danach EINE Verbesserungsrunde: die drei schlechtesten Szenen nach Zahlen plus die deutlichsten Bewegungs- und Detail-Abweichungen aus den Streifen. Nur dort ändern, neu rendern, noch einmal messen.
 - Ergebnis in NACHBAU.md:
   - Messwerte vorher und nachher
   - was nah dran ist, was nicht und warum

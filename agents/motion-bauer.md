@@ -35,6 +35,7 @@ Niemand beantwortet Fragen, während du baust, und du wartest nie auf eine Antwo
 5. **Selbst prüfen**, bevor du fertig meldest:
    - `__HEIM__/ms szenen <folge-id> --check --lint --nur <deine ids>`: keine FEHLER zu deinen Szenen (auch kein „noch nicht gebaut“), lint 0 Fehler.
    - `__HEIM__/ms snap <folge-id> --szene <id> --raster 0.25 --name <name>_<id>` und die Kernaktionen mit `--lokal`. Jeden Kontaktbogen mit dem Read-Tool ansehen, Prüfliste aus dem Skill abarbeiten, korrigieren, erneut prüfen. Der vorige Bogen liegt zum Vergleich in `snapshots/<name>_<id>/_ueberholt/`.
+   - **Pilot und Nachbau: Bewegung und Details.** Für jeden Eintrag der Bewegungsliste aus dem Brief einen Streifen gegen das Original: `__HEIM__/ms snap <folge-id> <t> --streifen --gegen <ausschnitt> --name <name>_<id>_bew`. Ansehen: Taucht es genauso auf (ploppt, wächst, fährt rein) und von derselben Stelle? Läuft Dauerbewegung weiter (Räder, Licht, Partikel)? Stimmen kleine Details (Glanz, Kanten, Rundungen)? Abweichungen einmal angleichen, dann weiter. Ein Durchgang, keine Prüfschleife.
 6. **Gemeinsamer Stand:** Die Regie hat `ms szenen` vor deinem Start laufen lassen (index.html und Platzhalter für alle Szenen). Fehlt `build/index.html` oder passt es nicht zu scenes.json: nicht selbst schreiben. `ms log "…" --art warnung`, in `fertig_<name>.json` unter `"offen"` eintragen, aufhören.
 
 ## Fertig-Meldung

@@ -24,7 +24,8 @@ Dein Maßstab: Der Nutzer darf keinen Fehler als Erster finden.
 4. **Stil gegen BIBEL und REGELN:** jede [R]-Regel der BIBEL und jede Zeile aus REGELN.md (falls vorhanden) abhaken (Farben, Schrift, Kamera, Schnittrhythmus, Caption-Stil). Abweichung = Befund mit Regel-Zitat.
 5. **Skript und Captions:** Hook nach Baukasten-Formel? Gesprochenes klingt natürlich? Caption-Wörter richtig geschrieben und zeitlich auf dem Wort?
 6. **Ton:** `build/assets/audio/mix_bericht.json` (Gate im Mix: −14 LUFS ±0,5, Effekte unter der Stimme: Median ≤ −12 dB, Maximum ≤ −10 dB, Hook ≤ 4 dB). `out/qa_<name>/RENDER.md` (Bildzahl, Schwarzbild-Scan, LUFS). Lautheit im Render außerhalb −14 ±1 oder gesperrte Sounds = kritisch. Beim Pilot ist der Ton der Originalton ohne Mix: nur prüfen, dass Bild und Ton nicht versetzt sind.
-7. **Pilot zusätzlich:** Ampel aus VERGLEICH.md, jeden Paarbogen ansehen. Benenne pro gelber/roter Szene die sichtbare Hauptursache (Farbe, Lage, Größe, Timing, Form). Widersprechen Zahl und Bild, das Bild zählt, das gehört in den Bericht.
+7. **Pilot zusätzlich:** Ampel aus VERGLEICH.md, jeden Paarbogen ansehen. Benenne pro gelber/roter Szene die sichtbare Hauptursache (Farbe, Lage, Größe, Timing, Form, Bewegung). Widersprechen Zahl und Bild, das Bild zählt, das gehört in den Bericht.
+   Bewegung und Details: Für die Einträge der Bewegungsliste (NACHBAU.md bzw. Analyse) je einen Streifen gegen das Original ansehen, `__HEIM__/ms snap <folge> <t> --streifen --gegen <ausschnitt> --name pruef_bew`. Melde, wo etwas anders auftaucht, eine Dauerbewegung fehlt (z. B. Räder stehen still) oder Details abweichen, auch in grünen Szenen.
 
 ## Bericht `<folge>/PRUEFBERICHT.md`
 - **Gesamturteil** in einem Wort: **sehr gut** / **gut mit Mängeln** / **nicht abnahmefähig**, mit 2 bis 3 Sätzen Begründung.

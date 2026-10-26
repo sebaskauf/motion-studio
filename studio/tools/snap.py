@@ -8,6 +8,9 @@
                                                 (Pilot; der Ausschnitt aus "ms stimme --original" hat die Zeitachse des Pilots).
                                                 Ergebnis dann auch kontaktbogen_paar*.jpg: je Zeitpunkt Original | Nachbau
                                                 nebeneinander, beschriftet (ein Bogen statt vieler pair-*.jpg)
+  ms snap <folge> 15.2 17.8 --streifen --gegen <folge>/vorbild/ausschnitt.mp4
+                     Bewegungsstreifen: jede Zeit wird zu 6 Bildern im Abstand von 0,08 s (--streifen 0.05 für dichter).
+                     Zeigt, WIE etwas auftaucht oder sich bewegt (ploppt auf, dreht sich weiter), was Standbilder nicht zeigen.
   --name kern_s2     Ordnername unter snapshots/ (Standard: Szene bzw. "snap"). Gleicher Name: hyperframes ersetzt die
                      Bilder, der vorige Kontaktbogen wandert vorher nach <name>/_ueberholt/ (Vorher-Nachher-Vergleich)
 Ergebnis: <folge>/snapshots/<name>/frame-*.png (volle Auflösung) + kontaktbogen*.jpg (Zeiten global und lokal beschriftet).
@@ -123,6 +126,8 @@ def main():
     ap.add_argument('--lokal', action='store_true', help='Zeiten sind lokal zur --szene')
     ap.add_argument('--name')
     ap.add_argument('--gegen', help='Vorbild-Video für Paar-Bilder (hyperframes --against)')
+    ap.add_argument('--streifen', type=float, nargs='?', const=0.08,
+                    help='Bewegungsstreifen: jede Zeit wird zu 6 Bildern im Abstand von 0,08 s (oder dem angegebenen Wert)')
     ap.add_argument('--ohne-lint', action='store_true')
     a = ap.parse_args()
 
@@ -142,6 +147,10 @@ def main():
         if not sz:
             raise SystemExit('FEHLER: --lokal braucht --szene.')
         zeiten = [sz['start'] + t for t in zeiten]
+    if a.streifen:
+        if not zeiten:
+            raise SystemExit('FEHLER: --streifen braucht Zeiten, z. B. ms snap <folge> 15.2 --streifen --gegen <original>')
+        zeiten = [t + k * a.streifen for t in zeiten for k in range(6)]
     if a.raster or (sz and not zeiten):
         schritt = a.raster or 0.25
         if sz:

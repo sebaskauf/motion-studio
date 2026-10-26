@@ -35,7 +35,8 @@ Grenze der Messung: Das Original gegen sich selbst mit leicht gedrehten Figuren 
 
 ## Ansehen, dann ändern
 1. **Paarbogen der schlechtesten Szene** mit dem Read-Tool öffnen. Eine gute Zahl beweist keinen gleichen Look, eine schlechte sagt nicht, warum.
-2. **Eine Ursache benennen**, sichtbar im Bild: Farbe/Helligkeit (Grading, Licht), Lage/Größe (Kamera, Abstand, fov), Timing (Aktion zu früh/spät), Form (Proportionen), fehlendes Element.
+2. **Eine Ursache benennen**, sichtbar im Bild: Farbe/Helligkeit (Grading, Licht), Lage/Größe (Kamera, Abstand, fov), Timing (Aktion zu früh/spät), Form (Proportionen), fehlendes Element, **Bewegung** (taucht anders auf, Dauerbewegung fehlt, anderes Tempo oder Easing).
+   Bewegung zeigen Standbilder und Zahlen nicht. Für die Einträge der Bewegungsliste Streifen ansehen: `__HEIM__/ms snap <folge> <t> --streifen --gegen <ausschnitt>` (6 Bilder im Abstand von 0,08 s, Original | Nachbau). Eine grüne Szene kann sich trotzdem falsch bewegen.
 3. **Eine Variable pro Versuch.** Ändern, Szene per `ms snap --gegen` prüfen, dann neu rendern und neu messen.
 4. Jeden Versuch in `VERSUCHE.md` der Folge notieren: `| Szene | Versuch | geänderte Variable | ΔE vorher → nachher | Urteil |`.
 5. Reihenfolge: rote Szenen zuerst, dann gelbe. Grün reicht, nicht weiter polieren.
