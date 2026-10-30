@@ -48,7 +48,9 @@ from urllib.parse import parse_qs, urlparse
 
 HIER = Path(__file__).resolve().parent
 sys.path.insert(0, str(HIER.parent / 'tools'))
+import _konfig  # noqa: E402
 import _ms  # noqa: E402
+import _vorrat  # noqa: E402
 import starten  # noqa: E402
 
 FERTIG = ('fertig', 'geplant', 'gepostet')
@@ -299,14 +301,15 @@ def stand() -> dict:
                                 'phase': k.get('phase')} for k in kanaele]},
         'vorschlag': _vorschlag(folgen, kanaele, sitzungen, profil_da, zuletzt),
         'adapter': False, 'titel': 'Motion-Studio', 'faehig': {'gepostet': True, 'geplant': True, 'ordner': True},
-        'sendeplan': _sendeplan_eingebaut(folgen), 'hinweise': _hinweise_eingebaut(folgen, kanaele, profil_da),
+        'sendeplan': _sendeplan_eingebaut(folgen), 'hinweise': _hinweise_eingebaut(folgen, kanaele, profil_da) + _hinweise_produktion(kanaele, zuletzt),
         'crew': _crew_aus_log(starten.crew_status(CREW_EINGEBAUT, sitzungen, folgen)) + [_autopilot_figur()],
         'version': _ms.config().get('version'),
         **_steuerung_eingebaut(kanaele, zuletzt),
+        **_mitglied_eingebaut(alle, kanaele, zuletzt),
     }
 
 
-AUTOPILOT_ARTEN = ('produktion-an', 'produktion-aus', 'bauen', 'anstossen')
+AUTOPILOT_ARTEN = ('produktion-an', 'produktion-aus', 'bauen', 'anstossen', 'autopilot-an', 'autopilot-aus', 'posten-einrichten')
 CREW_VON_WER = {'motion-regie': 'regie', 'motion-studio': 'regie', 'motion-bauer': 'bauer', 'motion-analyse': 'analyse', 'motion-pruefer': 'pruefer'}
 
 
@@ -335,8 +338,21 @@ def _ap():
     return autopilot
 
 
+_AP_CACHE: dict = {}
+
+
+def _ap_stand() -> dict:
+    """ms autopilot stand() höchstens alle 2 s neu (eine Seite fragt ihn sonst viermal je Abruf, unter Windows startet
+    die Zeitplan-Prüfung jedes Mal schtasks)."""
+    import time as _t
+    if _AP_CACHE.get('t', 0) > _t.time() - 2:
+        return _AP_CACHE['s']
+    _AP_CACHE.update(s=_ap().stand(), t=_t.time())
+    return _AP_CACHE['s']
+
+
 def _autopilot_figur() -> dict:
-    s = _ap().stand()
+    s = _ap_stand()
     c = s['konfig']
     if not c['an']:
         st = {'art': 'schlaeft', 'text': 'Tagesbau ist aus', 'an': False, 'sitzungen': []}
@@ -346,17 +362,19 @@ def _autopilot_figur() -> dict:
     else:
         st = {'art': 'wartet', 'text': s['grund'] or 'startet beim nächsten Durchlauf einen Bau', 'an': True, 'sitzungen': []}
     return {'id': 'autopilot', 'name': 'Autopilot', 'figur': 'autopilot', 'rolle': 'startet den Tagesbau', 'modell': 'alle 15 min',
-            'text': 'Startet jeden Tag im Bau-Fenster neue Folgen für deinen Kanal, höchstens zwei gleichzeitig, token-sparsam mit Sonnet '
-                    'und ohne Auto-Gedächtnis. Erreicht Claude das Nutzungslimit, macht er Pause. Gepostet wird nichts.', 'status': st}
+            'text': 'Startet jeden Tag im Bau-Fenster eigene Folgen aus deiner Ideenliste (Standard 1 am Tag), plant mit Opus und baut mit '
+                    'Sonnet in frischen Sitzungen. Die Wochenbremse hält ihn an, bevor dein Claude-Limit knapp wird, beim Nutzungslimit pausiert er '
+                    'bis zum Reset. Gepostet wird nur auf Plattformen, die du nach dem ersten Lauf freigegeben hast.', 'status': st}
 
 
 def _steuerung_eingebaut(kanaele: list[dict], zuletzt: str | None) -> dict:
     """Panel STEUERUNG im Motion-Studio-Modus: Tagesbau (ms autopilot) als Schalter, sofort bauen, Durchlauf anstoßen."""
     ap = _ap()
-    s = ap.stand()
+    s = _ap_stand()
     c = s['konfig']
     kanal = _ap_kanal(c, kanaele, zuletzt)
-    modell = {'claude-sonnet-5-5': 'Sonnet 5.5', 'claude-opus-5-5': 'Opus 5.5', 'claude-fable-5-1': 'Fable 5.1'}.get(c['modell'], c['modell'])
+    modell = (f'{_konfig.anzeige(c["modell_planung"])} plant, {_konfig.anzeige(c["modell"])} baut' if c['staffel']
+              else _konfig.anzeige(c['modell']))
     text = (f'{s["heute"]} von {c["pro_tag"]} Bauten heute · {c["parallel"]} gleichzeitig · {c["fenster"][0]} bis {c["fenster"][1]} Uhr · '
             f'{modell}{f" · Kanal {kanal}" if kanal else ""}. ')
     text += (s['grund'] if c['an'] and s['grund'] else 'Der nächste Durchlauf startet einen Bau.' if c['an'] else
@@ -372,7 +390,7 @@ def _steuerung_eingebaut(kanaele: list[dict], zuletzt: str | None) -> dict:
                          'bestaetigen': f'Tagesbau starten? Motion-Studio baut dann jeden Tag bis zu {c["pro_tag"]} Folgen für Kanal {kanal}, '
                                         f'höchstens {c["parallel"]} gleichzeitig, zwischen {c["fenster"][0]} und {c["fenster"][1]} Uhr, mit {modell} '
                                         'und ohne Rückfragen. Bezahlte Schritte nur bis „Ohne Nachfrage frei bis“ aus deinem Profil, darüber wartet der Bau auf dich. Ein Zeitplan '
-                                        '(alle 15 min) wird angelegt. Gepostet wird nichts.'})
+                                        '(alle 15 min) wird angelegt. Gepostet wird nur, wenn du das Posten eingerichtet und eingeschaltet hast.'})
     knoepfe = []
     if kanal:
         aktionen.append({'art': 'bauen', 'label': '1 Folge jetzt bauen', 'versteckt': True,
@@ -382,9 +400,109 @@ def _steuerung_eingebaut(kanaele: list[dict], zuletzt: str | None) -> dict:
         aktionen.append({'art': 'anstossen', 'label': 'Durchlauf jetzt', 'versteckt': True})
         knoepfe.append({'art': 'anstossen', 'label': 'Produktion jetzt anstoßen', 'icon': 'neu',
                         'hinweis': 'führt den Autopilot sofort aus statt in bis zu 15 min'})
-    return {'steuerung': {'produktion': {'an': bool(c['an']), 'heute': s['heute'], 'pro_tag': c['pro_tag'], 'parallel': c['parallel'],
+    # Posten (Schalter „Autopilot“ wie im Adapter-Modus: der Autopilot postet, der Tagesbau baut)
+    po = s['posten']
+    frei = _vorrat.freigaben(kanal) if kanal else {}
+    if c['posten']:
+        aktionen.append({'art': 'autopilot-aus', 'label': 'Posten aus', 'versteckt': True,
+                         'bestaetigen': 'Automatisches Posten ausschalten? Fertige Folgen bleiben im Vorrat.'})
+    elif frei:
+        aktionen.append({'art': 'autopilot-an', 'label': 'Posten an', 'versteckt': True,
+                         'bestaetigen': f'Automatisch posten? Der Autopilot postet einmal am Tag ab {c["post_zeit"]} Uhr die älteste fertige eigene Folge '
+                                        f'auf {", ".join(_vorrat.NAMEN[p] for p in frei)} (nur freigegebene Plattformen, über Claude in Chrome). '
+                                        'Klappt ein Post nicht, steht er rot im Studio und der Autopilot postet nicht weiter, bis du ihn erledigt hast.'})
+    if kanal and set(_vorrat.ziel_plattformen(kanal)) - set(frei):
+        aktionen.append({'art': 'posten-einrichten', 'label': 'Posten einrichten', 'versteckt': True,
+                         'bestaetigen': f'Posten für Kanal {kanal} einrichten? Eine Sitzung mit Claude in Chrome lädt deine letzte eigene Folge '
+                                        'auf jeder Plattform hoch und stoppt direkt vor „Veröffentlichen“. Erst nach deinem Ja wird veröffentlicht. '
+                                        'Bei YouTube entsteht beim Hochladen sofort ein privater Entwurf. Du musst in Chrome eingeloggt sein.'})
+        knoepfe.append({'art': 'posten-einrichten', 'label': 'Posten einrichten', 'icon': 'extern',
+                        'hinweis': 'erster Lauf je Plattform, stoppt vor Veröffentlichen'})
+    ptext = (f'Freigegeben: {", ".join(_vorrat.NAMEN[p] for p in frei) or "noch keine Plattform"}. '
+             + (f'Postet ab {c["post_zeit"]} Uhr, {c["posts_pro_tag"]} am Tag. ' if c['posten'] else 'Aus. ')
+             + (po['grund'] or (f'Nächster Post: „{po["naechste"]["titel"]}“.' if po.get('naechste') else '')))
+    w = s['woche']
+    budget = None
+    if w.get('prozent') is not None:
+        budget = {'prozent': w['prozent'], 'grenze': c['wochen_bremse'] or 100,
+                  'text': f'Geschätzt {w["prozent"]:.0f} % deines Wochenlimits ({w["gewichtet_M"]} M gewichtete Token seit dem Reset)'
+                          + (f', Bremse bei {c["wochen_bremse"]} %.' if c['wochen_bremse'] else ', Bremse aus.')}
+    return {'steuerung': {'autopilot': {'an': bool(c['posten']), 'text': ptext},
+                          'produktion': {'an': bool(c['an']), 'heute': s['heute'], 'pro_tag': c['pro_tag'], 'parallel': c['parallel'],
                                          'laufend': s['laufend'], 'fenster': c['fenster'], 'text': text},
-                          'knoepfe': knoepfe, 'zahl': modell}, 'aktionen': aktionen}
+                          'budget': budget, 'knoepfe': knoepfe, 'zahl': modell}, 'aktionen': aktionen}
+
+
+def _mitglied_eingebaut(alle: list[dict], kanaele: list[dict], zuletzt: str | None) -> dict:
+    """Vorrat mit Posten-Knopf, Posten-Stand, Kopfzeile Autopilot und Ideenliste (Mitglieder-Modus, Sebastian 30.10.2026)."""
+    ap = _ap()
+    s = _ap_stand()
+    c, po = s['konfig'], s['posten']
+    kanal = _ap_kanal(c, kanaele, zuletzt)
+    frei = _vorrat.freigaben(kanal) if kanal else {}
+    vorrat = []
+    for v in _vorrat.vorrat(None, alle):
+        e = dict(v)
+        e.pop('video', None)
+        e['wiederholbar'] = bool(v['fehler']) and v['grund'].startswith('Posten fehlgeschlagen')   # „Neu versuchen“ im Vorrat
+        e['hinweis_posten'] = ('Startet eine Sitzung mit Claude in Chrome. Freigegeben: '
+                               + (', '.join(_vorrat.NAMEN[p] for p in v['offen'] if p in _vorrat.freigaben(v['kanal'])) or 'keine')
+                               + '. Plattformen ohne Freigabe sind ein erster Lauf und stoppen vor „Veröffentlichen“.')
+        vorrat.append(e)
+    laeuft = po.get('laeuft') or {}
+    letzt = po.get('letzt') or {}
+    posten = None
+    if laeuft:
+        posten = {'laeuft': True, 'folge': laeuft.get('folge'), 'titel': laeuft.get('titel'), 'start': laeuft.get('start')}
+    elif letzt:
+        posten = {'laeuft': False, 'folge': letzt.get('folge'), 'titel': letzt.get('titel'), 'ok': letzt.get('ok'), 'text': letzt.get('text')}
+    naechster = None
+    if po.get('naechste') and c['posten']:
+        heute = datetime.now().astimezone()
+        hh, mm = (str(c['post_zeit']) + ':00').split(':')[:2]
+        t = heute.replace(hour=int(hh), minute=int(mm), second=0, microsecond=0)
+        if po.get('stopp') == 'heute' or t < heute:
+            t += timedelta(days=1) if po.get('stopp') == 'heute' else timedelta(0)
+        naechster = {'zeit': t.isoformat(timespec='minutes'), 'titel': po['naechste']['titel'], 'folge_id': po['naechste']['folge_id']}
+    autopilot = {'aktiv': bool(c['posten']), 'bauen': bool(c['an']), 'puffer': c['puffer'],
+                 'vorrat': sum(1 for v in vorrat if v['postbar']), 'naechster': naechster} if (frei or c['posten'] or c['an']) else None
+    ideen = None
+    if kanal:
+        import ideen as ideen_werkzeug
+        try:
+            d = ideen_werkzeug.lesen(kanal)
+            ideen = {'kanal': kanal, 'da': d['da'], 'datei': d['datei'], 'knapp': d['knapp'], 'schema': d['schema'],
+                     'offen': [{'idee': e['idee'], 'von': e['von'], 'notiz': e['notiz']} for e in d['offen'][:12]],
+                     'anzahl_offen': len(d['offen']), 'eigen_offen': d.get('eigen_offen', 0), 'erledigt': len(d['erledigt'])}
+        except SystemExit:
+            ideen = None
+    return {'vorrat': vorrat, 'posten': posten, 'autopilot': autopilot, 'ideen': ideen}
+
+
+def _hinweise_produktion(kanaele: list[dict], zuletzt: str | None) -> list[dict]:
+    """JETZT-Zeilen für Stopps des Tagesbaus und des Postens (Sebastian 30.10.: rot statt grauer Text), knappe Ideenliste."""
+    ap = _ap()
+    s = _ap_stand()
+    c, h = s['konfig'], []
+    if c['an'] and s.get('stopp') == 'puffer':
+        h.append({'art': 'vorrat', 'tag': 'PUFFER VOLL', 'text': f'Tagesbau gestoppt: {s["grund"]}',
+                  'knopf': {'label': 'Zum Vorrat', 'aktion': 'vorrat'}})
+    elif c['an'] and s.get('stopp') in ('bremse', 'limit'):
+        h.append({'art': 'aus', 'tag': 'WOCHENBREMSE' if s['stopp'] == 'bremse' else 'LIMIT', 'text': f'Tagesbau pausiert: {s["grund"]}'})
+    po = s['posten']
+    if po.get('stopp') == 'fehler':
+        h.append({'art': 'fehler', 'tag': 'POSTEN', 'text': po['grund']})
+    kanal = _ap_kanal(c, kanaele, zuletzt)
+    if kanal and (c['an'] or any(k.get('phase') == 'bereit' for k in kanaele)):
+        import ideen as ideen_werkzeug
+        try:
+            d = ideen_werkzeug.lesen(kanal)
+            if d['knapp']:
+                h.append({'art': 'fehlt', 'tag': 'IDEEN', 'text': f'Ideenliste von {kanal} ist knapp ({len(d["offen"])} offen). '
+                          'Die nächste Folge füllt nach dem Schema auf, oder du sagst der Regie deine Ideen („Leg meine Ideenliste an“).'})
+        except SystemExit:
+            pass
+    return h
 
 
 def _ap_kanal(c: dict, kanaele: list[dict] | None = None, zuletzt: str | None = None) -> str:
@@ -396,9 +514,22 @@ def _ap_kanal(c: dict, kanaele: list[dict] | None = None, zuletzt: str | None = 
 
 
 def _autopilot_auftrag(art: str) -> dict:
+    _AP_CACHE.clear()
     ap = _ap()
     c = ap.konfig()
     kanal = _ap_kanal(c)
+    if art in ('autopilot-an', 'autopilot-aus'):
+        if art == 'autopilot-an' and not (kanal and _vorrat.freigaben(kanal)):
+            raise SystemExit('FEHLER: Erst das Posten einrichten (erster Lauf je Plattform stoppt vor Veröffentlichen und fragt dich).')
+        c['posten'] = art == 'autopilot-an'
+        ap.konfig_schreiben(c)
+        ap.merke(f'Posten {"an" if c["posten"] else "aus"} (Studio)', 'info' if c['posten'] else 'warnung')
+        return {'meldung': f'Automatisches Posten ist {"an, ab " + c["post_zeit"] + " Uhr" if c["posten"] else "aus"}.'}
+    if art == 'posten-einrichten':
+        if not kanal:
+            raise SystemExit('FEHLER: Erst einen Kanal fertig lernen.')
+        erg = starten.starten('posten-einrichten', kanal=kanal, wer='dashboard')
+        return {'meldung': f'Posten-Einrichtung gestartet{" (" + erg["sitzung"] + ")" if erg.get("sitzung") else ""}. Die Fragen erscheinen hier unter JETZT.'}
     if art == 'produktion-aus':
         c['an'] = False
         ap.konfig_schreiben(c)
@@ -423,6 +554,24 @@ def _autopilot_auftrag(art: str) -> dict:
     return {'meldung': ('Tagesbau ist an.' if art == 'produktion-an' else 'Durchlauf fertig.')
             + (' Der erste Bau läuft.' if erg['gestartet'] else f' Gerade startet nichts: {erg["grund"]}')
             + (hinweis if art == 'produktion-an' else '')}
+
+
+def _posten_starten(fid: str) -> dict:
+    """„Jetzt posten“ im Vorrat: nur eigene, postbare Folgen; ein alter Posten-Fehler gilt damit als erledigt (neuer Versuch)."""
+    d = _folge_ordner(fid)
+    st = _ms.status_lesen(d)
+    st['_ordner'] = f'folgen/{d.name}'
+    if _vorrat.fehler_posten(st):
+        import posten
+        posten.erledigt(d.name)
+        st = _ms.status_lesen(d)
+        st['_ordner'] = f'folgen/{d.name}'
+    e = _vorrat.eintrag(st)
+    if not e['postbar']:
+        raise SystemExit(f'FEHLER: „{e["titel"]}“ darf nicht raus: {e["grund"]}.')
+    erg = starten.starten('posten', folge=d.name, wer='dashboard')
+    return {'meldung': f'Posten gestartet{" (" + erg["sitzung"] + ")" if erg.get("sitzung") else ""}. '
+                       'Plattformen ohne Freigabe stoppen vor „Veröffentlichen“ und fragen dich hier unter JETZT.'}
 
 
 # Kanal lernen: Minuten bis diese Phase erreicht ist. `pilot` setzt `ms neu --pilot` beim Anlegen, gebaut und gemessen
@@ -839,9 +988,11 @@ class Handler(BaseHTTPRequestHandler):
                 return self._adapter_post(teile, daten)
             if teile == ['api', 'auftrag'] and str(daten.get('art') or '') in AUTOPILOT_ARTEN:
                 return self._json(200, {'ok': True, **_autopilot_auftrag(str(daten['art']))})
+            if teile == ['api', 'auftrag'] and str(daten.get('art') or '') == 'posten':
+                return self._json(200, {'ok': True, **_posten_starten(str(daten.get('folge') or ''))})
             if teile == ['api', 'auftrag']:
                 art = str(daten.get('art') or '')
-                if art not in starten.AUFTRAEGE:
+                if art not in starten.AUFTRAEGE or art in ('autobau', 'autobau-b', 'autopost'):
                     return self._fehler(400, 'Unbekannter Auftrag')
                 erg = starten.starten(art, kanal=daten.get('kanal') or None, url=daten.get('url') or None,
                                       folge=daten.get('folge') or None, wer='dashboard')

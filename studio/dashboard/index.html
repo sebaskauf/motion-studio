@@ -96,7 +96,7 @@ svg.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor;
 /* Raster: ab 1100 px zweispaltig (64/36), darunter einspaltig in Kern-Loop-Reihenfolge */
 .raster { display: grid; grid-template-columns: minmax(0, 64fr) minmax(0, 36fr); gap: 12px; padding: 12px 16px 28px; align-items: start; }
 .spalte { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-#p-jetzt { order: 1; } #p-steuerung { order: 2; } #p-plan { order: 3; } #p-vorrat { order: 4; } #p-kanaele { order: 5; } #p-arbeit { order: 6; }
+#p-jetzt { order: 1; } #p-steuerung { order: 2; } #p-plan { order: 3; } #p-vorrat { order: 4; } #p-ideen { order: 4; } #p-kanaele { order: 5; } #p-arbeit { order: 6; }
 #p-agenten { order: 7; } #p-gepostet { order: 8; } #p-zahlen { order: 9; } #p-log { order: 10; }
 .plan-leer #p-kanaele { order: 2; } .plan-leer #p-plan { order: 3; }
 @media (max-width: 1099px) {
@@ -272,6 +272,12 @@ svg.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor;
 .vk-zeit b { color: var(--text); font-weight: 600; }
 .vk-tags { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .vk-knoepfe { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+/* IDEEN: offene Ideen des Kanals, eigene zuerst (Pack 4 Prompt 2) */
+.ideen { list-style: none; margin: 0; padding: 0; }
+.ideen li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: baseline; padding: 8px 14px; border-top: 1px solid var(--line, rgba(127,127,127,.18)); }
+.ideen li:first-child { border-top: 0; }
+.ideen .notiz { color: var(--muted); font-size: 12.5px; }
+.ideen-fuss { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 10px 14px; color: var(--muted); font-size: 12.5px; }
 .vorrat-leer { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 14px; }
 .vorrat-leer p { color: var(--muted); font-size: 13.5px; }
 @container (max-width: 520px) { .vorrat-leer { grid-template-columns: minmax(0, 1fr); } .vorrat-leer .knopf { justify-self: start; } }
@@ -640,6 +646,10 @@ dialog::backdrop { background: var(--scrim); }
         <header class="p-kopf"><h2 id="h-vorrat">Vorrat</h2><span class="p-zahl" id="vorrat-zahl"></span></header>
         <div class="p-inhalt" id="vorrat" style="--i:2"><div class="skelett-zeile"><span class="sk"></span><span class="sk breit"></span><span class="sk"></span></div></div>
       </section>
+      <section class="panel" id="p-ideen" aria-labelledby="h-ideen" hidden>
+        <header class="p-kopf"><h2 id="h-ideen">Ideen</h2><span class="p-zahl" id="ideen-zahl"></span></header>
+        <div class="p-inhalt" id="ideen" style="--i:2"></div>
+      </section>
       <section class="panel" id="p-kanaele" aria-labelledby="h-kanaele" hidden>
         <header class="p-kopf"><h2 id="h-kanaele">Kanäle</h2><span class="p-zahl" id="kanaele-zahl"></span></header>
         <div class="p-inhalt" id="kanaele" style="--i:2"></div>
@@ -734,7 +744,7 @@ const PHASE = { vorlage: 'Vorlage', skript: 'Skript', stimme: 'Stimme', storyboa
 const SCHRITTE = [['skript', 'Skript'], ['stimme', 'Stimme'], ['szenen', 'Szenen'], ['ton', 'Ton'], ['render', 'Render'], ['pruefung', 'Prüfung'], ['fertig', 'Fertig']];
 const SCHRITT_VON = { vorlage: 0, skript: 0, stimme: 1, storyboard: 2, szenen: 2, ton: 3, render: 4, vergleich: 4, pruefung: 5, fertig: 7, geplant: 7, gepostet: 7 };
 const KANAL_SCHRITT = { vorbild: 'Vorbild', zerlegt: 'Zerlegen', bibel: 'Bibel', pilot: 'Pilot', gemessen: 'Messen', kit: 'Baukasten', bereit: 'Bereit' };
-const ART = { einrichten: 'Einrichten', vorlagen: 'Vorlagen finden', 'kanal-lernen': 'Kanal lernen', folge: 'Nächste Folge', weiter: 'Weitermachen', pruefen: 'Prüfen', autobau: 'Autopilot-Bau' };
+const ART = { einrichten: 'Einrichten', vorlagen: 'Vorlagen finden', 'kanal-lernen': 'Kanal lernen', folge: 'Nächste Folge', weiter: 'Weitermachen', pruefen: 'Prüfen', autobau: 'Autopilot-Bau', 'autobau-b': 'Autopilot-Bau Stufe B', posten: 'Posten', 'posten-einrichten': 'Posten einrichten', autopost: 'Autopilot-Posten' };
 const ZUSTAND = { arbeitet: ['Arbeitet', 'ok'], wartet: ['Wartet', 'warn'], fehler: ['Fehler', 'bad'], beendet: ['Beendet', ''] };
 const LOGART = { info: 'Info', fertig: 'Erledigt', warnung: 'Warnung', fehler: 'Fehler', frage: 'Frage', kosten: 'Kosten' };
 const DATEI = { 'SKRIPT.md': 'Skript', 'STORYBOARD.md': 'Storyboard', 'PRUEFBERICHT.md': 'Prüfbericht', 'HANDOFF.md': 'Übergabe', 'CAPTION.md': 'Caption' };
@@ -935,7 +945,7 @@ setInterval(tick, 1000);
 
 // ------------------------------------------------------------ Zeichnen
 function zeichnen() {
-  zeichneKopf(); zeichneJetzt(); zeichneSteuerung(); zeichnePlan(); zeichneVorrat(); zeichneKanaele(); zeichneArbeit(); zeichneGepostet();
+  zeichneKopf(); zeichneJetzt(); zeichneSteuerung(); zeichnePlan(); zeichneVorrat(); zeichneIdeen(); zeichneKanaele(); zeichneArbeit(); zeichneGepostet();
   zeichneCrew(); zeichneAgenten(); zeichneLog(); zeichneZahlen();
   if (detailId) detailAktualisieren(false);
   if (ersterAufbau) {
@@ -966,7 +976,7 @@ function zeichneKopf() {
     c.push(chip('Autopilot', ap.aktiv ? 'an' : 'aus', ap.aktiv ? 'ok' : 'warn', ap.aktiv ? (ap.bauen ? 'Postet zu den Sendezeiten und baut nach' : 'Postet zu den Sendezeiten, baut nicht selbst nach') : 'Postet nichts automatisch'));
     if (!ap.aktiv) c.push(chip('Nächster Post', 'keiner', 'warn', 'Autopilot ist aus'));
     else if (ap.naechster) c.push(chip('Nächster Post', `${wannKurz(ap.naechster.zeit)} ${ap.naechster.titel}`, '', `${datumZeit(ap.naechster.zeit)}: ${ap.naechster.titel}${ap.naechster.trial ? ' (Trial)' : ''}`));
-    else c.push(chip('Nächster Post', 'Vorrat leer', 'bad', 'Keine fertige Folge mit Caption und Guide'));
+    else c.push(chip('Nächster Post', 'Vorrat leer', 'bad', S.adapter ? 'Keine fertige Folge mit Caption und Guide' : 'Keine postbare eigene Folge im Vorrat'));
     const v = ap.vorrat, p = ap.puffer || 0;
     c.push(chip('Vorrat', p ? `${v}/${p}` : String(v), v === 0 ? 'bad' : (p && v < p ? 'warn' : 'ok'), `${v} fertig zum Posten, Puffer ${p}${ap.ohne_guide ? `, ${ap.ohne_guide} ohne Guide oder Caption` : ''}`));
   } else {
@@ -1142,7 +1152,8 @@ function zeichneVorrat() {
     box.classList.remove('vorrat');
     const satz = pr?.an
       ? `Noch keine fertige Folge. Die Tagesproduktion läuft (${pr.heute} von ${pr.pro_tag} heute, ${pr.laufend ? `${pr.laufend} ${pr.laufend === 1 ? 'baut' : 'bauen'} gerade` : pr.kurz}). Fertige Folgen landen hier und gehen zu den Sendezeiten raus.`
-      : `Der Vorrat ist leer. Mit der Tagesproduktion baut der Autopilot bis zu ${pr?.pro_tag || 5} Folgen am Tag, die hier landen und zu den Sendezeiten rausgehen.`;
+      : S.adapter ? `Der Vorrat ist leer. Mit der Tagesproduktion baut der Autopilot bis zu ${pr?.pro_tag || 5} Folgen am Tag, die hier landen und zu den Sendezeiten rausgehen.`
+      : 'Noch keine fertige eigene Folge. Fertige Folgen landen hier und gehen über „Jetzt posten“ oder den Autopiloten (nach deiner Freigabe je Plattform) raus.';
     const knopf = pr?.an ? '<button type="button" class="knopf" data-aktion="agenten">Stand ansehen</button>'
       : (S.aktionen || []).some(a => a.art === 'produktion-an') ? '<button type="button" class="knopf" data-aktion="adapter" data-art="produktion-an">Tagesproduktion starten</button>' : '';
     abgleich(box, [1], () => 'leer', () => element('div', 'vorrat-leer', '<p></p><span></span>'), el => { setText(el.children[0], satz); setHTML(el.children[1], knopf); });
@@ -1165,18 +1176,37 @@ function zeichneVorrat() {
     if (diese) tags.push('<span class="tag ok">Postet</span>');
     if (v.zwilling) tags.push(`<span class="tag" title="Trial-Zwilling ${esc(v.zwilling.id)}${v.zwilling.geplant ? `, geplant ${esc(wann(v.zwilling.geplant))}` : ''}">Zwilling${v.zwilling.geplant ? ` ${esc(uhr(v.zwilling.geplant))}` : ''}</span>`);
     else if (v.zwilling_an) tags.push('<span class="tag" title="Für diese Folge gibt es keinen Trial-Zwilling">ohne Zwilling</span>');
-    tags.push(v.guide_ok ? '<span class="tag ok">Guide ok</span>' : '<span class="tag bad">Guide fehlt</span>');
+    if ('guide_ok' in v) tags.push(v.guide_ok ? '<span class="tag ok">Guide ok</span>' : '<span class="tag bad">Guide fehlt</span>');
     if (!v.caption_da) tags.push('<span class="tag bad">Caption fehlt</span>');
+    for (const [pl, txt] of Object.entries(v.fehler || {})) tags.push(`<span class="tag bad" title="${esc(txt)}">${esc(pl)}: Fehler</span>`);
+    if (Array.isArray(v.offen) && v.offen.length && !S.adapter) tags.push(`<span class="tag" title="Noch nicht gepostet auf">offen: ${esc(v.offen.join(', '))}</span>`);
     setHTML($('.vk-tags', el), tags.join(''));
     let k;
-    if (!v.postbar) k = `<button type="button" class="knopf klein" data-detail="${esc(v.folge_id)}">Details</button>`;
+    if (v.wiederholbar && !p) k = `<button type="button" class="knopf klein" data-aktion="posten" data-folge="${esc(v.folge_id)}">Neu versuchen</button><button type="button" class="knopf klein still" data-detail="${esc(v.folge_id)}">Details</button>`;
+    else if (!v.postbar) k = `<button type="button" class="knopf klein" data-detail="${esc(v.folge_id)}">Details</button>`;
     else {
       const aus = p ? ` disabled title="${esc(diese ? 'Geht gerade raus' : `Es postet gerade „${p.titel}“`)}"` : '';
       k = `<button type="button" class="knopf klein" data-aktion="posten" data-folge="${esc(v.folge_id)}"${aus}>Jetzt posten</button>`
-        + `<button type="button" class="knopf klein still" data-aktion="posten" data-trial="1" data-folge="${esc(v.folge_id)}"${aus}>Als Trial posten</button>`;
+        + (S.adapter ? `<button type="button" class="knopf klein still" data-aktion="posten" data-trial="1" data-folge="${esc(v.folge_id)}"${aus}>Als Trial posten</button>` : '');
     }
     setHTML($('.vk-knoepfe', el), k);
   });
+}
+
+// IDEEN: offene Ideen des Kanals, eigene zuerst (ms ideen, kanaele/<k>/IDEEN.md)
+function zeichneIdeen() {
+  const panel = $('#p-ideen'), d = S.ideen;
+  panel.hidden = !d;
+  if (!d) return;
+  setText($('#ideen-zahl'), d.da ? `${d.anzahl_offen} offen${d.eigen_offen ? ` · ${d.eigen_offen} eigene` : ''}${d.knapp ? ' · knapp' : ''}` : '');
+  const datei = d.da ? `<a href="${dateiURL(d.datei)}" target="_blank" rel="noopener">IDEEN.md öffnen</a>` : '';
+  if (!d.da || !d.offen.length) {
+    setHTML($('#ideen'), `<div class="ideen-fuss"><span>${d.da ? 'Keine offene Idee. Die nächste Folge findet neue nach dem Schema, oder sag der Regie deine Ideen.' : 'Noch keine Ideenliste. Sag der Regie: „Leg meine Ideenliste an“.'}</span>${datei}</div>`);
+    return;
+  }
+  const li = d.offen.map(e => `<li><span class="tag ${e.von === 'eigen' ? 'ok' : ''}">${e.von === 'eigen' ? 'Eigene' : 'System'}</span><span>${esc(e.idee)}${e.notiz ? ` <span class="notiz">· ${esc(e.notiz)}</span>` : ''}</span></li>`).join('');
+  const hinweis = d.knapp ? '<span class="tag warn">knapp</span> Unter 3 offenen Ideen füllt die nächste Folge nach dem Schema auf.' : (d.schema ? `${d.erledigt} umgesetzt.` : 'Schema fehlt noch (Pack 4 Prompt 2).');
+  setHTML($('#ideen'), `<ol class="ideen">${li}</ol><div class="ideen-fuss"><span>${hinweis}</span>${datei}</div>`);
 }
 
 // SENDEPLAN
@@ -1994,7 +2024,10 @@ function detailInfoHTML(f, s) {
   if ((f._dateien || []).length) links.push(['Dateien', `<p>${f._dateien.map(n => `<a href="${dateiURL(f._ordner + '/' + n)}" target="_blank" rel="noopener">${esc(DATEI[n] || n)}</a>`).join(' · ')}</p>`]);
   if (f.geplant_info && f.phase !== 'gepostet') links.push(['Sendezeit', `<p>${esc(f.geplant_info)}</p>`]);
   const vr = (S.vorrat || []).find(x => x.folge_id === folgeId(f));
-  if (vr) {
+  if (vr && !S.adapter) {
+    links.push(['Posten', `<p>${vr.postbar ? `offen auf ${esc((vr.offen || []).join(', '))}` : esc(vr.grund)}</p>`]);
+    links.push(['Caption', `<p>${vr.caption ? esc(vr.caption) : 'fehlt'}</p>`]);
+  } else if (vr) {
     links.push(['Zwilling', `<p>${vr.zwilling ? `ja, geht ${vr.zwilling.geplant ? esc(wann(vr.zwilling.geplant)) : `${esc(vr.zwilling_min)} min nach dem Original`} als Trial raus` : vr.zwilling_an ? 'nein, für diese Folge gibt es keinen' : 'Trial-Zwillinge sind aus'}</p>`]);
     links.push(['Caption', `<p>${vr.caption ? esc(vr.caption) : 'fehlt'}</p>`]);
   }
@@ -2010,7 +2043,7 @@ function detailAktionenHTML(f, s) {
   if (v && v.postbar) {   // im Detail ist Posten die Hauptaktion (außer eine Freigabe ist offen)
     const p = S.posten?.laeuft ? S.posten : null;
     const aus = p ? ` disabled title="${esc(p.folge === v.folge_id ? 'Geht gerade raus' : `Es postet gerade „${p.titel}“`)}"` : '';
-    postenHTML = `<div class="d-zeile"><button type="button" class="knopf${f.freigabe ? '' : ' primaer'}" data-aktion="posten" data-folge="${id}"${aus}>Jetzt posten</button><button type="button" class="knopf" data-aktion="posten" data-trial="1" data-folge="${id}"${aus}>Als Trial posten</button></div>`;
+    postenHTML = `<div class="d-zeile"><button type="button" class="knopf${f.freigabe ? '' : ' primaer'}" data-aktion="posten" data-folge="${id}"${aus}>Jetzt posten</button>${S.adapter ? `<button type="button" class="knopf" data-aktion="posten" data-trial="1" data-folge="${id}"${aus}>Als Trial posten</button>` : ''}</div>`;
   } else if (v) postenHTML = `<p class="leise" style="font-size:12.5px">Wird nicht gepostet: ${esc(v.grund)}.</p>`;
   const k = [];
   if (s && !s.nur_ansehen && S.tmux) k.push(`<button type="button" class="knopf" data-aktion="oeffnen" data-sitzung="${esc(s.name)}">${icon('terminal')}Terminal</button>`);
@@ -2024,7 +2057,7 @@ function detailAktionenHTML(f, s) {
     const geplant = f.geplant ? lokal(new Date(f.geplant)) : morgen18();
     if (F.geplant) html += `<div class="d-zeile"><label class="feld">Planen für<input type="datetime-local" id="d-zeit" value="${esc(geplant)}"></label><button type="button" class="knopf" data-aktion="geplant" data-folge="${id}">Planen</button></div>`;
     if (F.gepostet) html += `<div class="d-zeile"><label class="feld">Als gepostet markieren<input type="url" id="d-link" inputmode="url" autocomplete="off" placeholder="Link zum Beitrag, z. B. https://www.instagram.com/reel/…"></label><button type="button" class="knopf" data-aktion="gepostet" data-folge="${id}">Gepostet</button></div>`;
-    if (!S.adapter) html += `<p class="leise" style="font-size:12px">Motion-Studio postet nicht selbst. Das Upload-Paket liegt im Upload-Ordner.</p>`;
+    if (!S.adapter) html += `<p class="leise" style="font-size:12px">Gepostet wird über Claude in Chrome (Skill motion-posten), nur eigene Folgen, auf jeder Plattform erst nach deiner Freigabe. Das Upload-Paket liegt im Upload-Ordner.</p>`;
   }
   return html;
 }
@@ -2254,8 +2287,18 @@ function postenBeobachten() {
 }
 async function postenFragen(fid, trial, knopf) {
   const v = (S.vorrat || []).find(x => x.folge_id === fid);
-  if (!v || !v.postbar) return toast('Diese Folge ist gerade nicht postbar. Seite neu laden.', 'fehler');
+  if (!v || !(v.postbar || v.wiederholbar)) return toast('Diese Folge ist gerade nicht postbar. Seite neu laden.', 'fehler');
   if (S.posten?.laeuft) return toast(`Es postet gerade „${S.posten.titel}“. Warte, bis das fertig ist.`, 'warn');
+  if (!S.adapter) {
+    const okE = await frage({ ueber: 'Posten', titel: `„${v.titel}“ jetzt posten?`, text: v.hinweis_posten || 'Startet eine Sitzung mit Claude in Chrome.', ja: 'Jetzt posten',
+      zitatTitel: 'Caption', zitat: v.caption || 'fehlt' });
+    if (!okE) return;
+    if (knopf) knopf.disabled = true;
+    const rE = await post('/api/auftrag', { art: 'posten', folge: fid });
+    if (knopf) knopf.disabled = false;
+    toast(rE.ok ? (rE.meldung || 'Posten gestartet.') : rE.fehler, rE.ok ? 'ok' : 'fehler');
+    return schleife();
+  }
   const kanal = S.kanal_name || 'Instagram';
   const zw = v.zwilling && v.zwilling.bereit && !v.zwilling.gepostet;
   const text = trial ? `Postet sofort als Trial-Reel auf ${kanal} (zuerst nur für Nicht-Follower).${zw ? ' Der Trial-Zwilling wird dann nicht gepostet.' : ''}`
@@ -2359,6 +2402,7 @@ async function hinweisAktion(b) {
   if (a === 'sitzung_weiter') return sitzungWeiter(b.dataset.sitzung, b);
   if (a === 'ansehen') return sitzungOeffnen(b.dataset.sitzung);
   if (a === 'agenten') return zuDenAgenten(b.dataset.sitzung);
+  if (a === 'vorrat') { const p = $('#p-vorrat'); if (!p.hidden) p.scrollIntoView({ behavior: WENIG_BEWEGUNG ? 'auto' : 'smooth', block: 'start' }); return; }
 }
 
 // ------------------------------------------------------------ Klicks und Tasten
