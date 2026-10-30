@@ -5,7 +5,7 @@ description: "Baukasten eines Kanals aus dem Pilot machen und nach jeder Folge p
 
 # motion-kanal-kit
 
-Ziel: Jede neue Folge startet mit allem, was der Pilot gelernt hat. Das Kit liegt in `__ARBEIT__/kanaele/<k>/kit/` und wird bei `ms neu folge` nach `build/assets/` kopiert (lib, fonts, tex).
+Ziel: Jede neue Folge startet mit allem, was der Pilot gelernt hat. Kit, REGELN.md und der Stil-Skill gehören zusammen: das Kit liefert den Code, REGELN.md die Verbote, der Stil-Skill die Bauanleitung mit Zahlen. Das Kit liegt in `__ARBEIT__/kanaele/<k>/kit/` und wird bei `ms neu folge` nach `build/assets/` kopiert (lib, fonts, tex).
 Start: Beim Anlegen des Kanals (`ms neu kanal`) liegen schon die Start-Bausteine im Kit (`lib/ms2d.js`, `lib/ms3d.js`, `lib/ms3d-start.js`, `beispiele/beispiel-2d.html` Collage, `beispiel-2d-vektor.html` flacher Vektorstil, `beispiel-3d.html`, `captions.json`) und `KATALOG.md` ist schon erzeugt.
 
 ## 1. Bausteine aus dem Pilot übernehmen
@@ -71,6 +71,7 @@ Gruppen wie im Original (Pilot) gehören nicht hierher, sondern von Hand nach `b
 1. Neue Bausteine der Folge prüfen und additiv übernehmen (Schritt 1).
 2. Neue Fehler als Regel in REGELN.md, gute Kombinationen als Rezept in KATALOG.md.
 3. `__HEIM__/ms kit <k> katalog`. Status nur beim Pilot setzen: `__HEIM__/ms status kanal:<k> kit --notiz "<n> Bausteine, <m> Regeln"`.
+4. **Stil-Skill** `__ARBEIT__/.claude/skills/stil-<k>/SKILL.md` (angelegt in motion-kanal-lernen Schritt 9): erst `__HEIM__/ms stil <k> sichern`, dann ergänzen, was die Folge neu gezeigt hat: neuer Szenentyp, neuer Baustein mit genauem Aufruf, neue Abnahme-Regel mit Schwelle, ein Beispiel mit Datei und Zeit. Zeile unter „Pflege“ mit Datum und Folge. Nichts löschen (Überholtes durchstreichen und begründen). Zum Schluss `__HEIM__/ms stil <k> pruefen`: meldet es fehlende Einträge gegenüber der Sicherung, zurückholen.
 
 ## Fallen
 - Ein Syntaxfehler in einer Kit-Datei rendert JEDE Szene leer: `ms kit <k> pruefen` vor jedem Kopieren.

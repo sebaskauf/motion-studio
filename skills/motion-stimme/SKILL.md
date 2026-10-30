@@ -1,6 +1,6 @@
 ---
 name: motion-stimme
-description: "Stimme einer Motion-Studio-Folge erzeugen und vorbereiten: Anbieter laut PROFIL.md (ElevenLabs, Higgsfield, eigene Aufnahme), billiger Aussprache-Test vorab, Kostenansage, Whisper-Gegenprobe ≥ 95 %, Tempo-Fit auf die Vorlage, −14 LUFS, Wortzeiten und Caption-Gruppen (ms stimme, ms woerter). Laden bei \"Stimme\", \"Voiceover\", \"vertonen\", \"TTS\", \"ElevenLabs\", \"Aussprache\", \"Tempo anpassen\", \"Wortzeiten\", \"timing.txt\", Phase stimme."
+description: "Stimme einer Motion-Studio-Folge erzeugen und vorbereiten: Anbieter laut PROFIL.md (ElevenLabs, Higgsfield, Voice Studio lokal und gratis, eigene Aufnahme), billiger Aussprache-Test vorab, Kostenansage, Whisper-Gegenprobe ≥ 95 %, Tempo-Fit auf die Vorlage, −14 LUFS, Wortzeiten und Caption-Gruppen (ms stimme, ms woerter). Laden bei \"Stimme\", \"Voiceover\", \"vertonen\", \"TTS\", \"ElevenLabs\", \"Aussprache\", \"Tempo anpassen\", \"Wortzeiten\", \"timing.txt\", Phase stimme."
 ---
 
 # motion-stimme
@@ -14,9 +14,11 @@ Ausgang: `voice/stimme.wav` (fertig, −14 LUFS), `voice/woerter.json`, `voice/t
 |---|---|---|
 | ElevenLabs | `ms stimme <folge> --elevenlabs --stimme <voice_id>` direkt über die API (Schlüssel `ELEVENLABS_API_KEY` in `__ARBEIT__/.env`) | 1 Credit pro Zeichen (Multilingual v2/v3), Flash/Turbo 0,5. Kommerziell ab Starter-Plan |
 | Higgsfield | im Agenten über den Higgsfield-MCP (Audio-Erzeugung, TTS-Modelle wie ElevenLabs v4), Datei laden, dann `ms stimme <folge> --datei <datei>` | Credits laut Higgsfield, vorher anzeigen lassen |
+| Voice Studio (lokal) | geklonte Stimme über den MCP-Server `voicestudio` (Pack 3 Prompt 3, `http://localhost:3900`): Sprechtext mit Aussprache-Liste aus `ms stimme <folge> --higgsfield` (gibt nur den Text aus, kostet nichts), Datei im Ordner `__ARBEIT__/stimme/` erzeugen lassen, dann `ms stimme <folge> --datei <datei>` | gratis |
 | Eigene Aufnahme | Nutzer nimmt den Text auf (ruhiger Raum, Handy nah am Mund, WAV oder M4A), dann `ms stimme <folge> --datei <datei>` | gratis |
 
-Steht nichts im PROFIL: den Nutzer fragen, nicht raten. Eine lokale Sprachsynthese gibt es im Paket nicht: was ein anderes Programm erzeugt, kommt wie eine eigene Aufnahme über `--datei`.
+Steht nichts im PROFIL: den Nutzer fragen, nicht raten. Eine eigene Sprachsynthese hat das Paket nicht: was ein anderes Programm erzeugt (Voice Studio, Higgsfield), kommt wie eine eigene Aufnahme über `--datei`.
+**Voice Studio im Tagesbau:** Bau-Sitzungen laden nur die MCP-Server, die sie brauchen. Damit Stufe A die Stimme erzeugen kann, einmal `__HEIM__/ms autopilot einstellen --mcp-stimme voicestudio` (Higgsfield als Connector: `--mcp-stimme alle`). Antwortet `curl -s http://localhost:3900/health` nicht, läuft Voice Studio nicht: im Autopilot-Bau `ms status <folge> --wartet "Voice Studio läuft nicht, bitte starten"` und aufhören.
 **Pilot (Phase B):** keine Stimme erzeugen. Der Pilot nimmt den Originalton: `ms stimme <pilot> --original [--von <s> --bis <s>]`, danach `ms woerter <pilot>`. `--tempo` bricht beim Pilot ab (Ablauf im Skill motion-kanal-lernen, Schritt 4).
 
 ## 2. Aussprache-Test (billig, vor dem großen Auftrag)

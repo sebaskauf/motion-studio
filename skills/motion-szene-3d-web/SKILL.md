@@ -62,7 +62,8 @@ Der globale Start wird aus index.html gelesen. `t` in zustand/kamera ist lokal (
 1. `__HEIM__/ms snap <folge> --szene <id> --lokal 0 <T_1> <T_1+0.1> <T_2> … --name <bauer>_<id>_kern`: erstes Bild und jede Kernaktion + 0,1 s. Ansehen: Ist die Aktion im Bild? Trifft, was treffen soll? Objekt ganz im Bild, nicht verdeckt? Text lesbar?
 2. `__HEIM__/ms snap <folge> --szene <id> --raster 0.25 --name <bauer>_<id>`: Bewegung flüssig, kein Stillstand über 1,5 s, kein Durchdringen, kein Objekt an einer seltsamen Stelle (Objekt genau hinter einem anderen wirkt wie ein Teil davon).
 3. Endpose rendern statt glauben: Greifen, Stapeln, Treffen immer im Bild prüfen.
-**Gate:** lint 0 Fehler, Kern-Snapshots und Raster angesehen, alle Punkte erledigt.
+**Gate:** lint 0 Fehler, Kern-Snapshots und Raster angesehen, alle Punkte erledigt. Höchstens zwei Raster-Runden je Szene, danach nur noch die geänderte Stelle (`--lokal … --detail`). Nie `frame-*.png` in voller Größe öffnen.
+Gibt es den Stil-Skill `__ARBEIT__/.claude/skills/stil-<k>/SKILL.md`, gelten Szenentyp, Bausteine mit Aufruf, Kamera, Licht und Abnahme-Kriterien von dort.
 
 ## Pilot (Nachbau)
 Kamera am Original messen: Fluchtpunkte, Objektgröße im Bild → Abstand per Kamera-Mathe, fov schätzen. `__HEIM__/ms snap <folge> <zeiten> --gegen __ARBEIT__/folgen/<folge>/vorbild/ausschnitt.mp4` für Paar-Bilder (Original mit gleicher Zeitachse wie der Pilot).

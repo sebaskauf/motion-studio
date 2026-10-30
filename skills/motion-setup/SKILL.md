@@ -32,13 +32,14 @@ ffmpeg, Python 3.9+, Node.js 22+, HyperFrames + HyperFrames-Skills + Chrome für
 Fragen einzeln stellen, Antwort sofort in `__ARBEIT__/PROFIL.md` eintragen (Kopf bleibt `setup: unvollständig`, bis alles steht). Vorschläge machen, wo der Nutzer unsicher ist.
 **Hier nur das Technische und das Geld.** Nicht nach Kanal, Nische oder Vorbild fragen (Sebastian 23.10.: „Was macht dein Kanal?“ ist die falsche erste Frage). Das kommt erst nach dem Setup (Skill motion-format-finden): Short-Form oder YouTube, welcher Stil von welchem Account, dann automatisch Stil lernen und 1:1 nachbauen, erst danach Arten von Videos und eigener Twist. Die Felder Nische, Vorbild-Kanäle und Eigener Twist bleiben bis dahin leer.
 1. System: selbst aus `ms check` übernehmen (Mac mit Apple Silicon/Intel, Windows, Linux). Nur bestätigen lassen.
+1b. **Claude-Abo:** „Welches Claude-Abo hast du: Pro, Max 5x oder Max 20x?“ Eintragen (Profil, Zeile Claude-Abo) und `__HEIM__/ms autopilot abo pro|max5|max20` ausführen. Die Ausgabe sagt, wie viele Folgen realistisch sind (Standard 1 am Tag, Max 20x 3) und setzt die Wochenbremse. Ehrlich dazusagen: Kanal lernen ist der teuerste Schritt (mit Pro 70 bis 150 % einer Woche).
 2. Sprache der Videos.
 3. Plattformen und Format (Standard 9:16, 20 bis 60 Sekunden).
 4. Eigener Kanal: Handle(s), auf denen er postet oder posten will (leer lassen, wenn es noch keinen gibt).
-5. Stimme: Anbieter ElevenLabs (kostet, beste Qualität), Higgsfield (wenn er es schon hat) oder eigene Aufnahme (gratis, oft am glaubwürdigsten, auch für Dateien aus anderen Programmen). Bei ElevenLabs: Stimm-ID (voice_id), Modell, Einstellungen, falls schon bekannt. Felder wie in PROFIL.md, Abschnitt Stimme (Skill motion-stimme liest sie).
+5. Stimme: Anbieter ElevenLabs (kostet, beste Qualität), Higgsfield (wenn er es schon hat), Voice Studio (gratis, lokal, eigene Stimme klonen, Pack 3 Prompt 3) oder eigene Aufnahme (gratis, oft am glaubwürdigsten, auch für Dateien aus anderen Programmen). Voice Studio: danach `__HEIM__/ms autopilot einstellen --mcp-stimme voicestudio`, Higgsfield: `--mcp-stimme alle` (sonst fehlt der Stimme im Tagesbau der MCP-Server). Bei ElevenLabs: Stimm-ID (voice_id), Modell, Einstellungen, falls schon bekannt. Felder wie in PROFIL.md, Abschnitt Stimme (Skill motion-stimme liest sie).
 6. Budget pro Monat und pro Folge, welche bezahlten Dienste erlaubt sind. Standard „Ohne Nachfrage frei bis: 0“, also jede Ausgabe vorher fragen.
 7. Skript vor dem Bau zeigen: ja/nein (Standard ja).
-8. Rhythmus: Folgen pro Woche, Posting-Tage.
+8. Rhythmus: Folgen pro Tag (Vorschlag aus Schritt 1b, Standard 1), Posting-Uhrzeit (Standard 18:00).
 Am Ende `setup: fertig`, `erstellt` und `aktualisiert` mit Datum, Werkzeug-Zeile aus `ms check --kurz`. Das Profil einmal ganz zeigen und fragen, ob etwas fehlt.
 
 ## Stufe 3: Sound (für Phase C nötig)
@@ -74,7 +75,7 @@ Wofür: Sounds maschinell anhören und per Text suchen, Tiefe schätzen. Mac run
 1. `__HEIM__/ms check --stufe alle` ausführen und als Beleg zeigen.
 2. Kurze Übersicht: Basis ok, Profil fertig, Sound ja/nein, Blender ja/nein, KI ja/nein, verbundene Dienste (nur Namen).
 3. Eine Zeile ins Lernlog: Datum, „Setup fertig“, System, offene optionale Stufen.
-4. Hinweis: Claude Code einmal neu starten, falls Skills neu installiert wurden, und künftig immer im Arbeitsordner mit der Regie als Hauptsitzung starten: `cd "__ARBEIT__" && claude --agent motion-regie`. Dort gelten die erlaubten Befehle, und nur die Hauptsitzung kann Analyse, Bauer und Prüfer starten. Die Knöpfe im Dashboard starten genauso.
+4. Hinweis: Claude Code einmal neu starten, falls Skills neu installiert wurden, und künftig immer im Arbeitsordner mit der Regie als Hauptsitzung starten: `cd "__ARBEIT__" && claude --agent motion-regie --model opusplan` (opusplan: Opus im Plan-Modus, sonst Sonnet). Dort gelten die erlaubten Befehle, und nur die Hauptsitzung kann Analyse, Bauer und Prüfer starten. Die Knöpfe im Dashboard starten genauso.
 5. Nächster Schritt vorschlagen: „Lern den Kanal <Vorbild aus dem Profil>“ (Skill motion-kanal-lernen).
 
 ## Bekannte Fallen

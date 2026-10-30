@@ -48,10 +48,11 @@ Optional `"captions": false`: in dieser Szene keine Untertitel (Titelkarte, gro�
 **Gate:** `__HEIM__/ms szenen <folge> --check --plan` zeigt „Prüfung: OK“ (keine Lücke, Ende = Gesamtdauer). Fehlende Kompositionen sind hier noch erlaubt.
 
 ## 6. Bauer-Gruppen und Briefe
-- 2 bis 4 Szenen pro Bauer, möglichst gleiche Art (ein 3D-Bauer, ein bis zwei 2D-Bauer). Szenen mit gemeinsamem Übergang in dieselbe Gruppe.
-- Jeder Bauer bekommt einen Namen: `bauer-1`, `bauer-2` … Der Name steht im Brief, in `fertig_<name>.json` und ist die Adresse für SendMessage.
+- **1 bis 2 Szenen pro Bauer** (Token-Diät 30.10.2026: Bauer mit 3 bis 4 Szenen wuchsen auf 400 bis 690 k Verlauf, die Kosten steigen mit Schritten mal Verlauf). Möglichst gleiche Art, Szenen mit gemeinsamem Übergang in dieselbe Gruppe.
+- Gemeinsame Konstanten vorab für alle festlegen und in jeden Brief schreiben: Overlay-Ebenen (Scanlines, Korn), Grundfarbe, Schrift, Kamera-Grundbewegung, Caption-Zone. Sonst baut jeder Bauer sie anders.
+- Jeder Bauer bekommt einen Namen: `bauer-1`, `bauer-2` … Der Name steht im Brief und in `fertig_<name>.json`. Korrekturen nach der Fertig-Meldung gehen an einen frischen Bauer `<name>-fix`, nie per SendMessage an den alten.
 - **Vor dem Start:** `__HEIM__/ms szenen <folge> --plan`. Das schreibt `build/index.html` und legt für jede Szene ohne Komposition einen neutralen Platzhalter an (richtige Dauer, `data-platzhalter="1"`). So laufen lint und `ms snap` der Bauer von Anfang an. „noch nicht gebaut“ ist hier nur ein Hinweis.
-- **Start:** Starte alle Bauer in EINER Nachricht parallel über das Agent-Tool (subagent_type "motion-bauer", name "bauer-1", "bauer-2" …), je Bauer ein Brief.
+- **Start:** Starte alle Bauer in EINER Nachricht parallel über das Agent-Tool (subagent_type "motion-bauer", name "bauer-1", "bauer-2" …, `model` wie Helfer in `ms autopilot`, Standard sonnet), je Bauer ein Brief. Danach `__HEIM__/ms warte <folge> --bauer bauer-1 bauer-2 …` im Hintergrund.
 - Brief-Vorlage (ausfüllen, nichts weglassen):
 
 ```
@@ -62,8 +63,9 @@ Grenzen: Du fasst NUR build/compositions/<s2,s4>.html an, dazu neu: build/fertig
   andere Szenen, build/assets/lib oder das Kit des Kanals. Nichts löschen. Fehlt ein Baustein: in der Szene selbst bauen.
   Deine Kompositionen liegen als Platzhalter da: mit Read öffnen, mit Write komplett ersetzen.
   Keine bezahlten Dienste, keine Downloads mit Konto, .env nie lesen. Bedarf in fertig_<name>.json unter "offen" anfordern.
-Lies zuerst: kanaele/<k>/BIBEL.md, REGELN.md, falls vorhanden (beim Pilot: die [R]-Regeln aus BIBEL.md), kit/KATALOG.md,
-  STORYBOARD.md (deine Zeilen), Skill je Art.
+Lies zuerst: den Stil-Skill __ARBEIT__/.claude/skills/stil-<k>/SKILL.md (beim Pilot gibt es ihn noch nicht: BIBEL.md mit
+  den [R]-Regeln), REGELN.md, falls vorhanden, STORYBOARD.md (deine Zeilen), Skill je Art. KATALOG.md nur bei Bedarf.
+Szenentyp je Szene (aus dem Stil-Skill): <s2: Typ …>   Gemeinsame Konstanten: <Overlay, Grundfarbe, Kamera …>
 Bildwelt/Motiv: <…>   Farben: <Element: #hex, …>   Schrift: <…>   Kamera-Stil: <…>
 Pro Szene:
   <id> · Start global <x> · Dauer <d> · Art <…> · Track <n>
@@ -77,9 +79,10 @@ Pro Szene:
 [Pilot] Bewegungsliste deiner Szenen (aus NACHBAU.md bzw. der Analyse): <Zeit · Element · wie es auftaucht · Dauerbewegung · Details>
   Bewegung prüfst du mit Streifen: __HEIM__/ms snap <folge-id> <t> --streifen --gegen …/vorbild/ausschnitt.mp4
 Fertig, wenn: __HEIM__/ms szenen <folge-id> --check --lint --nur <s2,s4> ohne Fehler, jede Szene im Raster angesehen und
-  korrigiert, Kernaktionen auf dem Wort sichtbar. [Pilot] Jeder Eintrag der Bewegungsliste einmal als Streifen gegen das
+  korrigiert (höchstens zwei Raster-Runden je Szene), Kernaktionen auf dem Wort sichtbar, Abnahme-Kriterien des Stil-Skills erfüllt. [Pilot] Jeder Eintrag der Bewegungsliste einmal als Streifen gegen das
   Original angesehen und angeglichen (wie es auftaucht, Dauerbewegung, Details).
-Dann build/fertig_<name>.json und build/sfx_<name>.json schreiben (Format im Agent motion-bauer) und kurz berichten.
+Dann build/fertig_<name>.json (mit "baunotiz" je Szene) und build/sfx_<name>.json schreiben (Format im Agent motion-bauer)
+  und kurz berichten (höchstens 15 Zeilen).
 Live-Log: __HEIM__/ms log "<was gerade passiert>" --ziel <folge-id> --wer motion-bauer
 Du arbeitest im Hintergrund, niemand beantwortet Fragen. Unklar: sinnvolle Annahme treffen, weiterbauen, die Annahme
   in fertig_<name>.json unter "offen" und im Bericht nennen.
@@ -87,8 +90,8 @@ Nach 3 Fehlversuchen an einer Szene: aufhören, mit Pfaden der Kontaktbögen, Ve
 ```
 
 ## 7. Nach den Bauern
-Bauer warten nie auf Antworten. Während sie arbeiten: `__HEIM__/ms log --zeige` und die schon vorhandenen `build/fertig_*.json` lesen, jede Annahme unter `"offen"` entscheiden, Korrekturen per SendMessage an den Namen (`bauer-1` …).
-Warten, bis jede `build/fertig_<name>.json` da ist. Dann `__HEIM__/ms szenen <folge>` (Gate „Prüfung: OK“, also auch kein „noch nicht gebaut“ mehr), `__HEIM__/ms mix <folge> --vorschlaege` für den Ton (Skill motion-ton-mix), danach Skill motion-qa.
+Bauer warten nie auf Antworten. Die Regie wartet mit `__HEIM__/ms warte <folge> --bauer …` im Hintergrund und liest danach jede `build/fertig_<name>.json`: jede Annahme unter `"offen"` entscheiden, Korrekturen an frische Bauer (`<name>-fix`, Brief mit Szene, Bildpfad, Änderung und der Baunotiz).
+Wenn jede `build/fertig_<name>.json` da ist: `__HEIM__/ms szenen <folge>` (Gate „Prüfung: OK“, also auch kein „noch nicht gebaut“ mehr), `__HEIM__/ms mix <folge> --vorschlaege` für den Ton (Skill motion-ton-mix), danach Skill motion-qa.
 
 ## Fallen
 - Szenen ohne Überlappung (Start = Ende) ergeben ein Schwarzbild. Immer 0,06 s.

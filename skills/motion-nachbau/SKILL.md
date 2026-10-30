@@ -1,6 +1,6 @@
 ---
 name: motion-nachbau
-description: Ein konkretes Vorbild-Video 1:1 nachbauen. Alles erkennen (Stimme und Transkript, Bilder und Schnitte, Musikbett, Soundeffekte), Szene für Szene nachbauen, gegen das Original messen und als postbare Kopie mit eigener Stimme und eigenen Sounds rendern. Laden bei "bau dieses Video nach", "1:1 nachbauen", "kopier dieses Video", "genau so ein Video", Link oder Datei eines einzelnen Videos.
+description: Ein konkretes Vorbild-Video 1:1 nachbauen. Alles erkennen (Stimme und Transkript, Bilder und Schnitte, Musikbett, Soundeffekte), Szene für Szene nachbauen, gegen das Original messen und als Kopie mit eigener Stimme und eigenen Sounds rendern (Kopie und Nachbau werden nie automatisch gepostet). Laden bei "bau dieses Video nach", "1:1 nachbauen", "kopier dieses Video", "genau so ein Video", Link oder Datei eines einzelnen Videos.
 ---
 
 # Ein Video 1:1 nachbauen
@@ -60,21 +60,22 @@ Wie motion-kanal-lernen Schritt 4 bis 6:
 3. `ms woerter <folge>`, Caption-Gruppen wie im Original
 4. Storyboard aus der Schnittliste: eine Szene pro Shot
 5. `ms szenen <folge> --plan`
-6. motion-bauer parallel. Im Brief stehen Referenzbilder je Szene, die Zeilen der Bewegungsliste je Szene und Paarbilder mit `ms snap … --gegen`. Für Bewegung: `ms snap <folge> <t> --streifen --gegen vorbild/ausschnitt.mp4` (6 Bilder im Abstand von 0,08 s, Original neben Nachbau).
+6. motion-bauer parallel (1 bis 2 Szenen je Bauer, `model` wie Helfer in `ms autopilot`, warten mit `ms warte <folge> --bauer …` im Hintergrund). Im Brief stehen Referenzbilder je Szene, die Zeilen der Bewegungsliste je Szene und Paarbilder mit `ms snap … --gegen`. Für Bewegung: `ms snap <folge> <t> --streifen --gegen vorbild/ausschnitt.mp4` (6 Bilder im Abstand von 0,08 s, Original neben Nachbau).
 7. `ms szenen <folge>`, dann `ms render <folge> nachbau-v1`
 
 ## 5. Messen
 - `__HEIM__/ms vergleich <folge>`: ΔE (Farbabstand) und SSIM (Bildähnlichkeit) je Szene, dazu das Vergleichsvideo Original neben Nachbau.
 - Bewegung prüfen, die Zahlen sehen sie nicht: je Eintrag der Bewegungsliste ein Streifen `ms snap <folge> <t> --streifen --gegen vorbild/ausschnitt.mp4` und ansehen. Taucht es genauso auf, läuft die Dauerbewegung weiter, stimmen die Details?
-- Danach EINE Verbesserungsrunde: die drei schlechtesten Szenen nach Zahlen plus die deutlichsten Bewegungs- und Detail-Abweichungen aus den Streifen. Nur dort ändern, neu rendern, noch einmal messen.
+- Danach EINE Verbesserungsrunde: die drei schlechtesten Szenen nach Zahlen plus die deutlichsten Bewegungs- und Detail-Abweichungen aus den Streifen. Je Szene ein **frischer** Bauer (`<name>-fix`) mit kurzem Brief: Szene, Paarbild, Abweichung, Baunotiz aus `fertig_<name>.json`. Nie SendMessage an einen Bauer, der fertig gemeldet hat (gemessen 23.10.: 40 % der Bauer-Token fielen nach der ersten Fertig-Meldung an). Nur dort ändern, neu rendern, noch einmal messen.
 - Ergebnis in NACHBAU.md:
   - Messwerte vorher und nachher
   - was nah dran ist, was nicht und warum
 
-## 6. Postbare Kopie (eigener Ton)
-Den Originalton nie veröffentlichen. Für die Kopie:
+## 6. Kopie (eigener Ton)
+Den Originalton nie veröffentlichen. Die Kopie ist eine eigene Folge-Mappe mit `ms neu folge <slug>-kopie --kanal <slug> --kopie --vorlage <id>`
+(STATUS art `kopie`): Sie bleibt ein Nachbau eines fremden Videos und wird nie automatisch gepostet (Sebastian 30.10.2026). Für die Kopie:
 1. **Text:** gleicher Inhalt in der Sprache aus PROFIL.md (übersetzen, wenn nötig), Hook-Satz möglichst wörtlich.
-2. **Stimme:** nach Profil über `ms stimme <folge> …` (ElevenLabs, Higgsfield oder eigene Aufnahme), dann `ms woerter <folge>`. Die Szenen an die neuen Wortzeiten anpassen (`ms szenen`), statt sie neu zu bauen.
+2. **Stimme:** nach Profil über `ms stimme <folge> …` (ElevenLabs, Higgsfield, Voice Studio oder eigene Aufnahme), dann `ms woerter <folge>`. Die Szenen an die neuen Wortzeiten anpassen, statt sie neu zu bauen: Das macht die Regie selbst per Skript (Zeitkonstanten je Szene strecken, danach jede Szene einmal per `ms snap` prüfen), ohne neuen Bauer.
 3. **Musik:** Gab es ein Bett, nimm ein ähnliches aus der Sound-Bibliothek, gleich leise unter der Stimme (Pegel aus `ton.json`).
 4. **Soundeffekte:** an denselben Stellen wie im Original, gleiche Art aus der Bibliothek (Skill motion-sound-bibliothek, `ms sound`). Mischen nach motion-ton-mix.
 5. Rendern mit `ms render <folge> kopie-v1`.

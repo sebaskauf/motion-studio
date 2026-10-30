@@ -7,6 +7,7 @@ description: "2D-Szene für Motion-Studio bauen und prüfen: HyperFrames-Komposi
 
 Grundlage: HyperFrames-Skills `hyperframes-core` (Vertrag einer Komposition) und `hyperframes-animation` (GSAP, Lottie: `adapters/gsap.md`, `adapters/lottie.md`). Bei Unklarheit dort nachlesen.
 Bibliothek: `build/assets/lib/ms2d.js` (globales Objekt `MS2D`, in index.html automatisch geladen). Liste aller Bausteine: `kanaele/<k>/kit/KATALOG.md`.
+**Stil des Kanals:** Gibt es `__ARBEIT__/.claude/skills/stil-<k>/SKILL.md`, gilt er vor allem hier: Szenentyp, Bausteine mit Aufruf, Zeiten, Easing, Farben-Tokens und Abnahme-Kriterien kommen von dort.
 
 ## Gerüst
 1. Vorlage übernehmen: `kanaele/<k>/kit/beispiele/beispiel-2d.html` (Collage, Papier, Stempel) oder `beispiel-2d-vektor.html` (flacher Vektorstil in SVG: wenige Flächen, eine Aktion auf dem Wort, Zoom-Punch) mit Read lesen. Gibt es im Kit eine Szene, die näher dran ist, die nehmen. In `build/compositions/<id>.html` liegt schon ein Platzhalter von `ms szenen`: mit Read öffnen, dann mit Write komplett durch die Vorlage ersetzen (`data-platzhalter` fällt dabei weg). Kein `cp`.
@@ -46,7 +47,7 @@ Bibliothek: `build/assets/lib/ms2d.js` (globales Objekt `MS2D`, in index.html au
 2. `__HEIM__/ms snap <folge> --szene <id> --raster 0.25 --name <bauer>_<id>` und den Kontaktbogen mit dem Read-Tool ansehen.
 3. Kernaktionen einzeln: `__HEIM__/ms snap <folge> --szene <id> --lokal <T_1> <T_1+0.1> <T_2> … --name <bauer>_<id>_kern`.
 4. Prüfliste je Bogen: Jede Aktion auf ihrem Wort sichtbar? Text lesbar und im Rahmen? Wow-Moment da? Erstes Bild nicht leer? Nichts verdeckt Wichtiges oder liegt unter den Captions? Leere Flächen? Stillstand über 1,5 s?
-5. Korrigieren, erneut prüfen. Unklare Stelle in voller Größe: die `frame-*.png` im Snapshot-Ordner öffnen.
+5. Korrigieren, erneut prüfen: höchstens zwei Raster-Runden je Szene, danach nur noch die geänderte Stelle (`--lokal`). Unklare Stelle: `ms snap … --lokal <t> --detail` und `detail-<t>.jpg` ansehen (540 px). Nie `frame-*.png` in voller Größe öffnen (rund 1,4 k Token je Bild, gemessen 224-mal in drei Nachbauten).
 **Gate:** lint 0 Fehler, Raster angesehen, Prüfliste ohne offenen Punkt.
 
 ## Pilot (Nachbau)
