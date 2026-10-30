@@ -29,19 +29,18 @@ Lies die installierte Skill-Datei komplett (`~/.claude/skills/motion-setup/SKILL
 - Danach das Interview für mein Profil.
 - Schlüssel (Apify, ElevenLabs …) zeigst du nie an. Ich trage sie selbst in die `.env` im Arbeitsordner ein.
 
-SCHRITT 3: TAGESBAU (automatisch jeden Tag neue Folgen, token-sparsam)
-Lies `"<Installationsordner>/tools/autopilot.py" --help` und erklär mir den Tagesbau in drei Sätzen:
-- Was er macht: Jeden Tag im Bau-Fenster startet er selbst neue Folgen für meinen Kanal, höchstens 2 gleichzeitig. Gepostet wird nichts, fertige Folgen landen im Studio.
+SCHRITT 3: TAGESBAU (automatisch jeden Tag eigene Folgen, token-sparsam)
+Lies `"<Installationsordner>/tools/autopilot.py" --help`. Dann frag mich EINE Sache: Welches Claude-Abo habe ich, Pro, Max 5x oder Max 20x?
+Führ danach `"<Installationsordner>/ms" autopilot abo <pro|max5|max20>` aus und erklär mir den Tagesbau in drei Sätzen:
+- Was er macht: Jeden Tag im Bau-Fenster startet er selbst eigene Folgen für meinen Kanal, mit Themen aus meiner Ideenliste und im gelernten Stil. Standard ist 1 Folge am Tag, die Ausgabe sagt, was zu meinem Abo passt. Gepostet wird erst, wenn ich das Posten eingerichtet und je Plattform freigegeben habe.
 - Wie er Tokens spart:
-  - Bau-Sitzungen mit Sonnet und ohne Auto-Gedächtnis
-  - feste Effizienz-Regeln
-  - Pause, wenn mein Claude-Limit erreicht ist
+  - frische Sitzungen ohne Auto-Gedächtnis und nur mit den MCP-Servern, die gebraucht werden
+  - geplant wird mit Opus, gebaut mit Sonnet (Sonnet spart dabei keine Token, gemessen braucht es eher etwas mehr; es ist Standard, weil die Qualität gleich gut war)
+  - eine Wochenbremse hält ihn an, bevor mein Wochenlimit knapp wird, und beim Nutzungslimit pausiert er bis zum Reset
 - Kosten: Ohne Frage gibt er nur bis zur Grenze „Ohne Nachfrage frei bis“ aus meinem Profil aus. Was mehr kostet, wartet im Studio auf mein Ja.
 
-Dann frag mich EINE Sache: Wie viele Folgen pro Tag? Vorschlag 5, möglich 5 bis 8, je nach meinem Claude-Abo.
-
 Danach:
-1. `"<Installationsordner>/ms" autopilot einstellen --pro-tag <Zahl> --fenster 08:00-22:00 --modell sonnet`
+1. Zeig mir den Vorschlag aus der Ausgabe und frag, ob ich dabei bleibe. Will ich eine andere Zahl: `"<Installationsordner>/ms" autopilot einstellen --pro-tag <Zahl> --fenster 08:00-22:00`.
 2. `"<Installationsordner>/ms" autopilot einrichten`. Das legt den Zeitplan an: Mac launchd, Windows Aufgabenplanung, Linux cron, alle 15 Minuten. Unter Windows statt des ms-Skripts: `py -3 "<Installationsordner>/tools/autopilot.py" einrichten`.
 3. Zeig mir `ms autopilot` als Beleg.
 4. Sag mir: Eingeschaltet wird der Tagesbau erst, wenn mein erster Kanal fertig gelernt ist. Das geht im Studio mit dem Schalter „Tagesbau“ oder mit `ms autopilot an --kanal <slug>`. Läuft er, sehe ich im Studio jeden Agenten als Pixel-Figur bei der Arbeit und kann seine Fragen dort beantworten.
@@ -67,13 +66,14 @@ SCHRITT 5: ABSCHLUSS
 2. Schreib mir zum Schluss eine kurze Rückmeldung zum Weiterleiten an Sebastian: mein System, welche Stufen ok sind, und alles, was gehakt hat (Befehl, genaue Fehlermeldung, wie es gelöst wurde). Höchstens 10 Zeilen, ohne Schlüssel oder Passwörter.
 3. Hast du den Studio-Tab eingebaut: Ich lade Obsidian jetzt neu (Mac Cmd+R, Windows Strg+R), dann ist oben der Tab STUDIO da.
 4. Sag mir, dass ich Claude Code einmal neu starten soll, und zwar im Arbeitsordner mit der Regie als Hauptsitzung:
-   - Mac/Linux: `cd <Arbeitsordner> && claude --agent motion-regie`
-   - Windows PowerShell: `cd <Arbeitsordner>; claude --agent motion-regie`
+   - Mac/Linux: `cd <Arbeitsordner> && claude --agent motion-regie --model opusplan`
+   - Windows PowerShell: `cd <Arbeitsordner>; claude --agent motion-regie --model opusplan`
+   - `--model opusplan` heißt: Opus, wenn geplant wird (Plan-Modus: zweimal Shift+Tab), sonst Sonnet. Wer immer sein Standardmodell will, lässt es weg.
    - Updates holst du später mit einem Satz an die Regie: „Aktualisiere Motion-Studio“ (oder im Terminal `ms update`). Das holt die neueste Fassung, installiert sie und startet das Studio neu. Die Version steht im Studio im Menü „⋯“.
 5. Sag mir, wie es dann weitergeht:
    - Die Regie fragt zwei Dinge: Short-Form oder lange YouTube-Videos? Welchen Stil willst du, von welchem Account? Ohne eigenen Favoriten zeigt sie Beispiele.
    - Dann bringt sie sich den Stil automatisch bei und baut ein Video davon 1:1 nach, ohne Zwischenfragen. Im Studio siehst du jeden Schritt, die Agenten bei der Arbeit und wann es ungefähr fertig ist.
-   - Danach zeigt sie dir den Nachbau und fragt, was für Videos du in dem Stil machen willst und was dein eigener Twist ist. Dann geht die Produktion los. So gelten die erlaubten Befehle, und die Regie kann Analyse, Bauer und Prüfer starten. Genau so starte ich ab jetzt immer. Danach sage ich einfach, was ich will, zum Beispiel:
+   - Danach zeigt sie dir den Nachbau und fragt, was für Videos du in dem Stil machen willst und was dein eigener Twist ist. Aus dem Nachbau schreibt sie eine genaue Bauanleitung für deinen Stil (Stil-Skill), die jede spätere Sitzung lädt. Dann geht die Produktion los: eigene Folgen mit deinen Themen, vom Vorbild nur Form, Länge und Tempo. So gelten die erlaubten Befehle, und die Regie kann Analyse, Bauer und Prüfer starten. Genau so starte ich ab jetzt immer. Danach sage ich einfach, was ich will, zum Beispiel:
    - "Ich hab noch kein Format, hilf mir eins zu finden"
    - "Lern den Kanal @<vorbild>"
    - "Bau mir dieses Video 1:1 nach: <Link>"

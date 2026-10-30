@@ -238,6 +238,7 @@ if [ ! -f "$ARBEIT/.claude/settings.json" ]; then
       \"Bash($(json_esc "$(posix "$HEIM")")/ms *)\","
   cat > "$ARBEIT/.claude/settings.json" <<JSONEOF
 {
+  "autoMemoryEnabled": false,
   "permissions": {
     "allow": [
       "Bash($HJ/ms *)",$EXTRA
@@ -260,6 +261,25 @@ if [ ! -f "$ARBEIT/.claude/settings.json" ]; then
 }
 JSONEOF
   NEU_ANGELEGT="$NEU_ANGELEGT .claude/settings.json"
+fi
+
+# Token-Diät (30.10.2026): Sitzungen im Arbeitsordner ohne Auto-Gedächtnis, auch Dashboard- und manuelle Starts
+# (Claude Code 2.1.289 liest "autoMemoryEnabled" aus den Projekt-Einstellungen). Vorhandene Datei: nur diesen einen Schlüssel
+# ergänzen, wenn er fehlt, alles andere bleibt, wie es ist (vorher Sicherung settings.json.vor-v4).
+if [ -n "$PY" ] && [ -f "$ARBEIT/.claude/settings.json" ]; then
+  MS_S="$ARBEIT/.claude/settings.json" "$PY" - <<'PYEOF' || echo "HINWEIS: autoMemoryEnabled nicht ergänzt (settings.json nicht lesbar), Token-Diät greift dann nur bei Starts aus dem Studio."
+import json, os, shutil
+p = os.environ['MS_S']
+with open(p, encoding='utf-8') as f:
+    d = json.load(f)
+if 'autoMemoryEnabled' not in d:
+    shutil.copyfile(p, p + '.vor-v4')
+    d['autoMemoryEnabled'] = False
+    with open(p, 'w', encoding='utf-8') as f:
+        json.dump(d, f, ensure_ascii=False, indent=2)
+        f.write('\n')
+    print('  .claude/settings.json: autoMemoryEnabled false ergänzt (Sicherung settings.json.vor-v4)')
+PYEOF
 fi
 
 # ---------------------------------------------------------------- config.json im HEIM (Rest bleibt erhalten)
@@ -328,4 +348,5 @@ echo "Nächster Schritt, Stand prüfen:"
 echo "  \"$H_AUSSEN/ms\" check"
 echo "Claude Code danach im Arbeitsordner mit der Regie als Hauptsitzung starten (dort gelten die erlaubten Befehle,"
 echo "und nur die Hauptsitzung kann Analyse, Bauer und Prüfer starten):"
-echo "  cd \"$A_AUSSEN\" && claude --agent motion-regie"
+echo "  cd \"$A_AUSSEN\" && claude --agent motion-regie --model opusplan"
+echo "  (opusplan: Opus im Plan-Modus, sonst Sonnet. Weglassen, wenn du immer dein Standardmodell willst.)"
