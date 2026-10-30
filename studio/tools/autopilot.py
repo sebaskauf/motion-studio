@@ -7,6 +7,8 @@
   ms autopilot aus                   keine neuen Bauten mehr (laufende laufen zu Ende)
   ms autopilot lauf                  ein Durchlauf (macht der Zeitplan alle 15 min)
   ms autopilot jetzt                 einen Bau sofort starten (zählt nicht zum Tagesziel)
+  ms autopilot anstossen             in 20 s einen Durchlauf (wiederholt, solange ein anderer läuft): ms status --stufe A-fertig
+                                     ruft das abgekoppelt auf, damit Stufe B ohne Warten auf den Zeitplan startet
   ms autopilot einrichten            Zeitplan anlegen: macOS launchd, Windows Aufgabenplanung, Linux cron
   ms autopilot austragen             Zeitplan entfernen
   Zusatz: --trocken zeigt nur, was passieren würde. --json für Maschinen.
@@ -595,7 +597,7 @@ def _stand_text(s: dict) -> str:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('was', nargs='?', default='stand',
-                    choices=['stand', 'an', 'einstellen', 'aus', 'lauf', 'jetzt', 'einrichten', 'austragen', 'abo', 'posten'])
+                    choices=['stand', 'an', 'einstellen', 'aus', 'lauf', 'jetzt', 'einrichten', 'austragen', 'abo', 'posten', 'anstossen'])
     ap.add_argument('wert', nargs='?', help='bei abo: pro|max5|max20, bei posten: an|aus')
     ap.add_argument('--kanal')
     ap.add_argument('--pro-tag', type=int)
@@ -716,6 +718,15 @@ def main() -> None:
         text += '\nPosten: ' + ('gestartet.' if po.get('gestartet') and not po.get('trocken') else
                                  f'würde {po.get("folge")} posten.' if po.get('gestartet') else str(po.get('grund')))
         return aus(e, text)
+    if a.was == 'anstossen':
+        for i in range(8):                       # wie reel-studio staffel.py: erst warten, bis die Stufe-A-Sitzung zur Ruhe kommt
+            time.sleep(20 if i == 0 else 30)
+            try:
+                e = lauf()
+                return aus(e, 'Durchlauf angestoßen.')
+            except SystemExit:                   # anderer Durchlauf hält die Sperre
+                continue
+        return aus({'ok': False}, 'Durchlauf nicht möglich, die Sperre war 4 min belegt. Der Zeitplan holt es nach.')
     if a.was == 'jetzt':
         cfg = konfig()
         if not cfg['kanal']:

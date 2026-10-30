@@ -315,6 +315,24 @@ class AutopilotTest(Basis):
         self.assertEqual(gestartet, [('autobau-b', '2026-10-30-a')])
         self.assertEqual(z['baue'][0]['stufe'], 'B')
 
+    def test_stufe_a_fertig_stoesst_an(self):
+        self.kanal()
+        self.folge('2026-10-30-a', phase='storyboard', upload=False)
+        env = dict(os.environ, MS_KEIN_ANSTOSS='1')
+        r = subprocess.run([sys.executable, str(TOOLS / 'status.py'), '2026-10-30-a', '--stufe', 'A-fertig'], capture_output=True, text=True, env=env)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(json.loads((self.arbeit / 'folgen/2026-10-30-a/STATUS.json').read_text(encoding='utf-8'))['stufe'], 'A-fertig')
+        import status
+        aufrufe = []
+        echt = subprocess.Popen
+        subprocess.Popen = lambda cmd, **kw: aufrufe.append((cmd, kw.get('start_new_session')))
+        try:
+            os.environ.pop('MS_KEIN_ANSTOSS', None)
+            status.anstossen()
+        finally:
+            subprocess.Popen = echt
+        self.assertEqual(aufrufe[0][0][-2:], [str(TOOLS / 'autopilot.py'), 'anstossen'])
+
     def test_posten_schritt(self):
         import autopilot
         import _konfig

@@ -7,7 +7,8 @@
     --titel T  --video out/x.mp4  --vorschau out/x.jpg  --geplant 2026-10-21T18:00
     --fehler "…" | --fehler-weg      --wartet "Frage an den Nutzer" | --wartet-weg
     --kosten 0.42 USD "Apify 30 Reels"  --gepostet <link> [--plattform instagram]
-    --stufe A-fertig    Staffel-Bau: Stufe A (Idee, Skript, Stimme, Storyboard) fertig, der Autopilot startet Stufe B frisch
+    --stufe A-fertig    Staffel-Bau: Stufe A (Idee, Skript, Stimme, Storyboard) fertig. Stößt den Autopiloten abgekoppelt an,
+                        Stufe B startet in etwa einer Minute in einer frischen Sitzung
 Phasen Folge: vorlage skript stimme storyboard szenen ton render vergleich pruefung fertig geplant gepostet
 Phasen Kanal: vorbild zerlegt bibel pilot gemessen kit bereit"""
 import argparse
@@ -27,6 +28,23 @@ def zeile(st):
         teile.append(f"FEHLER: {st['fehler']}")
     teile.append(st.get('titel') or '')
     return '  '.join(t for t in teile if t)
+
+
+def anstossen() -> None:
+    """Staffel-Bau: Stufe A ist fertig. Den Autopiloten abgekoppelt anstoßen (überlebt das Schließen dieser Sitzung), damit
+    Stufe B in etwa einer Minute frisch startet statt erst beim nächsten Zeitplan-Lauf (wie reel-studio staffel.py, 23.10.2026)."""
+    import os
+    import subprocess
+    from pathlib import Path
+    if os.environ.get('MS_KEIN_ANSTOSS') == '1':      # Tests
+        return
+    log = _ms.arbeit() / 'autopilot' / 'anstoss.log'
+    log.parent.mkdir(parents=True, exist_ok=True)
+    flags = {'creationflags': 0x00000008 | 0x00000200} if _ms.SYSTEM == 'Windows' else {'start_new_session': True}
+    with open(log, 'a', encoding='utf-8') as f:
+        subprocess.Popen([sys.executable, str(Path(__file__).with_name('autopilot.py')), 'anstossen'], stdin=subprocess.DEVNULL,
+                         stdout=f, stderr=subprocess.STDOUT, **flags)
+    print('Autopilot angestoßen: Stufe B startet in etwa einer Minute in einer frischen Sitzung. Hier aufhören.')
 
 
 def main():
@@ -87,6 +105,8 @@ def main():
 
     if a.phase or a.notiz or felder:
         st = _ms.status_setzen(ordner, a.phase, a.notiz, **felder)
+        if a.stufe == 'A-fertig':
+            anstossen()
         if a.fehler:
             _ms.log(a.fehler, ziel=_ms.ziel_name(ordner), art='fehler')
         if a.wartet:
