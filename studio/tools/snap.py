@@ -13,7 +13,10 @@
                      Zeigt, WIE etwas auftaucht oder sich bewegt (ploppt auf, dreht sich weiter), was Standbilder nicht zeigen.
   --name kern_s2     Ordnername unter snapshots/ (Standard: Szene bzw. "snap"). Gleicher Name: hyperframes ersetzt die
                      Bilder, der vorige Kontaktbogen wandert vorher nach <name>/_ueberholt/ (Vorher-Nachher-Vergleich)
+  --detail          zusätzlich detail-<t>.jpg je Zeit in 540 px Breite: für den genauen Blick auf eine Stelle.
 Ergebnis: <folge>/snapshots/<name>/frame-*.png (volle Auflösung) + kontaktbogen*.jpg (Zeiten global und lokal beschriftet).
+Token-Diät (30.10.2026): frame-*.png in voller Größe NIE mit dem Read-Tool öffnen (gemessen 224 solche Lesevorgänge in drei
+Nachbauten). Erst der Kontaktbogen, bei Verdacht --detail an genau dieser Zeit.
 Vorher läuft hyperframes lint: ein Skriptfehler in EINER Szene rendert die ganze Seite leer, deshalb Abbruch bei lint-Fehlern.
 Dauer: etwa 1,5 s pro Bild (3D-Szenen länger). Kontaktbogen danach mit dem Read-Tool ansehen."""
 from __future__ import annotations
@@ -129,6 +132,7 @@ def main():
     ap.add_argument('--streifen', type=float, nargs='?', const=0.08,
                     help='Bewegungsstreifen: jede Zeit wird zu 6 Bildern im Abstand von 0,08 s (oder dem angegebenen Wert)')
     ap.add_argument('--ohne-lint', action='store_true')
+    ap.add_argument('--detail', action='store_true', help='zusätzlich detail-<t>.jpg in 540 px (statt frame-*.png in voller Größe)')
     a = ap.parse_args()
 
     fo = _bau.folge(a.folge)
@@ -225,6 +229,12 @@ def main():
     print(f'{len(bilder)} Bilder. Kontaktbogen ansehen' + (' (Paar-Bogen zuerst):' if paar_boegen else ':'))
     for b in paar_boegen + boegen:
         print(b)
+    if a.detail:
+        from PIL import Image
+        for t, pfad in bilder:
+            im = Image.open(pfad).convert('RGB')
+            im.resize((540, round(540 * im.height / im.width)), Image.LANCZOS).save(ordner / f'detail-{t:g}.jpg', quality=86)
+        print(f'Detailbilder (540 px): {ordner}/detail-*.jpg')
     if paar:
         print(f'Einzelpaare von hyperframes: {len(paar)} × pair-*.jpg in {ordner}')
     if alte:

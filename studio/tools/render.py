@@ -4,6 +4,7 @@
   ms render <folge> <name> --nur-qa              kein Render, nur die Prüfungen auf vorhandenem out/<name>.mp4
   --workers 2   parallele Chrome-Prozesse (Standard 1: RAM schonen, andere Agenten laufen mit)
   --trotzdem    auch rendern, wenn ms szenen --check Fehler meldet
+  --dicht       Szenenbögen mit 10 statt 5 Bildern pro Sekunde (nur bei Verdacht, kostet doppelt so viele Bild-Token)
   --auslauf 0   wie bei ms szenen. Ohne Angabe gilt der Auslauf, mit dem ms szenen index.html gebaut hat
                 (Dauer = Stimme + Auslauf = data-duration in index.html). Weicht die Angabe ab: Abbruch mit Hinweis.
 Beispiel: ms render 2026-10-20-probe probe-v1
@@ -18,9 +19,11 @@ Ablauf
   3. hyperframes render -> out/<name>_roh.mp4, dann Ton darunter: build/assets/audio/mix.wav, sonst die Stimme
   4. Prüfungen: Bildzahl gegen Soll (Dauer × 30, ±1 Bild erlaubt), Schwarzbild-Scan (blackdetect + Dunkel-Sprünge, Treffer außerhalb
      von Szenenschnitten = Fehler, am Schnitt = Hinweis zum Ansehen), Lautheit (Soll −14 LUFS: das Gate ±0,5 gilt beim Mix,
-     außerhalb ±1 ist es im Render ein Ausschlussfehler), Kontaktbögen out/qa_<name>/<szene>.jpg (10 Bilder/s)
+     außerhalb ±1 ist es im Render ein Ausschlussfehler), Kontaktbögen out/qa_<name>/<szene>.jpg (5 Bilder/s, --dicht 10),
+     Übersicht out/qa_<name>/uebersicht.jpg (1 Bild/s über die ganze Folge)
   5. out/<name>.jpg Vorschau, out/qa_<name>/RENDER.json + RENDER.md, Status "render" mit Video und Vorschau
-Danach: JEDEN Bogen in out/qa_<name>/ mit dem Read-Tool ansehen (Skill motion-qa)."""
+Danach (Skill motion-qa, Token-Diät 30.10.2026): Die Regie liest RENDER.md und sieht die Übersicht an, der Prüfer jeden
+Szenenbogen. Ein Bogen kostet rund 5 k Token, deshalb jeden Bogen nur einmal und nur bei Verdacht dichter (--dicht)."""
 from __future__ import annotations
 
 import argparse
@@ -93,12 +96,18 @@ def schwarz_scan(video: Path, szenen: list[dict], fps: float) -> list[dict]:
     return treffer
 
 
-def bogen_szene(video: Path, s: dict, ziel: Path, dauer_video: float, spalten=10, breite=216) -> Path:
-    """Dichter Kontaktbogen einer Szene (10 Bilder/s), Bilder gestreamt (nie das ganze Video im RAM)."""
+def uebersicht(video: Path, ziel: Path, dauer_video: float, spalten=8, breite=150) -> Path:
+    """Ein Bild pro Sekunde über die ganze Folge: für den schnellen Blick der Regie (statt aller Szenenbögen)."""
+    zeiten = [round(t + 0.5, 2) for t in range(int(max(1, dauer_video)))]
+    return _ms.kontaktbogen(video, zeiten, ziel, spalten=spalten, breite=breite, titel=f'{video.name}: 1 Bild pro Sekunde')
+
+
+def bogen_szene(video: Path, s: dict, ziel: Path, dauer_video: float, spalten=10, breite=216, fps=5) -> Path:
+    """Kontaktbogen einer Szene (5 Bilder/s, mit --dicht 10), Bilder gestreamt (nie das ganze Video im RAM)."""
     from PIL import Image, ImageDraw
     hoehe = round(breite * 1920 / 1080)
     von, bis = s['start'], min(s['start'] + s['dur'], dauer_video)
-    bilder = [(t, Image.fromarray(b)) for t, b in _ms.frames(video, fps=10, groesse=(breite, hoehe), start=von, ende=bis)]
+    bilder = [(t, Image.fromarray(b)) for t, b in _ms.frames(video, fps=fps, groesse=(breite, hoehe), start=von, ende=bis)]
     if not bilder:
         bilder = [(von, Image.new('RGB', (breite, hoehe), (80, 0, 0)))]
     zeilen = math.ceil(len(bilder) / spalten)
@@ -125,6 +134,7 @@ def main():
     ap.add_argument('--workers', default=str(_ms.config().get('render_workers', 1)))
     ap.add_argument('--nur-qa', action='store_true')
     ap.add_argument('--trotzdem', action='store_true')
+    ap.add_argument('--dicht', action='store_true', help='Szenenbögen mit 10 statt 5 Bildern pro Sekunde (nur bei Verdacht)')
     ap.add_argument('--auslauf', type=float, help='wie ms szenen (Standard: der Auslauf aus index.html)')
     a = ap.parse_args()
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]*', a.name):
@@ -199,7 +209,8 @@ def main():
     else:
         befunde.append(('HINWEIS', 'Video ohne Ton'))
     qa = out / f'qa_{a.name}'
-    boegen = [bogen_szene(video, s, qa / f"{s['id']}.jpg", info['dauer']) for s in szenen]
+    boegen = [bogen_szene(video, s, qa / f"{s['id']}.jpg", info['dauer'], fps=10 if a.dicht else 5) for s in szenen]
+    ueber = uebersicht(video, qa / 'uebersicht.jpg', info['dauer'])
     from PIL import Image
     t_v = min(1.0, info['dauer'] / 2)
     Image.fromarray(_ms.frame_bei(video, t_v, (540, 960))).save(out / f'{a.name}.jpg', quality=88)
@@ -213,7 +224,7 @@ def main():
           f'- Lautheit: {lautheit:.1f} LUFS' if lautheit is not None else '- Lautheit: kein Ton',
           f'- Schwarzbild-Scan: {len(treffer)} Treffer, davon {sum(1 for h in treffer if not h["am_schnitt"])} außerhalb von Schnitten',
           '', '## Befunde', ''] + ([f'- **{s}** {t}' for s, t in befunde] or ['- keine']) + \
-         ['', '## Kontaktbögen (jeden ansehen)', ''] + [f'- {b.name}' for b in boegen]
+         ['', f'## Übersicht (Regie): {ueber.name}', '', '## Kontaktbögen je Szene (Prüfer: jeden einmal ansehen)', ''] + [f'- {b.name}' for b in boegen]
     (qa / 'RENDER.md').write_text('\n'.join(md) + '\n', encoding='utf-8')
     if not a.nur_qa:   # --nur-qa ändert den Status nicht (prüft evtl. eine ältere Fassung)
         _ms.status_setzen(fo, 'render', f'Render {a.name} ({a.qualitaet}): {len(befunde)} Befunde',
@@ -224,7 +235,8 @@ def main():
     print('Befunde:', 'keine' if not befunde else len(befunde))
     for s, t in befunde:
         print(f'  {s}: {t}')
-    print('Kontaktbögen (jeden mit dem Read-Tool ansehen):')
+    print(f'Übersicht (Regie): {ueber}')
+    print('Kontaktbögen je Szene (der Prüfer sieht jeden an, die Regie nur bei Befund oder Verdacht):')
     for b in boegen:
         print(f'  {b}')
     print(f'fertig: {video} ({time.time() - t0:.0f} s)')
