@@ -6,7 +6,13 @@ Aufträge (startet `claude --agent motion-regie "<Auftrag>"` im Arbeitsordner):
   ms starten folge --kanal <k>                   Bau die nächste Folge für Kanal <k>.
   ms starten weiter [--folge <id>]               Mach bei der offenen Arbeit (oder dieser Folge) weiter.
   ms starten pruefen --folge <id>                Folge unabhängig prüfen lassen
+  ms starten posten --folge <id>                 Folge über Claude in Chrome posten (Skill motion-posten)
+  ms starten posten-einrichten --kanal <k>       Posten einrichten: erster Lauf je Plattform, Stopp vor „Veröffentlichen“
+  Intern (Tagesbau): autobau --kanal <k> (Stufe A), autobau-b --folge <id> (Stufe B), autopost --folge <id>
   Zusatz: --trocken zeigt nur den Befehl, startet nichts.
+Jede Sitzung startet schlank (_konfig.sitzung_optionen): ohne Auto-Gedächtnis, Modell aus autopilot.json (Regie opusplan,
+Tagesbau Stufe A Opus, Stufe B und Posten Sonnet), Bau-Sitzungen mit --strict-mcp-config und nur den MCP-Servern, die sie
+brauchen (Stimme: mcp_stimme), Posten zusätzlich mit --chrome (Claude in Chrome).
 Sitzungen (nur tmux-Sitzungen mit Präfix ms-, fremde werden nie angefasst):
   ms starten liste [--json]                      alle ms-Sitzungen mit Zustand (arbeitet, wartet, fehler, beendet)
   ms starten zeige <sitzung> [--zeilen 40]       letzte Terminalzeilen
@@ -33,16 +39,25 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+import _konfig
 import _ms
 import terminal_lesen as TL
 
 AGENT = 'motion-regie'
-AUFTRAEGE = ['einrichten', 'vorlagen', 'kanal-lernen', 'folge', 'weiter', 'pruefen', 'autobau']
+AUFTRAEGE = ['einrichten', 'vorlagen', 'kanal-lernen', 'folge', 'weiter', 'pruefen', 'posten', 'posten-einrichten',
+             'autobau', 'autobau-b', 'autopost']
 # Autopilot-Bau (ms autopilot): selbstständig, Kosten im Monatsbudget aus PROFIL.md freigegeben, sparsam (motion-folge „Effizienz“)
 AUTOBAU_ZUSATZ = ('Autopilot-Bau: Arbeite ohne Rückfragen durch und entscheide selbst sinnvoll. Bezahlte Schritte nur bis zur Grenze '
                   '„Ohne Nachfrage frei bis“ aus PROFIL.md und im Monatsbudget (trotzdem buchen). Kostet ein Schritt mehr oder geht etwas nur '
                   'mit einer Entscheidung des Nutzers: ms status <ziel> --wartet "<Frage>" setzen und die Sitzung mit einer kurzen Meldung '
                   'beenden. Halte dich an den Abschnitt Effizienz in motion-folge.')
+# Staffel-Bau (Token-Diät wie im reel-studio, 22.10.2026): Stufe A plant mit Opus, Stufe B baut in einer frischen Sitzung mit Sonnet
+STUFE_A = ('Staffel-Bau Stufe A: nur motion-folge Schritte 1 bis 4 (Idee aus der Ideenliste, Skript, Stimme, Storyboard). '
+           'Schreib danach in HANDOFF.md den Abschnitt „Übergabe Stufe B“ (Bauer-Gruppen mit Szenen, Farben, Schrift, offene Punkte), '
+           'setz ms status <folge> --stufe A-fertig und hör auf. Szenen, Ton, Render und Prüfung macht Stufe B in einer frischen Sitzung.')
+AUTOPOST = ('Autopilot-Posten: Arbeite ohne Rückfragen. Poste nur auf Plattformen mit Freigabe und gespeichertem Ablauf '
+            '(ms posten pruefen zeigt sie), genau nach dem Ablauf. Klappt etwas nicht: ms posten ergebnis <folge> --plattform <p> '
+            '--fehler "<was>" und aufhören, nicht improvisieren.')
 SITZUNG_RE = re.compile(r'^ms-[a-z0-9][a-z0-9-]{0,62}$')
 KANAL_RE = re.compile(r'^[a-z0-9][a-z0-9-]{0,62}$')
 FOLGE_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._-]{0,120}$')
@@ -103,7 +118,23 @@ def auftrag_text(art: str, kanal=None, url=None, folge=None) -> str:
         return f'Bau die nächste Folge für Kanal {k}.'
     if art == 'autobau':
         k = _kanal_pruefen(kanal)
-        return f'Bau die nächste Folge für Kanal {k}. {AUTOBAU_ZUSATZ}'
+        return f'Bau die nächste Folge für Kanal {k}. {AUTOBAU_ZUSATZ}' + (f' {STUFE_A}' if _konfig.konfig()['staffel'] else '')
+    if art == 'autobau-b':
+        f = _folge_pruefen(folge)
+        return (f'Autopilot-Bau Stufe B für Folge {f}: Lies HANDOFF.md (Übergabe Stufe B) und STORYBOARD.md und mach mit '
+                f'motion-folge ab Schritt 5 (Szenen) bis Schritt 9 (fertig) weiter. {AUTOBAU_ZUSATZ}')
+    if art == 'posten':
+        f = _folge_pruefen(folge)
+        return (f'Poste Folge {f} nach Skill motion-posten. Plattformen ohne Freigabe sind ein erster Lauf: dort vor '
+                '„Veröffentlichen“ stoppen, mir zeigen, was eingetragen ist, und auf mein Ja warten.')
+    if art == 'posten-einrichten':
+        k = _kanal_pruefen(kanal)
+        return (f'Richte das Posten für Kanal {k} ein (Skill motion-posten, erster Lauf): mit meiner letzten fertigen eigenen Folge '
+                'auf jeder Plattform aus meinem Profil bis direkt vor „Veröffentlichen“, dann stoppen und mich fragen. '
+                'Nie selbst veröffentlichen, bevor ich Ja sage.')
+    if art == 'autopost':
+        f = _folge_pruefen(folge)
+        return f'Poste Folge {f} nach Skill motion-posten. {AUTOPOST}'
     if art == 'weiter':
         if folge:
             return f'Mach bei Folge {_folge_pruefen(folge)} weiter.'
@@ -122,11 +153,13 @@ def _programm(name: str) -> str:
 
 
 def claude_befehl(text: str, modell: str | None = None, denkstufe: str | None = None, ohne_gedaechtnis: bool = False,
-                  kopflos: bool = False, bypass: bool = False) -> list[str]:
-    """claude-Aufruf. Token-Diät für Autopilot-Bauten: eigenes Modell (z. B. Sonnet), Denkstufe, ohne Auto-Gedächtnis
+                  kopflos: bool = False, bypass: bool = False, mcp: list[str] | None = None, chrome: bool = False) -> list[str]:
+    """claude-Aufruf. Token-Diät: eigenes Modell (z. B. opusplan, Sonnet), Denkstufe, ohne Auto-Gedächtnis
     (--settings autoMemoryEnabled:false spart rund 20 % Startkontext, gemessen 22.10.2026). kopflos = `claude -p` ohne Terminal.
     bypass = ohne Freigabe-Fragen: Im Tagesbau klickt niemand, und die Bauer brauchen eigene Mess-Skripte (python3), die nicht
-    auf der erlaubten Liste stehen (gemessen 23.10.: rund 85 % ihrer Befehle). Die Regie starten Mitglieder ebenso mit bypass."""
+    auf der erlaubten Liste stehen (gemessen 23.10.: rund 85 % ihrer Befehle). Die Regie starten Mitglieder ebenso mit bypass.
+    mcp = None: alle MCP-Server des Nutzers; Liste: nur diese (--strict-mcp-config, --mcp-config '{"mcpServers": {…}}'),
+    [] = keiner. chrome = Claude in Chrome (--chrome; laut Claude Code 2.1.289 kommt Chrome auch bei --strict-mcp-config dazu)."""
     ersatz = os.environ.get('MS_CLAUDE_BEFEHL')
     basis = shlex.split(ersatz) if ersatz else ['claude']
     basis[0] = _programm(basis[0])
@@ -140,6 +173,11 @@ def claude_befehl(text: str, modell: str | None = None, denkstufe: str | None = 
             extra += ['--settings', '{"autoMemoryEnabled":false}']
         if bypass:
             extra += ['--permission-mode', 'bypassPermissions']
+        if mcp is not None:
+            server, _fehlt = _konfig.mcp_server(list(mcp))
+            extra += ['--strict-mcp-config', '--mcp-config', json.dumps({'mcpServers': server}, separators=(',', ':'))]
+        if chrome:
+            extra += ['--chrome']
         if kopflos:
             extra += ['-p'] + ([] if bypass else ['--permission-mode', 'acceptEdits'])
     return basis + extra + ['--agent', AGENT, text]
@@ -175,12 +213,14 @@ def _agent_hinweis() -> str | None:
     return None
 
 
-def _umgebung() -> dict:
+def _umgebung(sitzung: str | None = None) -> dict:
     """Umgebung, die jede Agenten-Sitzung braucht: MS_ARBEIT immer, CLAUDE_CONFIG_DIR nur, wenn der Claude-Ordner
     vom Standard ~/.claude abweicht (CLAUDE_CONFIG_DIR oder config.json "claude_ordner"). Sonst findet die Sitzung
     motion-regie nicht. Beim Standard bleibt die Variable weg, weil Claude Code mit ihr seine Einstellungen woanders sucht."""
     import _setup
     umg = {'MS_ARBEIT': str(_ms.arbeit())}
+    if sitzung:
+        umg['MS_SITZUNG'] = sitzung     # ms neu folge schreibt sie in STATUS "sitzung": so findet der Autopilot seine Folge
     cfg = _setup.claude_ordner()
     try:
         abweichend = cfg.resolve() != (Path.home() / '.claude').resolve()
@@ -200,17 +240,29 @@ def _fenster_aus() -> bool:
     return os.environ.get('MS_KEINE_FENSTER') == '1'
 
 
+def optionen(art: str, **ueber) -> dict:
+    """Startoptionen aus autopilot.json (_konfig.sitzung_optionen), einzelne Werte überschreibbar (None = Standard)."""
+    o = _konfig.sitzung_optionen(art)
+    o.update({k: v for k, v in ueber.items() if v is not None})
+    return o
+
+
 def starten(art: str, kanal=None, url=None, folge=None, trocken=False, wer='studio', modell=None, denkstufe=None,
-            ohne_gedaechtnis=False, bypass=False) -> dict:
+            ohne_gedaechtnis=None, bypass=None, mcp=None, chrome=None) -> dict:
     text = auftrag_text(art, kanal, url, folge)
-    cmd = claude_befehl(text, modell=modell, denkstufe=denkstufe, ohne_gedaechtnis=ohne_gedaechtnis, bypass=bypass)
+    o = optionen(art, modell=modell, denkstufe=denkstufe, ohne_gedaechtnis=ohne_gedaechtnis, bypass=bypass, mcp=mcp, chrome=chrome)
+    cmd = claude_befehl(text, **o)
     cwd = _arbeitsordner()
-    umg = _umgebung()
-    aus = {'auftrag': art, 'text': text, 'befehl': cmd, 'befehl_text': shlex.join(cmd), 'ordner': str(cwd),
-           'umgebung': umg, 'hinweis': _agent_hinweis()}
     tmux = _tmux()
+    name = _neuer_name(art) if tmux else None
+    umg = _umgebung(name)
+    aus = {'auftrag': art, 'text': text, 'befehl': cmd, 'befehl_text': shlex.join(cmd), 'ordner': str(cwd),
+           'umgebung': umg, 'hinweis': _agent_hinweis(), 'optionen': o}
+    if o.get('mcp'):
+        fehlt = _konfig.mcp_server(list(o['mcp']))[1]
+        if fehlt:
+            aus['hinweis'] = ((aus['hinweis'] or '') + f' MCP-Server nicht übernommen (fehlt oder hat Zugangsdaten): {", ".join(fehlt)}.').strip()
     if tmux:
-        name = _neuer_name(art)
         umgebung = [x for k, v in umg.items() for x in ('-e', f'{k}={v}')] + ['-e', f'PATH={os.environ.get("PATH", "")}']
         tcmd = [tmux, '-u', 'new-session', '-d', '-s', name, '-x', '120', '-y', '36', '-c', str(cwd), *umgebung, *cmd,
                 ';', 'set-option', '-w', '-t', f'={name}:', 'remain-on-exit', 'on',

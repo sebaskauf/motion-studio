@@ -7,6 +7,7 @@
     --titel T  --video out/x.mp4  --vorschau out/x.jpg  --geplant 2026-10-21T18:00
     --fehler "…" | --fehler-weg      --wartet "Frage an den Nutzer" | --wartet-weg
     --kosten 0.42 USD "Apify 30 Reels"  --gepostet <link> [--plattform instagram]
+    --stufe A-fertig    Staffel-Bau: Stufe A (Idee, Skript, Stimme, Storyboard) fertig, der Autopilot startet Stufe B frisch
 Phasen Folge: vorlage skript stimme storyboard szenen ton render vergleich pruefung fertig geplant gepostet
 Phasen Kanal: vorbild zerlegt bibel pilot gemessen kit bereit"""
 import argparse
@@ -45,6 +46,7 @@ def main():
     ap.add_argument('--kosten', nargs=3, metavar=('BETRAG', 'EINHEIT', 'WAS'))
     ap.add_argument('--gepostet')
     ap.add_argument('--plattform', default='instagram')
+    ap.add_argument('--stufe', choices=['A-fertig', 'B-fertig'])
     ap.add_argument('--json', action='store_true', help='Ausgabe als JSON')
     a = ap.parse_args()
 
@@ -72,6 +74,8 @@ def main():
         felder['wartet_auf'] = a.wartet
     if a.wartet_weg:
         felder['wartet_auf'] = None
+    if a.stufe:
+        felder['stufe'] = a.stufe
     st = _ms.status_lesen(ordner)
     if a.kosten:
         betrag, einheit, was = a.kosten
