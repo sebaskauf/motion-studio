@@ -379,6 +379,41 @@ class MigrationTest(Basis):
         self.assertIn('Stil-Skill', g[1])
 
 
+class InstallRueckmeldungTest(unittest.TestCase):
+    """Rückmeldungen von Mitgliedern am 31.10.2026 (Kevin, Dinu)."""
+
+    def test_venv_nimmt_nie_python_315(self):
+        import setup
+        alt_v, alt_w, alt_exe = setup._py_version, setup.shutil.which, setup.sys.executable
+        try:
+            versionen = {'/x/python3.15': (3, 15), '/x/python3.13': (3, 13)}
+            setup.sys.executable = '/x/python3.15'
+            setup._py_version = lambda b: versionen.get(b[-1])
+            setup.shutil.which = lambda n: None
+            self.assertIsNone(setup.python_fuer_venv())          # nur 3.15 da: keine Wahl, klarer Hinweis statt Kompilierfehler
+            setup.shutil.which = lambda n: '/x/python3.13' if n == 'python3.13' else None
+            self.assertEqual(setup.python_fuer_venv(), (['/x/python3.13'], (3, 13)))
+        finally:
+            setup._py_version, setup.shutil.which, setup.sys.executable = alt_v, alt_w, alt_exe
+
+    def test_kenney_signierter_link_mit_referer(self):
+        import sound
+        aufrufe = []
+        def falsch(url, ziel=None, kopf=False, referer=None, fehler_text=None):
+            aufrufe.append((url, referer))
+            if url.endswith('/assets/impact-sounds'):
+                return '<html>kein fester Zip-Link</html>'
+            return '{"url": "https://kenney.nl/download/abc/def?expires=1"}'
+        alt = sound.lade_url
+        sound.lade_url = falsch
+        try:
+            self.assertEqual(sound.kenney_link('impact-sounds'), 'https://kenney.nl/download/abc/def?expires=1')
+        finally:
+            sound.lade_url = alt
+        self.assertEqual(aufrufe[1], ('https://kenney.nl/download-link/' + 'assets/impact-sounds'.encode().hex(),
+                                      'https://kenney.nl/assets/impact-sounds'))
+
+
 class IdeenTest(Basis):
     def test_eigene_zuerst_und_abhaken(self):
         import ideen

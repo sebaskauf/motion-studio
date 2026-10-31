@@ -70,12 +70,25 @@ SYNONYME = {
 
 # ---------------------------------------------------------------- Hilfen
 
-def lade_url(url, ziel: Path | None = None, kopf=False):
-    req = urllib.request.Request(url, headers=UA, method='HEAD' if kopf else 'GET')
+def lade_url(url, ziel: Path | None = None, kopf=False, referer: str | None = None, fehler_text: str | None = None):
+    """GET (Text oder Datei) bzw. kopf=True: nur die Größe. Manche Server (Kenney-Downloads) beantworten HEAD mit 404,
+    dann wird die Größe aus dem Kopf einer GET-Antwort gelesen, ohne den Inhalt zu laden."""
+    kopfzeilen = dict(UA, **({'Referer': referer} if referer else {}))
+    def oeffnen(methode):
+        return urllib.request.urlopen(urllib.request.Request(url, headers=kopfzeilen, method=methode), timeout=60)
     try:
-        with urllib.request.urlopen(req, timeout=60) as r:
-            if kopf:
+        if kopf:
+            try:
+                with oeffnen('HEAD') as r:
+                    n = int(r.headers.get('Content-Length') or 0)
+                    if n:
+                        return n
+            except urllib.error.HTTPError as e:
+                if e.code not in (403, 404, 405):
+                    raise
+            with oeffnen('GET') as r:
                 return int(r.headers.get('Content-Length') or 0)
+        with oeffnen('GET') as r:
             if ziel is None:
                 return r.read().decode('utf-8', errors='replace')
             ziel.parent.mkdir(parents=True, exist_ok=True)
@@ -85,9 +98,34 @@ def lade_url(url, ziel: Path | None = None, kopf=False):
             tmp.replace(ziel)
             return ziel
     except urllib.error.HTTPError as e:
-        raise SystemExit(f'FEHLER: {url} antwortet {e.code}. Seite im Browser prüfen (Link geändert?).')
+        raise SystemExit(fehler_text or f'FEHLER: {url} antwortet {e.code}. Seite im Browser prüfen (Link geändert?).')
     except urllib.error.URLError as e:
         raise SystemExit(f'FEHLER: {url} nicht erreichbar ({e.reason}). Internet prüfen.')
+
+
+def kenney_link(pack: str) -> str:
+    """Download-Link eines Kenney-Packs. Seit Herbst 2026 gibt kenney.nl keine festen Zip-Links mehr aus: Die Seite holt beim
+    Klick einen frisch signierten Link von /download-link/<id> (id = hex von "assets/<pack>", steht auch als data-download-id
+    am Knopf). Der Server prüft die Herkunft: ohne Referer der Asset-Seite 403 (geprüft 31.10.2026). Den alten festen Link
+    (/media/pages/assets/…zip) nimmt die Funktion weiter, falls er wieder auftaucht."""
+    seite = f'https://kenney.nl/assets/{pack}'
+    hand = (f'Seite {seite} im Browser öffnen, Zip mit „Download“ laden und mit '
+            f'"ms sound einlesen <ordner> --quelle kenney --lizenz CC0" übernehmen.')
+    html = lade_url(seite, fehler_text=f'FEHLER: {seite} nicht erreichbar. {hand}')
+    m = re.search(r"(https?://kenney\.nl)?(/media/pages/assets/" + re.escape(pack) + r"/[^'\"\s]+\.zip)", html)
+    if m:
+        return 'https://kenney.nl' + m.group(2)
+    ids = re.findall(r"data-download-id=[\"']([0-9a-fA-F]+)[\"']", html)
+    kid = ids[0] if ids else ('assets/' + pack).encode().hex()
+    antwort = lade_url(f'https://kenney.nl/download-link/{kid}', referer=seite,
+                       fehler_text=f'FEHLER: Kenney gibt für {pack} keinen Download-Link heraus. {hand}')
+    try:
+        url = json.loads(antwort).get('url') or ''
+    except ValueError:
+        url = ''
+    if not url.startswith('https://'):
+        raise SystemExit(f'FEHLER: Download-Link für {pack} nicht gefunden. {hand}')
+    return url
 
 
 def mb(n) -> str:
@@ -539,15 +577,10 @@ def cmd_laden(a):
         print('Kenney-Audio-Packs (CC0, kommerziell frei, ohne Namensnennung). Ermittle Download-Links …')
         packs = []
         for p in KENNEY_PACKS:
-            html = lade_url(f'https://kenney.nl/assets/{p}')
-            m = re.search(r"(https?://kenney\.nl)?(/media/pages/assets/" + re.escape(p) + r"/[^'\"\s]+\.zip)", html)
-            if not m:
-                raise SystemExit(f'FEHLER: Download-Link für {p} nicht gefunden. Seite https://kenney.nl/assets/{p} im Browser öffnen, '
-                                 f'Zip von Hand laden und mit "ms sound einlesen <ordner> --quelle kenney --lizenz CC0" übernehmen.')
-            url = 'https://kenney.nl' + m.group(2)
-            groesse = lade_url(url, kopf=True)
+            url = kenney_link(p)
+            groesse = lade_url(url, kopf=True, referer=f'https://kenney.nl/assets/{p}')
             packs.append((p, url, groesse))
-            print(f'  {p:<18} {mb(groesse):>8}  {url}')
+            print(f'  {p:<18} {mb(groesse):>8}  {url.split("?")[0]}')
         gesamt = sum(g for _, _, g in packs)
         print(f'Zusammen {mb(gesamt)} Download.')
         if not a.ja:
@@ -559,7 +592,7 @@ def cmd_laden(a):
             z = dl / f'kenney_{p}.zip'
             if not (z.exists() and z.stat().st_size == groesse):
                 print(f'Lade {p} …', flush=True)
-                lade_url(url, z)
+                lade_url(kenney_link(p), z, referer=f'https://kenney.nl/assets/{p}')   # frischer Link, die signierten laufen ab
             with zipfile.ZipFile(z) as zf:
                 for info in zf.infolist():
                     name = Path(info.filename)
@@ -580,7 +613,8 @@ def cmd_laden(a):
         if not a.id or not re.fullmatch(r'\d+', a.id):
             raise SystemExit('FEHLER: Mixkit-Nummer fehlt (z. B. 2568). Sie steht in der Adresse des Sounds auf mixkit.co.')
         url = f'https://assets.mixkit.co/active_storage/sfx/{a.id}/{a.id}.wav'
-        groesse = lade_url(url, kopf=True)
+        groesse = lade_url(url, kopf=True, fehler_text=f'FEHLER: Mixkit gibt die WAV-Datei von Sound {a.id} nicht frei (403, nur die Vorschau ist '
+                                                       f'öffentlich). Diesen Sound überspringen und einen anderen aus der Liste nehmen.')
         print(f'Mixkit {a.id}: {mb(groesse)} ({url}). Lizenz: {MIXKIT_LIZENZ}')
         print('Achtung: Auf Mixkit-Listenseiten gehört der Titel nicht immer zur Vorschau daneben. Nach dem Laden anhören.')
         if not a.ja:

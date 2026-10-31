@@ -30,6 +30,7 @@ Größe dem Nutzer nennen. Kostet nichts, also direkt laden.
 - Seiten `https://mixkit.co/free-sound-effects/whoosh/`, `…/pop/`, `…/click/`, `…/transition/` mit WebFetch lesen. Die Nummer steht in der Vorschau-Adresse `…/sfx/<nummer>/<nummer>-preview.mp3`.
 - Je Sound: `__HEIM__/ms sound laden mixkit <nummer> --name "<was es ist>" --ja`. Höchstens 20 pro Sitzung.
 - Titel auf Mixkit-Listen sitzen manchmal beim Nachbarn. Darum nach dem Laden anhören (Schritt 4).
+- Antwortet ein Sound mit 403, gibt Mixkit seine WAV-Datei nicht frei (nur die Vorschau). Überspringen und den nächsten nehmen, nie die Vorschau-MP3 laden.
 
 **3. KI-Felder (optional, wenn die Setup-Stufe KI installiert ist).**
 `__HEIM__/ms sound ki` rechnet für jeden Sound die AST-Klasse (was die Maschine hört) und einen CLAP-Vektor (Textsuche). Mac: rund 4 Minuten für 500 Sounds. Ohne KI läuft alles, die Suche ist dann reine Textsuche in Namen und Tags.

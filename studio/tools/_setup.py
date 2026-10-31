@@ -202,7 +202,7 @@ INSTALL = {
     'whisper-cli': _cmd('brew install whisper-cpp', None, None),
     'tmux': _cmd('brew install tmux', None, 'sudo apt install -y tmux'),
     'tesseract': _cmd('brew install tesseract', 'winget install -e --id UB-Mannheim.TesseractOCR',
-                      'sudo apt install -y tesseract-ocr'),
+                      'sudo apt install -y tesseract-ocr tesseract-ocr-deu'),
     'git': _cmd('xcode-select --install', 'winget install -e --id Git.Git', 'sudo apt install -y git'),
     'claude': _cmd('curl -fsSL https://claude.ai/install.sh | bash', 'winget install -e --id Anthropic.ClaudeCode',
                    'curl -fsSL https://claude.ai/install.sh | bash'),

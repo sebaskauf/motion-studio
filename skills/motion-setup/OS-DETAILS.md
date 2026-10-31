@@ -14,7 +14,7 @@ Claude Code laut code.claude.com/docs/en/setup). `ms setup programme` nutzt gena
 | yt-dlp | `brew install yt-dlp` | regelmäßig `brew upgrade yt-dlp`, alte Versionen scheitern an YouTube |
 | whisper-cli | `brew install whisper-cpp` | nutzt auf Apple Silicon die Grafikeinheit (Metal). Modell: `ms setup whisper-modell turbo --ja` |
 | tmux | `brew install tmux` | für Agent-Sitzungen aus dem Dashboard |
-| tesseract | `brew install tesseract` | optional, Texterkennung |
+| tesseract | `brew install tesseract` | optional, Texterkennung. Auf dem Mac liest Apples Texterkennung (Vision) auch Deutsch, tesseract ist nur Ersatz und reicht mit Englisch |
 | git | `xcode-select --install` | meist schon da |
 | Blender | `brew install --cask blender` | optional, rund 0,9 GB, liegt dann unter /Applications/Blender.app |
 | Claude Code | `curl -fsSL https://claude.ai/install.sh \| bash` oder `brew install --cask claude-code` | |
@@ -33,7 +33,7 @@ winget kommt mit dem „App Installer“ aus dem Microsoft Store. Im Werkzeug la
 | Python | `Python.Python.3.12` | danach heißt der Befehl oft `python`, nicht `python3`. `ms` findet beides |
 | Node.js | `OpenJS.NodeJS.LTS` | |
 | yt-dlp | `yt-dlp.yt-dlp` | |
-| tesseract | `UB-Mannheim.TesseractOCR` | optional |
+| tesseract | `UB-Mannheim.TesseractOCR` | optional. Für deutschen Text im Bild `deu.traineddata` aus github.com/tesseract-ocr/tessdata_fast in den Ordner `tessdata` der Installation legen (sonst nur Englisch, Umlaute fehlen) |
 | Blender | `BlenderFoundation.Blender` | optional, landet in `C:\Program Files\Blender Foundation\Blender <Version>\blender.exe`, `ms check` findet es dort |
 | Claude Code | `Anthropic.ClaudeCode` | oder in PowerShell `irm https://claude.ai/install.ps1 \| iex` |
 
@@ -54,7 +54,7 @@ winget kommt mit dem „App Installer“ aus dem Microsoft Store. Im Werkzeug la
 | Python | `sudo apt install -y python3 python3-venv python3-pip` |
 | Node.js 22 | `curl -fsSL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh && sudo -E bash nodesource_setup.sh && sudo apt install -y nodejs` (die apt-Version ist meist zu alt) |
 | yt-dlp | `sudo apt install -y pipx && pipx install yt-dlp` (apt-Version veraltet) |
-| tmux, tesseract, git | `sudo apt install -y tmux tesseract-ocr git` |
+| tmux, tesseract, git | `sudo apt install -y tmux tesseract-ocr tesseract-ocr-deu git` |
 | Blender | `sudo snap install blender --classic` |
 | Transkription | `ms setup venv --whisper` |
 | Claude Code | `curl -fsSL https://claude.ai/install.sh \| bash` |

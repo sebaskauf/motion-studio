@@ -79,6 +79,31 @@ def tabs_im_quellcode(app: str) -> set[str]:
     return {x.group(1) for x in TAB_RE.finditer(m.group(1))} if m else set()
 
 
+UNSERE_DATEIEN = {'src/App.tsx', 'src/StudioView.tsx', 'src/loadStudio.ts', 'src/App.tsx.vor-studio'}
+
+
+def eigenen_patch_zuruecksetzen(quelle: Path) -> None:
+    """Rückmeldung Kevin 31.10.2026: Beim zweiten Einbau scheiterte git pull an „lokalen Änderungen“. Das war unser eigener Patch
+    vom ersten Lauf (App.tsx angepasst, StudioView.tsx und loadStudio.ts kopiert). Ist App.tsx genau der Stand aus git plus unser
+    Patch und sonst nichts geändert, wird App.tsx vor dem Pull zurückgesetzt; Schritt 4 patcht danach neu. Eigene Änderungen des
+    Nutzers bleiben immer unangetastet."""
+    r = subprocess.run(['git', 'status', '--porcelain'], cwd=str(quelle), capture_output=True, text=True, encoding='utf-8', errors='replace')
+    if r.returncode or not r.stdout.strip():
+        return
+    geaendert = {zeile[3:].strip() for zeile in r.stdout.splitlines() if zeile.strip()}
+    if not geaendert <= UNSERE_DATEIEN or 'src/App.tsx' not in geaendert:
+        return
+    kopf = subprocess.run(['git', 'show', 'HEAD:src/App.tsx'], cwd=str(quelle), capture_output=True, text=True, encoding='utf-8')
+    if kopf.returncode:
+        return
+    jetzt = (quelle / 'src/App.tsx').read_text(encoding='utf-8')
+    if app_patchen(kopf.stdout) != jetzt:
+        sag('Hinweis: src/App.tsx enthält Änderungen außer dem STUDIO-Tab. Ich setze sie nicht zurück.')
+        return
+    subprocess.run(['git', 'checkout', '--', 'src/App.tsx'], cwd=str(quelle), capture_output=True, text=True)
+    sag('Eigenen STUDIO-Patch vom letzten Einbau zurückgesetzt, damit git pull geht. Er wird gleich neu eingebaut.')
+
+
 def befehl(args: list[str], cwd: Path, zeigen: str = '') -> subprocess.CompletedProcess:
     exe = shutil.which(args[0] + ('.cmd' if WIN and args[0] in ('npm', 'npx') else '')) or shutil.which(args[0])
     if not exe:
@@ -183,9 +208,11 @@ def main() -> None:
         if r.returncode:
             raus(1, f'git clone ging nicht: {(r.stderr or r.stdout).strip()[-400:]}')
     else:
+        eigenen_patch_zuruecksetzen(quelle)
         r = befehl(['git', 'pull', '--ff-only'], quelle)
         if r.returncode:
-            sag(f'Hinweis: git pull ging nicht ({(r.stderr or r.stdout).strip()[-200:]}). Ich baue mit dem vorhandenen Stand weiter.')
+            sag(f'Hinweis: git pull ging nicht ({(r.stderr or r.stdout).strip()[-200:]}). Im Quellordner gibt es Änderungen, die nicht '
+                'von diesem Einbau stammen. Ich lasse sie unangetastet und baue mit dem vorhandenen Stand weiter.')
     v_quelle = version(quelle / 'manifest.json')
     if v_quelle < v_inst:
         raus(2, f'Das Plugin im Vault (v{".".join(map(str, v_inst))}) ist neuer als der Quellcode (v{".".join(map(str, v_quelle))}). '
@@ -195,8 +222,10 @@ def main() -> None:
     fehlen = inst_tabs - tabs_im_quellcode(app) - {'STUDIO'}
     if fehlen:
         raus(2, f'Dein Agentic OS hat Tabs, die im Quellcode {quelle} fehlen: {", ".join(sorted(fehlen))}. '
-             'Ein Build würde sie wegnehmen. Erst deren Einbau-Anleitung (EINBAU.md des jeweiligen Systems) im Quellordner nachholen, '
-             'dann mich noch einmal starten.')
+             'Ein Build würde sie wegnehmen. Zwei Wege, der Nutzer entscheidet: (1) deren Einbau-Anleitung (EINBAU.md des jeweiligen '
+             'Systems) im Quellordner nachholen, dann mich noch einmal starten; (2) ohne Build: Das Studio läuft genauso im Browser '
+             '(ms dashboard --oeffnen, Adresse http://127.0.0.1:8777). Stecken die eigenen Tabs als Patch in einem eigenen Plugin, '
+             'kann der Nutzer dort einen Tab mit dieser Adresse als iframe ergänzen. Am Vault nichts von Hand bauen.')
 
     # 4. Dateien + App.tsx
     for n in ('StudioView.tsx', 'loadStudio.ts'):

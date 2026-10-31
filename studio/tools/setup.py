@@ -20,6 +20,7 @@ import os
 import re
 import shutil
 import subprocess
+import time
 import sys
 import urllib.request
 from pathlib import Path
@@ -47,6 +48,48 @@ def ausfuehren(befehl, shell=False) -> int:
 
 # ---------------------------------------------------------------- venv
 
+# Python für die Umgebung (Rückmeldung Kevin 31.10.2026): Homebrew liefert inzwischen Python 3.15, onnxruntime (von faster-whisper)
+# hat dafür noch keine Wheels. pip weicht dann auf ein altes faster-whisper mit av<13 aus, das aus dem Quellcode gebaut werden müsste
+# („pkg-config is required for building PyAV“). Geprüft auf PyPI am 31.10.2026: onnxruntime cp311 bis cp314, numpy/scipy ab cp312,
+# av cp312-abi3. Darum: die neueste vorhandene Version zwischen 3.12 und 3.14.
+PY_GUT = ((3, 12), (3, 14))
+
+
+def _py_version(befehl: list[str]) -> tuple[int, int] | None:
+    try:
+        r = subprocess.run(befehl + ['-c', 'import sys; print(sys.version_info[0], sys.version_info[1])'],
+                           capture_output=True, text=True, timeout=20)
+        a, b = r.stdout.split()[:2]
+        return int(a), int(b)
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return None
+
+
+def python_fuer_venv() -> tuple[list[str], tuple[int, int]] | None:
+    """Neueste Python-Version im Bereich PY_GUT (3.12 bis 3.14), die auf dem Rechner liegt. None, wenn keine."""
+    kand: list[list[str]] = []
+    for minor in range(PY_GUT[1][1], PY_GUT[0][1] - 1, -1):
+        if SYSTEM == 'Windows':
+            kand.append(['py', f'-3.{minor}'])
+        for name in (f'python3.{minor}', f'/opt/homebrew/bin/python3.{minor}', f'/usr/local/bin/python3.{minor}'):
+            pfad = shutil.which(name) if '/' not in name else (name if Path(name).is_file() else None)
+            if pfad:
+                kand.append([pfad])
+    kand.append([sys.executable])
+    beste = None
+    for b in kand:
+        v = _py_version(b)
+        if v and PY_GUT[0] <= v <= PY_GUT[1] and (beste is None or v > beste[1]):
+            beste = (b, v)
+    return beste
+
+
+def _py_hinweis() -> str:
+    return {'Darwin': 'brew install python@3.13', 'Windows': 'winget install -e --id Python.Python.3.13'}.get(
+        SYSTEM, 'sudo apt install -y python3.13 python3.13-venv (oder über deinen Paketmanager)')
+
+
+
 def setup_venv(a):
     if sys.version_info[:2] < _setup.PY_MIN:
         raise SystemExit(f'FEHLER: Python {sys.version.split()[0]} ist zu alt, Motion-Studio braucht >= 3.9. '
@@ -60,9 +103,34 @@ def setup_venv(a):
         print('Installieren mit:')
         zeige(f'{_setup.ms_befehl()} setup venv --ki --ja')
         return 0
+    if vp and a.ki:
+        v = _py_version([str(vp)])
+        if v and not (PY_GUT[0] <= v <= PY_GUT[1]):
+            gut = python_fuer_venv()
+            if not gut:
+                raise SystemExit(f'FEHLER: Die Python-Umgebung läuft mit Python {v[0]}.{v[1]}. Für die KI-Pakete gibt es dafür noch keine '
+                                 f'fertigen Pakete (onnxruntime, Stand 31.10.2026 bis 3.14). Installier Python 3.13: {_py_hinweis()}, '
+                                 f'dann diesen Befehl noch einmal.')
+            alt = venv.with_name(f'.venv-py{v[0]}{v[1]}')
+            print(f'Die Umgebung läuft mit Python {v[0]}.{v[1]}, die KI-Pakete brauchen 3.12 bis 3.14. Lege sie neu an mit Python '
+                  f'{gut[1][0]}.{gut[1][1]} (die alte bleibt als {_setup.kurz_pfad(alt)} liegen).')
+            if alt.exists():
+                alt = venv.with_name(f'.venv-py{v[0]}{v[1]}-{int(time.time())}')
+            venv.rename(alt)
+            vp = None
     if not vp:
-        print(f'Lege Python-Umgebung an: {_setup.kurz_pfad(venv)} (Python {sys.version.split()[0]})')
-        r = subprocess.run([sys.executable, '-m', 'venv', str(venv)], capture_output=True, text=True)
+        gut = python_fuer_venv()
+        if gut:
+            basis, v = gut
+        elif a.ki:
+            raise SystemExit(f'FEHLER: Für die KI-Pakete braucht die Umgebung Python 3.12 bis 3.14, gefunden nur Python '
+                             f'{sys.version.split()[0]}. Installier Python 3.13: {_py_hinweis()}, dann diesen Befehl noch einmal.')
+        else:
+            basis, v = [sys.executable], tuple(sys.version_info[:2])
+            print(f'Hinweis: Python {v[0]}.{v[1]} geht für die Basis. Die optionalen KI-Pakete brauchen später 3.12 bis 3.14 '
+                  f'({_py_hinweis()}).')
+        print(f'Lege Python-Umgebung an: {_setup.kurz_pfad(venv)} (Python {v[0]}.{v[1]})')
+        r = subprocess.run(basis + ['-m', 'venv', str(venv)], capture_output=True, text=True)
         if r.returncode != 0:
             hinweis = ''
             if SYSTEM == 'Linux':
