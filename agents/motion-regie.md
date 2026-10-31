@@ -16,7 +16,7 @@ und sorgst dafür, dass er nie einen Fehler als Erster findet.
 |---|---|---|
 | A Einrichten | einmal | `motion-setup` (Programme, Profil), `motion-sound-bibliothek` (Sounds) |
 | B Kanal lernen | einmal pro Vorbild | `motion-kanal-lernen` |
-| C Produzieren | laufend | `motion-folge` (eigene Folgen), `motion-ideen` (Ideenliste), `motion-posten` (Posten über Claude in Chrome) |
+| C Produzieren | laufend | `motion-folge` (eigene Folgen), `motion-ideen` (Ideenliste), `motion-posten` (Posten über Claude in Chrome, Upload mit `motion-video-hochladen`) |
 
 Werkzeuge: alles über `__HEIM__/ms <werkzeug>` (`__HEIM__/ms hilfe` zeigt alle, `--help` jedes einzelne).
 Arbeitsordner des Nutzers: `__ARBEIT__`. Verboten ist, die Werkzeug-Skripte an `ms` vorbei aufzurufen (`python3 …/tools/x.py`). Eigene kleine Hilfsskripte für Messungen sind erlaubt: Start mit `__HEIM__/.venv/bin/python` (Windows `__HEIM__/.venv/Scripts/python.exe`), darin `sys.path.insert(0, "__HEIM__/tools")` und `import _ms` (Bilder nur über `_ms.frames()` oder `_ms.frame_bei()`, Beispiel im Skill motion-video-zerlegen).
@@ -40,7 +40,7 @@ Nur die Hauptsitzung kann Analyse, Bauer und Prüfer starten. Fehlt dir das Agen
 | Setup fertig, aber noch kein Kanal und keine Folge, „wie fange ich an“, „was soll ich machen“ | Skill `motion-format-finden`: zwei Fragen (Short-Form oder YouTube? Welcher Stil von welchem Account?), dann OHNE Rückfrage in dieser Sitzung Skill motion-kanal-lernen (keine zweite Regie-Sitzung starten; das Studio zeigt Fortschritt und Fertig-Zeit aus Status und Live-Log). Arten von Videos und eigener Twist erst nach dem Nachbau |
 | „nächste Folge“, „neues Video“, „mach ein Reel über …“, „erste eigene Folge“ | Skill `motion-folge` (braucht einen Kanal mit Status `bereit`, sonst erst Phase B). Eigene Folge: Inhalt aus der Idee, Vorlage nur Bauplan. Hat diese Sitzung schon einen Kanal gelernt oder eine Folge gebaut: frische Sitzung (motion-folge Schritt 0) |
 | „Ideenliste“, „meine Ideen“, „Themen für die nächsten Folgen“, Liste knapp | Skill `motion-ideen` |
-| „poste“, „hochladen“, „automatisch posten“, „Posten einrichten“, „Claude in Chrome“ | Skill `motion-posten` (erster Lauf je Plattform stoppt vor „Veröffentlichen“ und fragt) |
+| „poste“, „hochladen“, „automatisch posten“, „Posten einrichten“, „Claude in Chrome“ | Skill `motion-posten` (erster Lauf je Plattform stoppt vor „Veröffentlichen“ und fragt), Video hochladen immer mit Skill `motion-video-hochladen` |
 | „Autopilot“, „Tagesbau“, „wie viele Folgen am Tag“, „Abo“ | `__HEIM__/ms autopilot` (Stand), `ms autopilot abo pro|max5|max20`, `ms autopilot an --kanal <k>`, `ms autopilot posten an` |
 | „was hat das gekostet“, „Token“, „Limit“ | `__HEIM__/ms verbrauch` (Woche) bzw. `ms verbrauch <folge>` |
 | „such Vorlagen“, „was läuft gerade bei @x“ | Skill `motion-vorlagen-finden` |

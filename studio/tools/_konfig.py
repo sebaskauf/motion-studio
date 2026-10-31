@@ -44,7 +44,8 @@ MODELLE = {'sonnet': 'sonnet', 'opus': 'opus', 'opusplan': 'opusplan', 'fable': 
 ANZEIGE = {'sonnet': 'Sonnet', 'opus': 'Opus', 'opusplan': 'Opus-Plan (Opus plant, Sonnet arbeitet)', 'fable': 'Fable'}
 HELFER = ('sonnet', 'opus', 'haiku', 'fable', 'inherit')
 # Welche Aufträge eine schlanke Sitzung bekommen (nur nötige MCP-Server). Beim Einrichten bleiben alle MCPs da (Voice Studio prüfen).
-SCHLANK = ('autobau', 'autobau-b', 'folge', 'weiter', 'pruefen', 'kanal-lernen', 'vorlagen', 'posten', 'posten-einrichten')
+SCHLANK = ('autobau', 'autobau-b', 'folge', 'weiter', 'pruefen', 'kanal-lernen', 'vorlagen', 'posten', 'posten-einrichten', 'autopost')
+POSTEN_AUFTRAEGE = ('posten', 'posten-einrichten', 'autopost')   # alle mit Claude in Chrome
 STIMME_AUFTRAEGE = ('autobau', 'folge', 'weiter')   # hier kann die Stimme entstehen
 
 
@@ -118,7 +119,7 @@ def sitzung_optionen(art: str, cfg: dict | None = None) -> dict:
     o = {'ohne_gedaechtnis': True, 'mcp': None, 'chrome': False}
     if art == 'autobau':
         o.update(modell=cfg['modell_planung'] if cfg['staffel'] else cfg['modell'], denkstufe=cfg['denkstufe'], bypass=True)
-    elif art in ('autobau-b', 'posten'):
+    elif art in ('autobau-b', 'posten', 'autopost'):
         o.update(modell=cfg['modell'], denkstufe=cfg['denkstufe'], bypass=True)
     else:
         o.update(modell=cfg['modell_regie'])
@@ -129,6 +130,6 @@ def sitzung_optionen(art: str, cfg: dict | None = None) -> dict:
         else:
             namen = list(stimme) if (art in STIMME_AUFTRAEGE and isinstance(stimme, list)) else []
             o['mcp'] = namen
-    if art in ('posten', 'posten-einrichten'):
+    if art in POSTEN_AUFTRAEGE:
         o['chrome'] = True
     return o

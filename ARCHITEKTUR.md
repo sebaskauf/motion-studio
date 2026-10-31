@@ -86,7 +86,7 @@ Mitinstalliert (öffentlich, von HeyGen): HyperFrames-Skills über `npx hyperfra
                            posten/<plattform>.md (gespeicherter Ablauf) posten/freigabe.json (Ja des Nutzers je Plattform)
   folgen/<JJJJ-MM-TT>-<slug>/  STATUS.json SKRIPT.md STORYBOARD.md voice/ build/ (HyperFrames-Projekt) out/ snapshots/
                            blender/<sid>/ (Blender-Szenen: szene.py, Bilder, render.log) PRUEFBERICHT.md HANDOFF.md CAPTION.md
-                           upload/ (<id>.mp4, CAPTION.md, TITEL.txt, titelbild.jpg, post.mp4 unter 10 MB für Claude in Chrome)
+                           upload/ (<id>.mp4, CAPTION.md, TITEL.txt, titelbild.jpg, post.mp4 + stuecke/ für den Upload über Claude in Chrome)
                            Pilot zusätzlich: vorbild/ausschnitt.mp4 (Original im Pilot-Fenster) VERSUCHE.md (Messversuche, motion-vergleich)
   vorlagen/register.json  vorlagen/videos/<id>.mp4  vorlagen/transkripte/<id>.json
   sounds/files/<quelle>/…  sounds/katalog.json

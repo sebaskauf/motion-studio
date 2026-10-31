@@ -56,8 +56,10 @@ STUFE_A = ('Staffel-Bau Stufe A: nur motion-folge Schritte 1 bis 4 (Idee aus der
            'Schreib danach in HANDOFF.md den Abschnitt „Übergabe Stufe B“ (Bauer-Gruppen mit Szenen, Farben, Schrift, offene Punkte), '
            'setz ms status <folge> --stufe A-fertig und hör auf. Szenen, Ton, Render und Prüfung macht Stufe B in einer frischen Sitzung.')
 AUTOPOST = ('Autopilot-Posten: Arbeite ohne Rückfragen. Poste nur auf Plattformen mit Freigabe und gespeichertem Ablauf '
-            '(ms posten pruefen zeigt sie), genau nach dem Ablauf. Klappt etwas nicht: ms posten ergebnis <folge> --plattform <p> '
-            '--fehler "<was>" und aufhören, nicht improvisieren.')
+            '(ms posten pruefen zeigt sie), genau nach dem Ablauf. Das Video lädst du in voller Qualität nach Skill '
+            'motion-video-hochladen hoch (ms posten datei, Stücke einzeln per file_upload, prüfen, einsetzen). Klappt etwas nicht: '
+            'ms posten ergebnis <folge> --plattform <p> --fehler "<was>" und aufhören, nicht improvisieren.')
+HOCHLADEN = 'Das Video lädst du nach Skill motion-video-hochladen hoch, nie über das Systemfenster.'
 SITZUNG_RE = re.compile(r'^ms-[a-z0-9][a-z0-9-]{0,62}$')
 KANAL_RE = re.compile(r'^[a-z0-9][a-z0-9-]{0,62}$')
 FOLGE_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._-]{0,120}$')
@@ -126,12 +128,12 @@ def auftrag_text(art: str, kanal=None, url=None, folge=None) -> str:
     if art == 'posten':
         f = _folge_pruefen(folge)
         return (f'Poste Folge {f} nach Skill motion-posten. Plattformen ohne Freigabe sind ein erster Lauf: dort vor '
-                '„Veröffentlichen“ stoppen, mir zeigen, was eingetragen ist, und auf mein Ja warten.')
+                '„Veröffentlichen“ stoppen, mir zeigen, was eingetragen ist, und auf mein Ja warten. ' + HOCHLADEN)
     if art == 'posten-einrichten':
         k = _kanal_pruefen(kanal)
         return (f'Richte das Posten für Kanal {k} ein (Skill motion-posten, erster Lauf): mit meiner letzten fertigen eigenen Folge '
                 'auf jeder Plattform aus meinem Profil bis direkt vor „Veröffentlichen“, dann stoppen und mich fragen. '
-                'Nie selbst veröffentlichen, bevor ich Ja sage.')
+                'Nie selbst veröffentlichen, bevor ich Ja sage. ' + HOCHLADEN)
     if art == 'autopost':
         f = _folge_pruefen(folge)
         return f'Poste Folge {f} nach Skill motion-posten. {AUTOPOST}'

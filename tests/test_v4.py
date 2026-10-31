@@ -103,8 +103,11 @@ class KonfigTest(Basis):
         a = _konfig.sitzung_optionen('autobau', c)
         self.assertEqual((a['modell'], a['mcp'], a['bypass'], a['chrome']), ('opus', [], True, False))
         self.assertEqual(_konfig.sitzung_optionen('autobau-b', c)['modell'], 'sonnet')
-        p = _konfig.sitzung_optionen('autopost', c) if 'autopost' in _konfig.SCHLANK else _konfig.sitzung_optionen('posten', c)
-        self.assertTrue(_konfig.sitzung_optionen('posten', c)['chrome'])
+        p = _konfig.sitzung_optionen('autopost', c)   # 31.10.: Autopilot-Posten lief vorher ohne Chrome, Bypass und schlanke MCPs
+        self.assertEqual((p['chrome'], p['bypass'], p['mcp'], p['modell']), (True, True, [], 'sonnet'))
+        for art in ('posten', 'posten-einrichten', 'autopost'):
+            self.assertTrue(_konfig.sitzung_optionen(art, c)['chrome'], art)
+            self.assertEqual(_konfig.sitzung_optionen(art, c)['mcp'], [], art)
         self.assertEqual(_konfig.sitzung_optionen('folge', c)['modell'], 'opusplan')
         self.assertIsNone(_konfig.sitzung_optionen('einrichten', c)['mcp'])
         c['mcp_stimme'] = ['voicestudio']
@@ -151,6 +154,9 @@ class StartenTest(Basis):
         self.assertIn('Autopilot-Posten', starten.auftrag_text('autopost', folge='2026-10-30-eins'))
         erg = starten.starten('posten', folge='2026-10-30-eins', trocken=True)
         self.assertIn('--chrome', erg['befehl'])
+        erg = starten.starten('autopost', folge='2026-10-30-eins', trocken=True)
+        for teil in ('--chrome', '--strict-mcp-config', 'bypassPermissions'):
+            self.assertIn(teil, erg['befehl'])
         self.assertIn('MS_ARBEIT', erg['umgebung'])
 
 
@@ -225,6 +231,123 @@ class PostenTest(Basis):
         self.assertFalse(posten.pruefen('2026-10-30-pilot')['postbar'])
         r = subprocess.run([sys.executable, str(TOOLS / 'posten.py'), 'pruefen', '2026-10-30-pilot'], capture_output=True, text=True)
         self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+
+
+class StueckeTest(Basis):
+    """Upload in voller Qualität über Stücke (Methode vom 18.10.2026, Sebastian 31.10.)."""
+
+    def video(self, fid):
+        d = self.folge(fid, upload=False)
+        (d / 'upload').mkdir(parents=True, exist_ok=True)
+        if not shutil.which('ffmpeg'):
+            self.skipTest('ffmpeg fehlt')
+        subprocess.run(['ffmpeg', '-nostdin', '-v', 'error', '-y', '-f', 'lavfi', '-i', 'testsrc2=size=720x1280:rate=30:duration=2',
+                        '-f', 'lavfi', '-i', 'sine=frequency=440:duration=2', '-c:v', 'libx264', '-b:v', '4M', '-c:a', 'aac',
+                        '-shortest', str(d / 'upload' / f'{fid}.mp4')], check=True)
+        return d
+
+    def test_stuecke_und_wiederverwenden(self):
+        import posten
+        posten.STUECK_BYTES = 200_000
+        d = self.video('2026-10-31-eigen')
+        e = posten.datei('2026-10-31-eigen')
+        self.assertTrue(e['neu'])
+        self.assertGreater(e['anzahl'], 2)
+        roh = b''.join(Path(x['pfad']).read_bytes() for x in e['stuecke'])
+        self.assertEqual(roh, (d / 'upload' / 'post.mp4').read_bytes())
+        self.assertTrue(all(x['groesse'] <= 200_000 for x in e['stuecke']))
+        self.assertEqual(e['name'], '2026-10-31-eigen.mp4')
+        self.assertFalse(posten.datei('2026-10-31-eigen')['neu'])   # zweiter Aufruf nimmt die vorhandenen Stücke
+        self.assertGreater(posten._ms.probe(d / 'upload' / 'post.mp4').get('dauer') or 0, 1.5)   # nicht neu kodiert, gleiche Länge
+
+    def test_javascript_im_browser_nachgestellt(self):
+        if not shutil.which('node'):
+            self.skipTest('node fehlt')
+        import posten
+        posten.STUECK_BYTES = 150_000
+        self.video('2026-10-31-eigen')
+        e = posten.datei('2026-10-31-eigen')
+        teile = {x['name']: x['pfad'] for x in e['stuecke']}
+        schritte = {s: posten.js(s, '2026-10-31-eigen') for s in ('auffangen', 'pruefen', 'einsetzen', 'aufraeumen')}
+        stub = r"""
+const fs = require('fs');
+globalThis.window = globalThis;
+class DataTransfer { constructor() { this.l = []; this.items = {add: f => this.l.push(f)}; } get files() { return this.l; } }
+globalThis.DataTransfer = DataTransfer;
+const felder = [];
+function feld(attrs) { const f = {type: 'file', accept: attrs.accept || '', name: attrs.name || '', id: '', multiple: !!attrs.multiple,
+  attrs: {...attrs}, files: [], events: [], getAttribute(k) { return this.attrs[k] ?? null; },
+  setAttribute(k, v) { this.attrs[k] = v; }, set type(v) {}, get type() { return 'file'; }, style: {},
+  addEventListener(t, cb) { this.cb = cb; }, dispatchEvent(ev) { this.events.push(ev.type); }, remove() { felder.splice(felder.indexOf(this), 1); } };
+  felder.push(f); return f; }
+feld({accept: 'image/*'}); const plattform = feld({accept: 'video/mp4,video/quicktime'});
+globalThis.document = {
+  createElement: () => feld({}),
+  body: {appendChild: () => {}},
+  querySelector: sel => sel.includes('CLAUDE CHUNK UPLOAD') ? felder.find(f => f.attrs['aria-label'] === 'CLAUDE CHUNK UPLOAD') || null : null,
+  querySelectorAll: sel => sel.includes('CLAUDE CHUNK UPLOAD') ? felder.filter(f => f.attrs['aria-label'] === 'CLAUDE CHUNK UPLOAD') : felder.slice(),
+};
+const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+const lauf = code => { const i = code.lastIndexOf('JSON.stringify('); return new AsyncFunction(code.slice(0, i) + 'return ' + code.slice(i))(); };
+(async () => {
+  const S = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+  const a = JSON.parse(await lauf(S.js.auffangen));
+  const unser = felder.find(f => f.attrs['aria-label'] === 'CLAUDE CHUNK UPLOAD');
+  const namen = Object.keys(S.teile).sort();
+  // file_upload je Stück: Feld bekommt genau eine Datei, change feuert
+  for (const n of namen.slice(0, -1)) { unser.files = [new File([fs.readFileSync(S.teile[n])], n)]; unser.cb(); }
+  const p1 = JSON.parse(await lauf(S.js.pruefen));
+  const letzte = namen[namen.length - 1];
+  unser.files = [new File([fs.readFileSync(S.teile[letzte])], letzte)]; unser.cb();
+  const p2 = JSON.parse(await lauf(S.js.pruefen));
+  const ein = JSON.parse(await lauf(S.js.einsetzen));
+  const buf = Buffer.from(await plattform.files[0].arrayBuffer());
+  const r = JSON.parse(await lauf(S.js.aufraeumen));
+  console.log(JSON.stringify({a, p1, p2, ein, name: plattform.files[0].name, gleich: buf.equals(fs.readFileSync(S.datei)),
+    events: plattform.events, rest: typeof window.claudeChunks, felder_rest: felder.filter(f => f.attrs['aria-label']).length}));
+})().catch(e => { console.log(JSON.stringify({fehler: String(e.stack || e)})); });
+"""
+        f = self.tmp / 'stub.js'
+        f.write_text(stub, encoding='utf-8')
+        daten = self.tmp / 'daten.json'
+        daten.write_text(json.dumps({'js': schritte, 'teile': teile, 'datei': e['datei']}), encoding='utf-8')
+        r = subprocess.run(['node', str(f), str(daten)], capture_output=True, text=True, timeout=60)
+        aus = json.loads(r.stdout.strip().splitlines()[-1])
+        self.assertNotIn('fehler', aus, aus.get('fehler'))
+        self.assertTrue(aus['a']['feld'])
+        self.assertFalse(aus['p1']['alles_gut'])
+        self.assertEqual(len(aus['p1']['fehlt']), 1)
+        self.assertTrue(aus['p2']['alles_gut'], aus['p2'])
+        self.assertTrue(aus['ein']['eingesetzt'], aus['ein'])
+        self.assertTrue(aus['ein']['groesse_ok'])
+        self.assertEqual(aus['ein']['feld']['accept'], 'video/mp4,video/quicktime')   # nicht das Bildfeld, nicht unser Feld
+        self.assertTrue(aus['gleich'])
+        self.assertEqual(aus['name'], '2026-10-31-eigen.mp4')
+        self.assertEqual(aus['events'], ['input', 'change'])
+        self.assertEqual((aus['rest'], aus['felder_rest']), ('undefined', 0))
+
+    def test_falsches_stueck_wird_erkannt(self):
+        if not shutil.which('node'):
+            self.skipTest('node fehlt')
+        import posten
+        posten.STUECK_BYTES = 150_000
+        self.video('2026-10-31-eigen')
+        posten.datei('2026-10-31-eigen')
+        code = posten.js('pruefen', '2026-10-31-eigen')
+        stub = ("globalThis.window = globalThis; const fs = require('fs');\n"
+                "const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;\n"
+                "const code = fs.readFileSync(process.argv[2], 'utf8'); const i = code.lastIndexOf('JSON.stringify(');\n"
+                "window.claudeChunks = {}; const soll = JSON.parse(code.split('\\n')[0].slice(13, -1));\n"
+                "for (const n of Object.keys(soll)) window.claudeChunks[n] = new File([Buffer.alloc(soll[n][0])], n);\n"
+                "new AsyncFunction(code.slice(0, i) + 'return ' + code.slice(i))().then(x => console.log(x));\n")
+        f = self.tmp / 'stub2.js'
+        f.write_text(stub, encoding='utf-8')
+        c = self.tmp / 'code.js'
+        c.write_text(code, encoding='utf-8')
+        r = subprocess.run(['node', str(f), str(c)], capture_output=True, text=True, timeout=60)
+        aus = json.loads(r.stdout.strip().splitlines()[-1])
+        self.assertFalse(aus['alles_gut'])
+        self.assertEqual(len(aus['falsch']), aus['soll'])
 
 
 class IdeenTest(Basis):
