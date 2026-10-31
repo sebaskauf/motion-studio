@@ -23,7 +23,7 @@ Apple Silicon (M1 bis M5): alles läuft nativ. Intel-Macs gehen auch, Whisper un
 
 ## Windows (10/11)
 
-Zuerst **Git for Windows** (`winget install -e --id Git.Git`): Claude Code braucht Git Bash für sein Bash-Werkzeug, und `ms` ist ein Bash-Skript.
+Zuerst **Git for Windows** (`winget install -e --id Git.Git`): Für Motion-Studio Pflicht, weil `install.sh` und `ms` Bash-Skripte sind und im Bash-Werkzeug (Git Bash) laufen müssen. Claude Code selbst geht laut Doku auch ohne Git (dann nur mit PowerShell), Motion-Studio nicht.
 winget kommt mit dem „App Installer“ aus dem Microsoft Store. Im Werkzeug laufen die Befehle mit `--accept-source-agreements --accept-package-agreements`.
 
 | Programm | winget-ID | Hinweis |

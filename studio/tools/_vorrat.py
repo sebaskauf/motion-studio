@@ -112,7 +112,7 @@ def eintrag(st: dict, kanal_plattformen: list[str] | None = None) -> dict:
     fehler = fehler_posten(st)
     grund = ''
     if not ist_eigen(st):
-        grund = 'Pilot oder Nachbau, wird nie gepostet' if st.get('art') in ('pilot', 'kopie') else 'keine eigene Folge (quelle fehlt)'
+        grund = 'Pilot oder Nachbau, wird nie gepostet' if st.get('art') in ('pilot', 'kopie') else 'keine eigene Folge (quelle fehlt, ältere Version: Nutzer fragen, dann ms posten eigen)'
     elif st.get('phase') not in OFFEN:
         grund = 'noch nicht fertig' if st.get('phase') != 'gepostet' else 'schon gepostet'
     elif not dateien['video']:

@@ -59,6 +59,8 @@ class Basis(unittest.TestCase):
         d = self.arbeit / 'kanaele' / slug
         schreibe(d / 'STATUS.json', {'id': slug, 'art': 'kanal', 'titel': slug, 'vorbild': '@vorbild', 'phase': phase,
                                      'phasen': {}, 'pilot': pilot, 'messwerte': {'delta_e': 4.8, 'ssim': 0.73}})
+        if phase == 'bereit':   # fertig gelernte Kanäle haben seit v4 einen Stil-Skill
+            schreibe(self.arbeit / '.claude' / 'skills' / f'stil-{slug}' / 'SKILL.md', '# Stil\n')
         return d
 
     def folge(self, fid, kanal='k1', art='folge', phase='fertig', quelle='eigen', upload=True, erstellt='2026-10-30T10:00:00+01:00', **felder):
@@ -348,6 +350,33 @@ const lauf = code => { const i = code.lastIndexOf('JSON.stringify('); return new
         aus = json.loads(r.stdout.strip().splitlines()[-1])
         self.assertFalse(aus['alles_gut'])
         self.assertEqual(len(aus['falsch']), aus['soll'])
+
+
+class MigrationTest(Basis):
+    """Mitglieder mit Kanälen und Folgen aus 5f23e29 (vor v4)."""
+
+    def test_alte_folge_als_eigen_nur_mit_ja(self):
+        import posten
+        self.profil('Instagram')
+        self.kanal()
+        self.folge('2026-10-30-alt', quelle=None)
+        self.assertIn('ältere Version', posten.pruefen('2026-10-30-alt')['grund'])
+        with self.assertRaises(SystemExit):
+            posten.eigen('2026-10-30-alt', '')
+        self.assertTrue(posten.eigen('2026-10-30-alt', 'ja, ist meins')['neu'])
+        self.assertTrue(posten.pruefen('2026-10-30-alt')['postbar'])
+        self.folge('2026-10-30-pilot', art='pilot', quelle=None)
+        with self.assertRaises(SystemExit):
+            posten.eigen('2026-10-30-pilot', 'ja')
+
+    def test_tagesbau_stoppt_ohne_stil_skill(self):
+        import autopilot
+        self.kanal()
+        (self.arbeit / '.claude' / 'skills' / 'stil-k1' / 'SKILL.md').unlink()
+        cfg = dict(autopilot.konfig(), an=True, kanal='k1', fenster=['00:00', '23:59'])
+        g = autopilot.stopp(cfg, {}, datetime.now())
+        self.assertEqual(g[0], 'stil')
+        self.assertIn('Stil-Skill', g[1])
 
 
 class IdeenTest(Basis):

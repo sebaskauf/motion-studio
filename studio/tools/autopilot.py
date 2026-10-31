@@ -322,6 +322,9 @@ def stopp(cfg: dict, z: dict, jetzt: datetime) -> tuple[str, str] | None:
         return 'kanal', 'Kein Kanal eingestellt (ms autopilot an --kanal <slug>).'
     if not kanal_bereit(cfg['kanal']):
         return 'kanal', f'Kanal {cfg["kanal"]} ist noch nicht fertig gelernt.'
+    if not (_ms.arbeit() / '.claude' / 'skills' / f'stil-{cfg["kanal"]}' / 'SKILL.md').is_file():   # Kanäle von vor dem 31.10.2026
+        return 'stil', (f'Kanal {cfg["kanal"]} hat noch keinen Stil-Skill (neu seit dem Update). Sag der Regie: '
+                        f'„Leg den Stil-Skill für Kanal {cfg["kanal"]} an“, danach baut der Tagesbau weiter.')
     if not im_fenster(cfg, jetzt):
         return 'fenster', f'Gebaut wird zwischen {cfg["fenster"][0]} und {cfg["fenster"][1]} Uhr.'
     if (z.get('tage') or {}).get(jetzt.date().isoformat(), 0) >= int(cfg['pro_tag']):

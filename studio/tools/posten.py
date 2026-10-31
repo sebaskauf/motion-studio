@@ -8,6 +8,8 @@
   ms posten ergebnis <folge> --plattform instagram --link <url>        Post hat geklappt
   ms posten ergebnis <folge> --plattform instagram --fehler "<was>"    Post ist gescheitert: rot im Studio, Folge bleibt liegen
   ms posten erledigt <folge> [--plattform <p>]        Fehler erledigt (selbst hochgeladen oder neuer Versuch erlaubt)
+  ms posten eigen <folge> --zitat "<Ja des Nutzers>"  Folge aus einer älteren Version (ohne quelle) als eigene markieren, NUR nach
+                                                      Rückfrage: Ist der Inhalt seiner oder eine Nacherzählung? Nie Pilot, Nachbau oder Kopie.
   ms posten freigabe <kanal> <plattform> --zitat "<Ja des Nutzers>"
                      NUR nach dem ersten Lauf, der vor „Veröffentlichen“ gestoppt hat und den der Nutzer mit Ja bestätigt hat.
                      Voraussetzung: kanaele/<k>/posten/<plattform>.md (gespeicherter Ablauf). Ab dann postet der Autopilot dort.
@@ -260,6 +262,22 @@ def erledigt(fid: str, plattform: str | None = None) -> dict:
     return {'ok': True}
 
 
+def eigen(fid: str, zitat: str | None) -> dict:
+    """Migration (31.10.2026): Folgen aus Motion-Studio vor v4 haben kein quelle-Feld und gelten nicht als eigene, also postet
+    das System sie nie. Nach ausdrücklichem Ja des Nutzers (der Inhalt ist seiner) wird quelle auf eigen gesetzt."""
+    d, st = _folge(fid)
+    if st.get('art') != 'folge':
+        raise SystemExit('FEHLER: Pilot, Nachbau, Kopie oder Stil-Test werden nie gepostet und nie als eigene markiert.')
+    if st.get('quelle'):
+        return {'ok': True, 'quelle': st['quelle'], 'neu': False}
+    zitat = ' '.join(str(zitat or '').split())
+    if len(zitat) < 2:
+        raise SystemExit('FEHLER: --zitat fehlt: das Ja des Nutzers wörtlich, dass der Inhalt seiner ist.')
+    _ms.status_setzen(d, None, None, quelle='eigen', quelle_bestaetigt={'zeit': _ms.jetzt(), 'zitat': zitat[:200]})
+    _ms.log(f'Folge {V.folge_id(st)} als eigene markiert (ältere Version, Ja des Nutzers)', ziel=_ms.ziel_name(d), art='info')
+    return {'ok': True, 'quelle': 'eigen', 'neu': True}
+
+
 def freigabe(kanal: str, plattform: str, zitat: str | None, zurueck=False) -> dict:
     p = _plattform(plattform)
     d = V.kanal_ordner(kanal)
@@ -286,7 +304,7 @@ def freigabe(kanal: str, plattform: str, zitat: str | None, zurueck=False) -> di
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument('was', nargs='?', default='stand', choices=['stand', 'pruefen', 'datei', 'js', 'ergebnis', 'erledigt', 'freigabe'])
+    ap.add_argument('was', nargs='?', default='stand', choices=['stand', 'pruefen', 'datei', 'js', 'ergebnis', 'erledigt', 'eigen', 'freigabe'])
     ap.add_argument('ziel', nargs='?', help='Folge-ID, bei freigabe der Kanal')
     ap.add_argument('plattform_pos', nargs='?', metavar='plattform')
     ap.add_argument('--kanal')
@@ -336,6 +354,9 @@ def main():
                    if e['ok'] else f'Fehler eingetragen, im Studio rot: {e["fehler"]}')
     if a.was == 'erledigt':
         return aus(erledigt(a.ziel, a.plattform or a.plattform_pos), 'Erledigt.')
+    if a.was == 'eigen':
+        e = eigen(a.ziel, a.zitat)
+        return aus(e, 'Als eigene Folge markiert.' if e['neu'] else f'Hat schon quelle: {e["quelle"]}.')
     if a.was == 'freigabe':
         e = freigabe(a.ziel, a.plattform or a.plattform_pos or '', a.zitat, a.zurueck)
         return aus(e, f'Freigaben für {a.ziel}: {", ".join(e["freigaben"]) or "keine"}')

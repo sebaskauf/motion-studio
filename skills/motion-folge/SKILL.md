@@ -7,6 +7,7 @@ description: "Phase C von Motion-Studio: eine EIGENE Folge im gelernten Kanal-St
 
 Ergebnis: `folgen/<id>/upload/` mit fertigem Video, CAPTION.md, TITEL.txt und Titelbild, geprüft (0 kritische Befunde), Status `fertig`.
 Voraussetzung: ein Kanal mit Status `bereit` und Stil-Skill (sonst erst Skill motion-kanal-lernen).
+**Stil-Skill fehlt** (Kanal aus einer Motion-Studio-Version vor dem 31.10.2026, `ms stil <k> pruefen` meldet ihn als fehlend): Im Gespräch dem Nutzer sagen, dass der Kanal zuerst seinen Stil-Skill braucht (motion-kanal-lernen Schritt 9 inklusive Stil-Test, geschätzt 5 bis 15 M Token), nach seinem Ja anlegen und füllen, dann die Folge. Im Autopilot-Bau nichts anlegen: `ms status kanal:<k> --wartet "Stil-Skill fehlt (neu seit dem Update). In der Regie sagen: Leg den Stil-Skill für Kanal <k> an"` und die Sitzung beenden.
 **Eigene Folge** (Sebastian 30.10.2026): Der Pilot war der 1:1-Nachbau zum Lernen. Ab jetzt kommt der INHALT aus der Ideenliste, der
 Nische und dem Twist des Nutzers. Vom Vorbild übernimmst du nur Form, Länge, Tempo und die Hook-FORMEL, nie Geschichte, Sätze oder Hook-Inhalt.
 
