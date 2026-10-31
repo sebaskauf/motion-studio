@@ -65,7 +65,7 @@ SCHRITT 5: ABSCHLUSS
    - Tagesbau eingestellt (Zahl pro Tag, Zeitplan ja/nein)
    - Studio-Tab im Agentic OS ja/nein
 2. Schreib mir zum Schluss eine kurze Rückmeldung zum Weiterleiten an Sebastian: mein System, welche Stufen ok sind, und alles, was gehakt hat (Befehl, genaue Fehlermeldung, wie es gelöst wurde). Höchstens 10 Zeilen, ohne Schlüssel oder Passwörter.
-3. Sag mir, dass ich Claude Code einmal neu starten soll, und zwar im Arbeitsordner mit der Regie als Hauptsitzung. So gelten die erlaubten Befehle, und die Regie kann Analyse, Bauer und Prüfer starten. Genau so starte ich ab jetzt immer:
+3. Sag mir, wie ich die Regie ab jetzt starte. Mit Agentic OS: nach dem Neuladen (Punkt 5) unter Plus die Motion Regie anklicken. Ohne Agentic OS: Claude Code einmal neu starten, und zwar im Arbeitsordner mit der Regie als Hauptsitzung (so gelten die erlaubten Befehle, und die Regie kann Analyse, Bauer und Prüfer starten):
    - Mac/Linux: `cd <Arbeitsordner> && claude --agent motion-regie --model opusplan`
    - Windows PowerShell: `cd <Arbeitsordner>; claude --agent motion-regie --model opusplan`
    - `--model opusplan` heißt: Opus, wenn geplant wird (Plan-Modus: Shift+Tab drücken, bis „plan mode on“ unten steht), sonst Sonnet. Wer immer sein Standardmodell will, lässt es weg.
